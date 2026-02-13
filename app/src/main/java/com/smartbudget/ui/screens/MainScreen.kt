@@ -80,77 +80,26 @@ fun MainScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .statusBarsPadding()
+            ) {
+                // Line 1: Title + action icons
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = "MoneyOne",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
-                },
-                actions = {
-                    // Account selector
-                    TextButton(onClick = { showAccountMenu = true }) {
-                        Icon(
-                            Icons.Filled.AccountBalance,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = if (isConsolidated) stringResource(R.string.all_accounts)
-                                   else currentAccount?.name ?: stringResource(R.string.account),
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                        Icon(
-                            Icons.Filled.ArrowDropDown,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showAccountMenu,
-                        onDismissRequest = { showAccountMenu = false }
-                    ) {
-                        // Consolidated option (Pro only)
-                        if (isPro && accounts.size > 1) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        stringResource(R.string.all_accounts),
-                                        fontWeight = if (isConsolidated) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                },
-                                onClick = {
-                                    viewModel.selectAllAccounts()
-                                    showAccountMenu = false
-                                },
-                                leadingIcon = {
-                                    if (isConsolidated) {
-                                        Icon(Icons.Filled.Check, contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary)
-                                    }
-                                }
-                            )
-                            Divider()
-                        }
-                        accounts.forEach { account ->
-                            DropdownMenuItem(
-                                text = { Text(account.name) },
-                                onClick = {
-                                    viewModel.selectAccount(account)
-                                    showAccountMenu = false
-                                },
-                                leadingIcon = {
-                                    if (!isConsolidated && account.id == currentAccount?.id) {
-                                        Icon(Icons.Filled.Check, contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary)
-                                    }
-                                }
-                            )
-                        }
-                    }
+                    Spacer(modifier = Modifier.weight(1f))
 
                     // Search
                     IconButton(onClick = onSearch) {
@@ -164,7 +113,7 @@ fun MainScreen(
                     // Month summary toggle
                     IconButton(onClick = { showMonthSummary = !showMonthSummary }) {
                         Icon(
-                            if (showMonthSummary) Icons.Filled.BarChart else Icons.Filled.BarChart,
+                            Icons.Filled.BarChart,
                             contentDescription = stringResource(R.string.month_summary),
                             tint = if (showMonthSummary) MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.onSurfaceVariant
@@ -214,11 +163,77 @@ fun MainScreen(
                             leadingIcon = { Icon(Icons.Filled.Settings, contentDescription = null) }
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
+                }
+
+                // Line 2: Account selector
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .offset(y = (-8).dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = { showAccountMenu = true }) {
+                        Icon(
+                            Icons.Filled.AccountBalance,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (isConsolidated) stringResource(R.string.all_accounts)
+                                   else currentAccount?.name ?: stringResource(R.string.account),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        Icon(
+                            Icons.Filled.ArrowDropDown,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showAccountMenu,
+                        onDismissRequest = { showAccountMenu = false }
+                    ) {
+                        if (isPro && accounts.size > 1) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(R.string.all_accounts),
+                                        fontWeight = if (isConsolidated) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                onClick = {
+                                    viewModel.selectAllAccounts()
+                                    showAccountMenu = false
+                                },
+                                leadingIcon = {
+                                    if (isConsolidated) {
+                                        Icon(Icons.Filled.Check, contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                            )
+                            Divider()
+                        }
+                        accounts.forEach { account ->
+                            DropdownMenuItem(
+                                text = { Text(account.name) },
+                                onClick = {
+                                    viewModel.selectAccount(account)
+                                    showAccountMenu = false
+                                },
+                                leadingIcon = {
+                                    if (!isConsolidated && account.id == currentAccount?.id) {
+                                        Icon(Icons.Filled.Check, contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
