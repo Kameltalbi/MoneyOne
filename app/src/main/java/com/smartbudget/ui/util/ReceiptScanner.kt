@@ -12,9 +12,39 @@ data class ReceiptResult(
     val rawText: String
 )
 
+object ReceiptAmountExtractor {
+    // Regex patterns to find amounts on receipts
+    internal val amountPatterns = listOf(
+        // TOTAL followed by amount
+        Regex("""(?i)(?:total|tot|montant|amount|somme|net|ttc|a\s*payer)\s*[:=]?\s*(\d+[.,]\d{2})"""),
+        // Currency symbol followed by amount
+        Regex("""[€$£]\s*(\d+[.,]\d{2})"""),
+        // Amount followed by currency
+        Regex("""(\d+[.,]\d{2})\s*[€$£]"""),
+        // Standalone amount (last resort - largest amount)
+        Regex("""(\d+[.,]\d{2})""")
+    )
+
+    fun extractAmount(text: String): Double? {
+        for (pattern in amountPatterns) {
+            val matches = pattern.findAll(text).toList()
+            if (matches.isNotEmpty()) {
+                val amounts = matches.mapNotNull { match ->
+                    val amountStr = match.groupValues[1].replace(",", ".")
+                    amountStr.toDoubleOrNull()
+                }
+                if (amounts.isNotEmpty()) {
+                    return amounts.max()
+                }
+            }
+        }
+        return null
+    }
+}
+
 object ReceiptScanner {
 
-    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.Builder().build())
+    private val recognizer by lazy { TextRecognition.getClient(TextRecognizerOptions.Builder().build()) }
 
     // Regex patterns to find amounts on receipts
     private val amountPatterns = listOf(
@@ -45,7 +75,7 @@ object ReceiptScanner {
         return ReceiptResult(amount = amount, rawText = text)
     }
 
-    private fun extractAmount(text: String): Double? {
+    internal fun extractAmount(text: String): Double? {
         // Try patterns in order of specificity
         for (pattern in amountPatterns) {
             val matches = pattern.findAll(text).toList()
