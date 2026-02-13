@@ -25,10 +25,10 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     private var billingClient: BillingClient? = null
     private var productDetails: List<ProductDetails> = emptyList()
 
-    private val _monthlyPrice = MutableStateFlow("$0.99/mo")
+    private val _monthlyPrice = MutableStateFlow("$1.99")
     val monthlyPrice: StateFlow<String> = _monthlyPrice.asStateFlow()
 
-    private val _annualPrice = MutableStateFlow("$9.99/yr")
+    private val _annualPrice = MutableStateFlow("$19.99")
     val annualPrice: StateFlow<String> = _annualPrice.asStateFlow()
 
     fun initialize() {

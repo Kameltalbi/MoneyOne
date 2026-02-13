@@ -253,7 +253,10 @@
     <string name="pro_feature_balance">Ajustement du solde</string>
     <string name="monthly_plan">Mensuel</string>
     <string name="annual_plan">Annuel</string>
-    <string name="annual_plan_desc">0,99 USD/mois facturé annuellement</string>
+    <string name="monthly_plan_desc">Flexibilité maximale</string>
+    <string name="annual_plan_desc">1,67 USD/mois — économisez 16%%</string>
+    <string name="per_month">mois</string>
+    <string name="per_year">an</string>
     <string name="best_value">Meilleure offre</string>
     <string name="subscribe">S\'abonner</string>
     <string name="restore_purchases">Restaurer les achats</string>

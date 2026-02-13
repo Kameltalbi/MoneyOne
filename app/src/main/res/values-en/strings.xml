@@ -250,7 +250,10 @@
     <string name="pro_feature_balance">Balance adjustment</string>
     <string name="monthly_plan">Monthly</string>
     <string name="annual_plan">Annual</string>
-    <string name="annual_plan_desc">$0.99/month billed annually</string>
+    <string name="monthly_plan_desc">Maximum flexibility</string>
+    <string name="annual_plan_desc">$1.67/month — save 16%%</string>
+    <string name="per_month">mo</string>
+    <string name="per_year">yr</string>
     <string name="best_value">Best value</string>
     <string name="subscribe">Subscribe</string>
     <string name="restore_purchases">Restore purchases</string>

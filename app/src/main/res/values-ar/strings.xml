@@ -250,7 +250,10 @@
     <string name="pro_feature_balance">تعديل الرصيد</string>
     <string name="monthly_plan">شهري</string>
     <string name="annual_plan">سنوي</string>
-    <string name="annual_plan_desc">0.99 دولار/شهر يدفع سنوياً</string>
+    <string name="monthly_plan_desc">مرونة قصوى</string>
+    <string name="annual_plan_desc">1.67 دولار/شهر — وفر 16%%</string>
+    <string name="per_month">شهر</string>
+    <string name="per_year">سنة</string>
     <string name="best_value">أفضل عرض</string>
     <string name="subscribe">اشتراك</string>
     <string name="restore_purchases">استعادة المشتريات</string>
