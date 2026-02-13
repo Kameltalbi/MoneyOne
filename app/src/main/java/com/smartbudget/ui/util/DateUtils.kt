@@ -3,6 +3,7 @@ package com.smartbudget.ui.util
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -37,4 +38,11 @@ object DateUtils {
 
     fun formatDate(date: LocalDate): String =
         date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault()))
+
+    // UTC conversions for Material 3 DatePicker
+    fun toUtcMillis(date: LocalDate): Long =
+        date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+
+    fun fromUtcMillis(millis: Long): LocalDate =
+        java.time.Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
 }

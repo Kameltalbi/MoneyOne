@@ -341,14 +341,14 @@ fun AddTransactionScreen(
     // Date picker dialog
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = DateUtils.toEpochMillis(formState.date)
+            initialSelectedDateMillis = DateUtils.toUtcMillis(formState.date)
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        viewModel.updateDate(DateUtils.fromEpochMillis(millis))
+                        viewModel.updateDate(DateUtils.fromUtcMillis(millis))
                     }
                     showDatePicker = false
                 }) {

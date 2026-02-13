@@ -1,5 +1,6 @@
 package com.smartbudget.ui.screens
 
+import android.content.Context
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,6 +46,7 @@ fun MainScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as SmartBudgetApp
     val isPro by app.billingManager.isPro.collectAsState()
+
     val currentYearMonth by viewModel.currentYearMonth.collectAsStateWithLifecycle()
     val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()
     val currentAccount by viewModel.currentAccount.collectAsStateWithLifecycle()
@@ -52,6 +54,7 @@ fun MainScreen(
     val accounts by viewModel.accounts.collectAsStateWithLifecycle()
     val dailyTransactions by viewModel.dailyTransactions.collectAsStateWithLifecycle()
     val monthSummary by viewModel.monthSummary.collectAsStateWithLifecycle()
+    val balanceUpToDate by viewModel.balanceUpToDate.collectAsStateWithLifecycle()
     val dayBalances by viewModel.dayBalances.collectAsStateWithLifecycle()
 
     var showAccountMenu by remember { mutableStateOf(false) }
@@ -76,7 +79,7 @@ fun MainScreen(
                 title = {
                     Text(
                         text = "MoneyOne",
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -218,8 +221,7 @@ fun MainScreen(
 
             // Daily balance under calendar
             item {
-                val dayBalance = dayBalances[selectedDate] ?: 0.0
-                val balanceColor = if (monthSummary.balance >= 0)
+                val balanceColor = if (balanceUpToDate >= 0)
                     com.smartbudget.ui.theme.IncomeGreen
                 else
                     com.smartbudget.ui.theme.ExpenseRed
@@ -243,7 +245,7 @@ fun MainScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = com.smartbudget.ui.util.CurrencyFormatter.format(monthSummary.balance),
+                            text = com.smartbudget.ui.util.CurrencyFormatter.format(balanceUpToDate),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                             color = balanceColor
@@ -535,4 +537,5 @@ fun MainScreen(
             Text(stringResource(R.string.transaction_duplicated))
         }
     }
+
 }

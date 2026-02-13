@@ -150,6 +150,22 @@
 
     <!-- Balance adjustment -->
     <string name="adjust_balance">Ajuster le solde</string>
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Gérez vos finances</string>
+    <string name="onboarding_desc_1">Suivez vos revenus et dépenses facilement avec un calendrier intuitif</string>
+    <string name="onboarding_title_2">Budgets intelligents</string>
+    <string name="onboarding_desc_2">Définissez des budgets mensuels par catégorie et suivez votre progression</string>
+    <string name="onboarding_title_3">Analysez vos habitudes</string>
+    <string name="onboarding_desc_3">Visualisez vos dépenses avec des graphiques clairs et prenez le contrôle</string>
+    <string name="next_page">Suivant</string>
+    <string name="skip_balance">Passer cette étape</string>
+    <string name="choose_your_language">Choisissez votre langue</string>
+    <string name="choose_your_currency">Choisissez votre devise</string>
+
+    <string name="initial_balance_title">Bienvenue sur MoneyOne !</string>
+    <string name="initial_balance_message">Quel est le solde actuel de votre compte ?</string>
+    <string name="initial_balance_hint">Solde initial</string>
+    <string name="start">Commencer</string>
     <string name="current_balance">Solde actuel</string>
     <string name="new_balance">Nouveau solde</string>
     <string name="adjust">Ajuster</string>

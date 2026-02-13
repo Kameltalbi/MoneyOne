@@ -150,6 +150,22 @@
 
     <!-- Balance adjustment -->
     <string name="adjust_balance">Adjust balance</string>
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Manage your finances</string>
+    <string name="onboarding_desc_1">Track your income and expenses easily with an intuitive calendar</string>
+    <string name="onboarding_title_2">Smart budgets</string>
+    <string name="onboarding_desc_2">Set monthly budgets per category and track your progress</string>
+    <string name="onboarding_title_3">Analyze your habits</string>
+    <string name="onboarding_desc_3">Visualize your spending with clear charts and take control</string>
+    <string name="next_page">Next</string>
+    <string name="skip_balance">Skip this step</string>
+    <string name="choose_your_language">Choose your language</string>
+    <string name="choose_your_currency">Choose your currency</string>
+
+    <string name="initial_balance_title">Welcome to MoneyOne!</string>
+    <string name="initial_balance_message">What is your current account balance?</string>
+    <string name="initial_balance_hint">Initial balance</string>
+    <string name="start">Start</string>
     <string name="current_balance">Current balance</string>
     <string name="new_balance">New balance</string>
     <string name="adjust">Adjust</string>

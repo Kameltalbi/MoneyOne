@@ -7,6 +7,7 @@ import com.smartbudget.SmartBudgetApp
 import com.smartbudget.data.dao.TransactionWithCategory
 import com.smartbudget.data.entity.Account
 import com.smartbudget.data.entity.Budget
+import com.smartbudget.data.entity.Transaction
 import com.smartbudget.data.entity.TransactionType
 import com.smartbudget.ui.util.DateUtils
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -163,6 +164,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MonthSummary())
 
+    // Balance up to selected date (not the whole month)
+    val balanceUpToDate: StateFlow<Double> =
+        combine(_currentAccount, _selectedDate, _isConsolidated) { account, date, consolidated ->
+            Triple(account, date, consolidated)
+        }.flatMapLatest { (account, date, consolidated) ->
+            val start = DateUtils.monthStart(YearMonth.from(date))
+            val end = DateUtils.dayEnd(date)
+            if (consolidated) {
+                combine(
+                    transactionRepo.getAllTotalIncome(start, end),
+                    transactionRepo.getAllTotalExpenses(start, end)
+                ) { income, expenses -> income - expenses }
+            } else if (account == null) {
+                flowOf(0.0)
+            } else {
+                combine(
+                    transactionRepo.getTotalIncome(account.id, start, end),
+                    transactionRepo.getTotalExpenses(account.id, start, end)
+                ) { income, expenses -> income - expenses }
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
     // Category budgets for the month
     val categoryBudgets: StateFlow<List<Budget>> = _currentYearMonth.flatMapLatest { ym ->
         budgetRepo.getAllBudgetsForMonth(DateUtils.yearMonthString(ym))
@@ -201,6 +224,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
             transactionRepo.insert(transaction.copy(id = 0))
+        }
+    }
+
+    fun setInitialBalance(amount: Double) {
+        if (amount == 0.0) return
+        viewModelScope.launch {
+            val account = accountRepo.getDefaultAccount() ?: return@launch
+            val transaction = Transaction(
+                name = "Solde initial",
+                amount = amount,
+                type = TransactionType.INCOME,
+                accountId = account.id,
+                date = System.currentTimeMillis(),
+                note = "Solde initial du compte",
+                isValidated = true
+            )
+            transactionRepo.insert(transaction)
         }
     }
 }

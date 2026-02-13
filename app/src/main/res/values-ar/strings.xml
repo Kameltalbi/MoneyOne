@@ -150,6 +150,22 @@
 
     <!-- Balance adjustment -->
     <string name="adjust_balance">تعديل الرصيد</string>
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">أدر أموالك</string>
+    <string name="onboarding_desc_1">تابع دخلك ومصاريفك بسهولة مع تقويم سهل الاستخدام</string>
+    <string name="onboarding_title_2">ميزانيات ذكية</string>
+    <string name="onboarding_desc_2">حدد ميزانيات شهرية لكل فئة وتابع تقدمك</string>
+    <string name="onboarding_title_3">حلل عاداتك</string>
+    <string name="onboarding_desc_3">شاهد مصاريفك برسوم بيانية واضحة وتحكم في أموالك</string>
+    <string name="next_page">التالي</string>
+    <string name="skip_balance">تخطي هذه الخطوة</string>
+    <string name="choose_your_language">اختر لغتك</string>
+    <string name="choose_your_currency">اختر عملتك</string>
+
+    <string name="initial_balance_title">مرحبا بك في MoneyOne!</string>
+    <string name="initial_balance_message">ما هو رصيد حسابك الحالي؟</string>
+    <string name="initial_balance_hint">الرصيد الأولي</string>
+    <string name="start">ابدأ</string>
     <string name="current_balance">الرصيد الحالي</string>
     <string name="new_balance">الرصيد الجديد</string>
     <string name="adjust">تعديل</string>

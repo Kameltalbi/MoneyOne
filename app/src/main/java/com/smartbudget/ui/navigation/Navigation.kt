@@ -1,6 +1,8 @@
 package com.smartbudget.ui.navigation
 
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -21,6 +23,7 @@ object Routes {
     const val SETTINGS_ACCOUNTS = "settings/accounts"
     const val DASHBOARD = "dashboard"
     const val PRO_UPGRADE = "pro_upgrade"
+    const val ONBOARDING = "onboarding"
 }
 
 @Composable
@@ -30,10 +33,30 @@ fun SmartBudgetNavigation(
     transactionViewModel: TransactionViewModel = viewModel(),
     settingsViewModel: SettingsViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("moneyone_setup", Context.MODE_PRIVATE)
+    val isFirstLaunch = !prefs.getBoolean("onboarding_done", false)
+    val startRoute = if (isFirstLaunch) Routes.ONBOARDING else Routes.MAIN
+
     NavHost(
         navController = navController,
-        startDestination = Routes.MAIN
+        startDestination = startRoute
     ) {
+        composable(Routes.ONBOARDING) {
+            OnboardingScreen(
+                onFinish = { initialBalance ->
+                    prefs.edit().putBoolean("onboarding_done", true).apply()
+                    prefs.edit().putBoolean("initial_balance_set", true).apply()
+                    if (initialBalance > 0) {
+                        mainViewModel.setInitialBalance(initialBalance)
+                    }
+                    navController.navigate(Routes.MAIN) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(Routes.MAIN) {
             MainScreen(
                 viewModel = mainViewModel,

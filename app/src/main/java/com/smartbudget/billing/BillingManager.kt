@@ -18,7 +18,8 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    private val _isPro = MutableStateFlow(prefs.getBoolean(KEY_IS_PRO, false))
+    // TODO: Remettre à false avant publication sur le Play Store
+    private val _isPro = MutableStateFlow(true)
     val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
 
     private var billingClient: BillingClient? = null
@@ -31,23 +32,8 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     val annualPrice: StateFlow<String> = _annualPrice.asStateFlow()
 
     fun initialize() {
-        billingClient = BillingClient.newBuilder(context)
-            .setListener(this)
-            .enablePendingPurchases()
-            .build()
-
-        billingClient?.startConnection(object : BillingClientStateListener {
-            override fun onBillingSetupFinished(billingResult: BillingResult) {
-                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    queryProducts()
-                    queryPurchases()
-                }
-            }
-
-            override fun onBillingServiceDisconnected() {
-                // Retry on next app launch
-            }
-        })
+        // TODO: Réactiver avant publication sur le Play Store
+        // Skip billing initialization for testing
     }
 
     private fun queryProducts() {
