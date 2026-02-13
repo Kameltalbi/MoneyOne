@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MoneyOne</string>
+
+    <!-- General -->
+    <string name="back">رجوع</string>
+    <string name="save">حفظ</string>
+    <string name="cancel">إلغاء</string>
+    <string name="delete">حذف</string>
+    <string name="edit">تعديل</string>
+    <string name="add">إضافة</string>
+    <string name="close">إغلاق</string>
+    <string name="ok">موافق</string>
+    <string name="search">بحث</string>
+    <string name="clear">مسح</string>
+    <string name="saved">تم الحفظ ✓</string>
+    <string name="no_data">لا توجد بيانات</string>
+
+    <!-- Main Screen -->
+    <string name="account">حساب</string>
+    <string name="add_transaction">إضافة معاملة</string>
+    <string name="dashboard">لوحة التحكم</string>
+    <string name="settings">الإعدادات</string>
+    <string name="menu">القائمة</string>
+    <string name="month_summary">ملخص الشهر</string>
+    <string name="transactions_for">معاملات %1$s</string>
+    <string name="no_transaction">لا توجد معاملات</string>
+    <string name="balance_at">الرصيد في %1$s:</string>
+    <string name="previous_month">الشهر السابق</string>
+    <string name="next_month">الشهر التالي</string>
+
+    <!-- Transaction Types -->
+    <string name="expense">مصروف</string>
+    <string name="income">دخل</string>
+
+    <!-- Add Transaction Screen -->
+    <string name="new_transaction">معاملة جديدة</string>
+    <string name="edit_transaction">تعديل المعاملة</string>
+    <string name="transaction_name">اسم المعاملة</string>
+    <string name="amount">المبلغ</string>
+    <string name="category">الفئة</string>
+    <string name="date">التاريخ</string>
+    <string name="note_optional">ملاحظة (اختياري)</string>
+    <string name="recurrence">التكرار</string>
+    <string name="save_transaction">حفظ</string>
+    <string name="edit_save">تعديل</string>
+    <string name="no_category">بدون فئة</string>
+    <string name="transaction_actions">إجراءات</string>
+    <string name="delete_transaction">حذف المعاملة</string>
+    <string name="delete_transaction_confirm">هل تريد حقاً حذف هذه المعاملة؟</string>
+    <string name="duplicate_transaction">تكرار المعاملة</string>
+    <string name="transaction_duplicated">تم تكرار المعاملة ✓</string>
+    <string name="sort_by">ترتيب حسب</string>
+    <string name="sort_date">التاريخ</string>
+    <string name="sort_amount">المبلغ</string>
+    <string name="sort_category">الفئة</string>
+
+    <!-- Recurrence -->
+    <string name="recurrence_none">مرة واحدة</string>
+    <string name="recurrence_weekly">أسبوعي</string>
+    <string name="recurrence_monthly">شهري</string>
+    <string name="recurrence_quarterly">كل 3 أشهر</string>
+    <string name="recurrence_four_monthly">كل 4 أشهر</string>
+    <string name="recurrence_semi_annual">كل 6 أشهر</string>
+    <string name="recurrence_annual">سنوي</string>
+
+    <!-- Month Summary -->
+    <string name="incomes">الدخل</string>
+    <string name="expenses">المصروفات</string>
+    <string name="balance">الرصيد</string>
+    <string name="budget">الميزانية</string>
+    <string name="remaining">المتبقي</string>
+    <string name="over_budget">تجاوز الميزانية</string>
+    <string name="budget_used">من الميزانية مستخدم</string>
+    <string name="no_budget_set">لم يتم تحديد ميزانية</string>
+
+    <!-- Settings -->
+    <string name="currency">العملة</string>
+    <string name="monthly_global_budget">الميزانية الشهرية العامة</string>
+    <string name="global_budget_label">الميزانية العامة (%1$s)</string>
+    <string name="save_budget">حفظ الميزانية</string>
+    <string name="category_budgets">ميزانيات الفئات</string>
+    <string name="category_budgets_desc">تحديد ميزانية لكل فئة مصروفات</string>
+    <string name="categories">الفئات</string>
+    <string name="expenses_count">%1$d مصروفات</string>
+    <string name="incomes_count">%1$d دخل</string>
+
+    <!-- Categories Screen -->
+    <string name="new_category">فئة جديدة</string>
+    <string name="edit_category">تعديل الفئة</string>
+    <string name="delete_category">حذف الفئة</string>
+    <string name="delete_category_confirm">هل تريد حقاً حذف \"%1$s\"؟</string>
+    <string name="category_name">الاسم</string>
+    <string name="color">اللون</string>
+    <string name="icon">الأيقونة</string>
+    <string name="create">إنشاء</string>
+
+    <!-- Category Budgets Screen -->
+    <string name="budget_per_category">ميزانيات الفئات</string>
+    <string name="budget_per_category_desc">تحديد ميزانية شهرية لكل فئة مصروفات</string>
+    <string name="budget_in">الميزانية بـ %1$s</string>
+    <string name="no_expense_category">لا توجد فئات مصروفات.\nأضف بعضها في الفئات.</string>
+
+    <!-- Currency Screen -->
+    <string name="choose_currency">اختيار العملة</string>
+    <string name="search_country_currency">البحث عن بلد أو عملة…</string>
+
+    <!-- Dashboard -->
+    <string name="expenses_by_category">المصروفات حسب الفئة</string>
+    <string name="no_expense_this_month">لا توجد مصروفات هذا الشهر</string>
+    <string name="budget_tracking">تتبع الميزانية</string>
+    <string name="budget_vs_actual">الميزانية مقابل الإنفاق الفعلي حسب الفئة</string>
+    <string name="budget_exceeded_by">تجاوز بمقدار %1$s</string>
+    <string name="budget_remaining">متبقي %1$s</string>
+    <string name="budget_usage">استخدام الميزانية</string>
+    <string name="income_vs_expenses">الدخل مقابل المصروفات</string>
+
+    <!-- Calendar -->
+    <string name="mon">إثن</string>
+    <string name="tue">ثلا</string>
+    <string name="wed">أرب</string>
+    <string name="thu">خمي</string>
+    <string name="fri">جمع</string>
+    <string name="sat">سبت</string>
+    <string name="sun">أحد</string>
+
+    <!-- Accounts -->
+    <string name="accounts">الحسابات</string>
+    <string name="main_account">الحساب الرئيسي</string>
+    <string name="new_account">حساب جديد</string>
+    <string name="account_name">اسم الحساب</string>
+    <string name="rename_account">إعادة تسمية الحساب</string>
+    <string name="delete_account">حذف الحساب</string>
+    <string name="delete_account_confirm">هل تريد حقاً حذف الحساب \"%1$s\"? سيتم حذف جميع المعاملات المرتبطة.</string>
+    <string name="max_accounts_reached">تم بلوغ الحد الأقصى 5 حسابات</string>
+    <string name="cannot_delete_default">لا يمكن حذف الحساب الافتراضي</string>
+    <string name="last_account">لا يمكن حذف الحساب الأخير</string>
+    <string name="set_as_default">تعيين كافتراضي</string>
+    <string name="default_account">افتراضي</string>
+    <string name="accounts_count">%1$d حساب(ات)</string>
+    <string name="all_accounts">جميع الحسابات</string>
+
+    <!-- Language -->
+    <string name="language">اللغة</string>
+    <string name="language_french">Français</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="choose_language">اختيار اللغة</string>
+    <string name="restart_required">أعد تشغيل التطبيق لتطبيق التغيير</string>
+
+    <!-- Balance adjustment -->
+    <string name="adjust_balance">تعديل الرصيد</string>
+    <string name="current_balance">الرصيد الحالي</string>
+    <string name="new_balance">الرصيد الجديد</string>
+    <string name="adjust">تعديل</string>
+    <string name="balance_adjusted">تم تعديل الرصيد ✓</string>
+
+    <!-- Pro -->
+    <string name="pro">برو</string>
+    <string name="free_version">النسخة المجانية</string>
+    <string name="pro_version">MoneyOne Pro</string>
+    <string name="upgrade_to_pro">الترقية إلى برو</string>
+    <string name="pro_active">برو مفعل</string>
+    <string name="pro_feature_accounts">حتى 5 حسابات</string>
+    <string name="pro_feature_unlimited">معاملات غير محدودة</string>
+    <string name="pro_feature_categories">فئات مخصصة</string>
+    <string name="pro_feature_dashboard">لوحة معلومات كاملة</string>
+    <string name="pro_feature_consolidation">توحيد متعدد الحسابات</string>
+    <string name="pro_feature_balance">تعديل الرصيد</string>
+    <string name="monthly_plan">شهري</string>
+    <string name="annual_plan">سنوي</string>
+    <string name="annual_plan_desc">0.99 دولار/شهر يدفع سنوياً</string>
+    <string name="best_value">أفضل عرض</string>
+    <string name="subscribe">اشتراك</string>
+    <string name="restore_purchases">استعادة المشتريات</string>
+    <string name="pro_required">ميزة برو</string>
+    <string name="pro_required_desc">هذه الميزة تتطلب MoneyOne Pro</string>
+    <string name="transaction_limit_reached">تم بلوغ حد 100 معاملة/شهر</string>
+    <string name="free_account_limit">حساب واحد فقط في النسخة المجانية</string>
+</resources>
