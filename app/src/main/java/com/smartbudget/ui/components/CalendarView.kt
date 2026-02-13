@@ -180,8 +180,8 @@ private fun CalendarDayCell(
         ) {
             Text(
                 text = day.toString(),
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.Normal,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (isToday || isSelected) FontWeight.ExtraBold else FontWeight.Bold,
                 color = textColor,
                 textAlign = TextAlign.Center
             )

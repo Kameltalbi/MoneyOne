@@ -26,4 +26,7 @@ interface BudgetDao {
 
     @Query("DELETE FROM budgets WHERE yearMonth = :yearMonth AND isGlobal = 1")
     suspend fun deleteGlobalBudget(yearMonth: String)
+
+    @Query("SELECT * FROM budgets WHERE yearMonth = :yearMonth")
+    suspend fun getAllBudgetsForMonthDirect(yearMonth: String): List<Budget>
 }

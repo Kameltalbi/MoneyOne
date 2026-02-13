@@ -3,6 +3,7 @@ package com.smartbudget.data.repository
 import com.smartbudget.data.dao.TransactionDao
 import com.smartbudget.data.dao.TransactionWithCategory
 import com.smartbudget.data.entity.Transaction
+import com.smartbudget.data.entity.TransactionType
 import kotlinx.coroutines.flow.Flow
 
 class TransactionRepository(private val transactionDao: TransactionDao) {
@@ -52,4 +53,27 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
 
     suspend fun getTransactionById(id: Long): Transaction? =
         transactionDao.getTransactionById(id)
+
+    fun searchTransactions(query: String): Flow<List<TransactionWithCategory>> =
+        transactionDao.searchTransactions(query)
+
+    suspend fun getTotalExpensesDirect(accountId: Long, startDate: Long, endDate: Long): Double =
+        transactionDao.getTotalExpensesDirect(accountId, startDate, endDate)
+
+    suspend fun getExpensesByCategoryDirect(accountId: Long, categoryId: Long, startDate: Long, endDate: Long): Double =
+        transactionDao.getExpensesByCategoryDirect(accountId, categoryId, startDate, endDate)
+
+    suspend fun getTotalBalance(accountId: Long): Double =
+        transactionDao.getTotalBalance(accountId)
+
+    suspend fun getTotalBalanceAllAccounts(): Double =
+        transactionDao.getTotalBalanceAllAccounts()
+
+    suspend fun getRecurringTransactions(): List<Transaction> =
+        transactionDao.getRecurringTransactions()
+
+    suspend fun getLastOccurrenceDate(
+        name: String, accountId: Long, type: TransactionType, 
+        categoryId: Long?, amount: Double
+    ): Long? = transactionDao.getLastOccurrenceDate(name, accountId, type, categoryId, amount)
 }

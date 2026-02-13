@@ -162,14 +162,79 @@
     <string name="choose_your_language">اختر لغتك</string>
     <string name="choose_your_currency">اختر عملتك</string>
 
-    <string name="initial_balance_title">مرحبا بك في MoneyOne!</string>
-    <string name="initial_balance_message">ما هو رصيد حسابك الحالي؟</string>
-    <string name="initial_balance_hint">الرصيد الأولي</string>
+    <string name="initial_balance_title">أنشئ حسابك</string>
+    <string name="initial_balance_message">اختر اسما لحسابك وأدخل رصيدك الحالي</string>
+    <string name="account_name_hint">اسم الحساب</string>
+    <string name="initial_balance_hint">الرصيد الحالي (اختياري)</string>
     <string name="start">ابدأ</string>
     <string name="current_balance">الرصيد الحالي</string>
     <string name="new_balance">الرصيد الجديد</string>
     <string name="adjust">تعديل</string>
     <string name="balance_adjusted">تم تعديل الرصيد ✓</string>
+
+    <!-- Backup -->
+    <string name="backup_title">نسخ احتياطي Google Drive</string>
+    <string name="backup_sign_in">تسجيل الدخول بحساب Google</string>
+    <string name="backup_sign_in_failed">فشل تسجيل الدخول</string>
+    <string name="backup_save">نسخ احتياطي</string>
+    <string name="backup_restore">استعادة</string>
+    <string name="backup_success">تم النسخ الاحتياطي بنجاح ✓</string>
+    <string name="backup_error">خطأ في النسخ الاحتياطي</string>
+    <string name="backup_restored">تمت الاستعادة بنجاح ✓ أعد تشغيل التطبيق</string>
+    <string name="backup_restore_error">خطأ في الاستعادة</string>
+    <string name="backup_last">آخر نسخ احتياطي: %1$s</string>
+    <string name="backup_sign_out">تسجيل الخروج</string>
+
+    <!-- Multi-currency -->
+    <string name="default_currency_label">العملة الافتراضية للتطبيق</string>
+
+    <!-- Forecast -->
+    <string name="forecast_title">توقعات نهاية الشهر</string>
+    <string name="forecast_based_on">بناءً على %1$d يوم من %2$d</string>
+    <string name="forecast_expenses">المصروفات المتوقعة</string>
+    <string name="forecast_income">الدخل المتوقع</string>
+    <string name="forecast_balance">الرصيد المتوقع</string>
+    <string name="forecast_day">يوم</string>
+
+    <!-- Receipt Scan -->
+    <string name="scan_receipt">مسح إيصال</string>
+    <string name="scan_no_amount">لم يتم اكتشاف أي مبلغ على الإيصال</string>
+    <string name="scan_error">خطأ في المسح</string>
+
+    <!-- Comparison -->
+    <string name="month_comparison">مقارنة مع الشهر السابق</string>
+
+    <!-- Theme -->
+    <string name="theme_color">لون السمة</string>
+
+    <!-- Export -->
+    <string name="export_csv">تصدير CSV</string>
+
+    <!-- Search -->
+    <string name="search_hint">البحث عن معاملة…</string>
+    <string name="search_empty">اكتب للبحث بالاسم أو الفئة أو الملاحظة أو المبلغ</string>
+    <string name="search_no_results">لا توجد نتائج</string>
+    <string name="search_results_count">%1$d نتيجة</string>
+
+    <!-- Budget Alerts -->
+    <string name="budget_alert_channel">تنبيهات الميزانية</string>
+    <string name="budget_alert_channel_desc">إشعارات عند بلوغ 80%% من الميزانية</string>
+    <string name="budget_alert_global_title">الميزانية العامة عند %1$s</string>
+    <string name="budget_alert_category_title">ميزانية الفئة عند %1$s</string>
+    <string name="budget_alert_body">تم إنفاق %1$s من %2$s</string>
+
+    <!-- Annual Summary -->
+    <string name="annual_summary">الملخص السنوي %1$d</string>
+
+    <!-- Savings Goals -->
+    <string name="savings_goals_title">أهداف الادخار</string>
+    <string name="no_savings_goals">لا توجد أهداف ادخار</string>
+    <string name="add_savings_goal">هدف جديد</string>
+    <string name="goal_name">اسم الهدف</string>
+    <string name="goal_target_amount">المبلغ المستهدف</string>
+    <string name="add_savings">ادخار</string>
+    <string name="remaining_to_save">المتبقي للادخار: %1$s</string>
+    <string name="delete_goal_confirm">حذف الهدف \"%1$s\"؟</string>
 
     <!-- Pro -->
     <string name="pro">برو</string>

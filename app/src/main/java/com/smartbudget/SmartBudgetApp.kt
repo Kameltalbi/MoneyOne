@@ -8,34 +8,58 @@ import com.smartbudget.data.entity.TransactionType
 import com.smartbudget.data.repository.AccountRepository
 import com.smartbudget.data.repository.BudgetRepository
 import com.smartbudget.data.repository.CategoryRepository
+import com.smartbudget.data.repository.SavingsGoalRepository
 import com.smartbudget.data.repository.TransactionRepository
 import com.smartbudget.billing.BillingManager
+import com.smartbudget.data.RecurrenceManager
+import com.smartbudget.notification.BudgetAlertManager
 import com.smartbudget.ui.util.CurrencyFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class SmartBudgetApp : Application() {
-    val database by lazy { SmartBudgetDatabase.getDatabase(this) }
-    val accountRepository by lazy { AccountRepository(database.accountDao()) }
-    val categoryRepository by lazy { CategoryRepository(database.categoryDao()) }
-    val transactionRepository by lazy { TransactionRepository(database.transactionDao()) }
-    val budgetRepository by lazy { BudgetRepository(database.budgetDao()) }
+    var database = null as SmartBudgetDatabase?
+        private set
+
+    fun getDb(): SmartBudgetDatabase {
+        if (database == null || !database!!.isOpen) {
+            database = SmartBudgetDatabase.getDatabase(this)
+        }
+        return database!!
+    }
+
+    fun reopenDatabase() {
+        database = SmartBudgetDatabase.getDatabase(this)
+    }
+
+    val accountRepository by lazy { AccountRepository(getDb().accountDao()) }
+    val categoryRepository by lazy { CategoryRepository(getDb().categoryDao()) }
+    val transactionRepository by lazy { TransactionRepository(getDb().transactionDao()) }
+    val budgetRepository by lazy { BudgetRepository(getDb().budgetDao()) }
+    val savingsGoalRepository by lazy { SavingsGoalRepository(getDb().savingsGoalDao()) }
     val billingManager by lazy { BillingManager(this) }
+    val budgetAlertManager by lazy { BudgetAlertManager(this, budgetRepository, transactionRepository) }
 
     override fun onCreate() {
         super.onCreate()
         CurrencyFormatter.init(this)
         billingManager.initialize()
+        budgetAlertManager.createNotificationChannel()
         seedDefaultData()
+        processRecurringTransactions()
+    }
+
+    private fun processRecurringTransactions() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val recurrenceManager = RecurrenceManager(transactionRepository)
+            recurrenceManager.generateUpToMonth(java.time.YearMonth.now())
+        }
     }
 
     private fun seedDefaultData() {
         CoroutineScope(Dispatchers.IO).launch {
-            // Seed default account
-            if (accountRepository.getDefaultAccount() == null) {
-                accountRepository.insert(Account(name = "Compte principal", isDefault = true))
-            }
+            // Default account is now created during onboarding
 
             // Seed default categories
             if (categoryRepository.count() == 0) {

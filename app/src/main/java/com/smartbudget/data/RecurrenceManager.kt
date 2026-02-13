@@ -1,0 +1,80 @@
+package com.smartbudget.data
+
+import com.smartbudget.data.entity.Recurrence
+import com.smartbudget.data.entity.Transaction
+import com.smartbudget.data.repository.TransactionRepository
+import java.time.Instant
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneId
+
+class RecurrenceManager(private val transactionRepo: TransactionRepository) {
+
+    /**
+     * Generate missing recurring transactions up to the end of [targetMonth].
+     * Called each time the user navigates to a month.
+     * Respects recurrenceEndDate if set.
+     */
+    suspend fun generateUpToMonth(targetMonth: YearMonth) {
+        val recurringTransactions = transactionRepo.getRecurringTransactions()
+        val generateUntil = targetMonth.atEndOfMonth()
+
+        for (template in recurringTransactions) {
+            if (template.recurrence == Recurrence.NONE) continue
+
+            // Respect end date if set
+            val endDate = template.recurrenceEndDate?.let {
+                Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+            }
+
+            // Find the last occurrence date for this recurring transaction
+            val lastOccurrenceMillis = transactionRepo.getLastOccurrenceDate(
+                name = template.name,
+                accountId = template.accountId,
+                type = template.type,
+                categoryId = template.categoryId,
+                amount = template.amount
+            ) ?: template.date
+
+            val lastDate = Instant.ofEpochMilli(lastOccurrenceMillis)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+
+            var nextDate = getNextDate(lastDate, template.recurrence)
+
+            while (!nextDate.isAfter(generateUntil)) {
+                // Stop if past end date
+                if (endDate != null && nextDate.isAfter(endDate)) break
+
+                val millis = nextDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                transactionRepo.insert(
+                    Transaction(
+                        name = template.name,
+                        amount = template.amount,
+                        type = template.type,
+                        categoryId = template.categoryId,
+                        accountId = template.accountId,
+                        date = millis,
+                        note = template.note,
+                        isValidated = false,
+                        recurrence = template.recurrence,
+                        recurrenceEndDate = template.recurrenceEndDate
+                    )
+                )
+                nextDate = getNextDate(nextDate, template.recurrence)
+            }
+        }
+    }
+
+    private fun getNextDate(from: LocalDate, recurrence: Recurrence): LocalDate {
+        return when (recurrence) {
+            Recurrence.WEEKLY -> from.plusWeeks(1)
+            Recurrence.MONTHLY -> from.plusMonths(1)
+            Recurrence.QUARTERLY -> from.plusMonths(3)
+            Recurrence.FOUR_MONTHLY -> from.plusMonths(4)
+            Recurrence.SEMI_ANNUAL -> from.plusMonths(6)
+            Recurrence.ANNUAL -> from.plusYears(1)
+            Recurrence.NONE -> from
+        }
+    }
+}

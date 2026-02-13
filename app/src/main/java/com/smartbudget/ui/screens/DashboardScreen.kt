@@ -29,6 +29,10 @@ import com.smartbudget.ui.util.toComposeColor
 import com.smartbudget.ui.util.DateUtils
 import com.smartbudget.ui.viewmodel.MainViewModel
 import com.smartbudget.ui.viewmodel.MonthSummary
+import com.smartbudget.ui.viewmodel.MonthlyTotal
+import java.time.YearMonth
+import java.time.format.TextStyle
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +44,14 @@ fun DashboardScreen(
     val monthSummary by viewModel.monthSummary.collectAsStateWithLifecycle()
     val monthlyTransactions by viewModel.monthlyTransactions.collectAsStateWithLifecycle()
     val categoryBudgets by viewModel.categoryBudgets.collectAsStateWithLifecycle()
+    val annualData by viewModel.annualData.collectAsStateWithLifecycle()
+    val previousMonthSummary by viewModel.previousMonthSummary.collectAsStateWithLifecycle()
+    val monthForecast by viewModel.monthForecast.collectAsStateWithLifecycle()
+
+    // Load annual data when year changes
+    LaunchedEffect(currentYearMonth.year) {
+        viewModel.loadAnnualData(currentYearMonth.year)
+    }
 
     Scaffold(
         topBar = {
@@ -118,6 +130,32 @@ fun DashboardScreen(
                 IncomeVsExpensesCard(summary = monthSummary)
             }
 
+            // End of month forecast (only for current month)
+            if (monthForecast.daysElapsed > 1) {
+                item {
+                    ForecastCard(forecast = monthForecast)
+                }
+            }
+
+            // Month comparison
+            item {
+                MonthComparisonCard(
+                    currentSummary = monthSummary,
+                    previousSummary = previousMonthSummary,
+                    currentYearMonth = currentYearMonth
+                )
+            }
+
+            // Annual summary chart
+            if (annualData.isNotEmpty()) {
+                item {
+                    AnnualSummaryChart(
+                        year = currentYearMonth.year,
+                        data = annualData
+                    )
+                }
+            }
+
             item { Spacer(modifier = Modifier.height(16.dp)) }
         }
     }
@@ -128,7 +166,7 @@ private fun ExpenseByCategoryChart(
     transactions: List<TransactionWithCategory>,
     totalExpenses: Double
 ) {
-    val expensesByCategory = transactions
+    val allExpensesByCategory = transactions
         .filter { it.type == TransactionType.EXPENSE }
         .groupBy { it.categoryName ?: "Autre" }
         .mapValues { (_, txns) -> txns.sumOf { it.amount } }
@@ -138,6 +176,16 @@ private fun ExpenseByCategoryChart(
     val categoryColors = transactions
         .filter { it.type == TransactionType.EXPENSE }
         .associate { (it.categoryName ?: "Autre") to (it.categoryColor?.toComposeColor() ?: Color.Gray) }
+
+    // Top 5 + regroup the rest as "Autres"
+    val expensesByCategory = if (allExpensesByCategory.size > 5) {
+        val top5 = allExpensesByCategory.take(5)
+        val othersTotal = allExpensesByCategory.drop(5).sumOf { it.second }
+        top5 + listOf("Autres" to othersTotal)
+    } else {
+        allExpensesByCategory
+    }
+    val chartColors = categoryColors + ("Autres" to Color.Gray)
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -170,88 +218,85 @@ private fun ExpenseByCategoryChart(
                     )
                 }
             } else {
-                // Donut chart
-                Box(
-                    modifier = Modifier.size(200.dp),
-                    contentAlignment = Alignment.Center
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Canvas(modifier = Modifier.fillMaxSize()) {
-                        val strokeWidth = 40f
-                        val radius = (size.minDimension - strokeWidth) / 2
-                        val center = Offset(size.width / 2, size.height / 2)
-                        var startAngle = -90f
+                    // Pie chart (camembert plein)
+                    Box(
+                        modifier = Modifier.size(160.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val padding = 8f
+                            var startAngle = -90f
 
-                        expensesByCategory.forEach { (category, amount) ->
-                            val sweep = (amount / totalExpenses * 360).toFloat()
-                            val color = categoryColors[category] ?: Color.Gray
+                            expensesByCategory.forEach { (category, amount) ->
+                                val sweep = (amount / totalExpenses * 360).toFloat()
+                                val color = chartColors[category] ?: Color.Gray
 
-                            drawArc(
-                                color = color,
-                                startAngle = startAngle,
-                                sweepAngle = sweep,
-                                useCenter = false,
-                                topLeft = Offset(center.x - radius, center.y - radius),
-                                size = Size(radius * 2, radius * 2),
-                                style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
+                                drawArc(
+                                    color = color,
+                                    startAngle = startAngle,
+                                    sweepAngle = sweep,
+                                    useCenter = true,
+                                    topLeft = Offset(padding, padding),
+                                    size = Size(size.width - padding * 2, size.height - padding * 2)
+                                )
+                                startAngle += sweep
+                            }
+
+                            // White center circle for donut effect
+                            drawCircle(
+                                color = Color.White,
+                                radius = size.minDimension * 0.25f,
+                                center = Offset(size.width / 2, size.height / 2)
                             )
-                            startAngle += sweep
+                        }
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = CurrencyFormatter.format(totalExpenses),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = ExpenseRed
+                            )
                         }
                     }
 
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = CurrencyFormatter.format(totalExpenses),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = ExpenseRed
-                        )
-                        Text(
-                            text = "Total",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Legend
-                expensesByCategory.forEach { (category, amount) ->
-                    val color = categoryColors[category] ?: Color.Gray
-                    val percent = if (totalExpenses > 0) (amount / totalExpenses * 100) else 0.0
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    // Legend à droite du camembert
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(12.dp)
-                                .padding(1.dp)
-                        ) {
-                            Canvas(modifier = Modifier.fillMaxSize()) {
-                                drawCircle(color = color)
+                        expensesByCategory.forEach { (category, amount) ->
+                            val color = chartColors[category] ?: Color.Gray
+                            val percent = if (totalExpenses > 0) (amount / totalExpenses * 100) else 0.0
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Canvas(modifier = Modifier.size(10.dp)) {
+                                    drawCircle(color = color)
+                                }
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = category,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Medium,
+                                    maxLines = 1,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = "${String.format("%.0f", percent)}%",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = color
+                                )
                             }
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = category,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = "${String.format("%.1f", percent)}%",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = CurrencyFormatter.format(amount),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium
-                        )
                     }
                 }
             }
@@ -553,6 +598,337 @@ private fun CategoryBudgetTrackingCard(
                             stringResource(R.string.budget_remaining, CurrencyFormatter.format(remaining)),
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isOverBudget) ExpenseRed else IncomeGreen
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnnualSummaryChart(
+    year: Int,
+    data: List<MonthlyTotal>
+) {
+    val maxValue = data.maxOfOrNull { maxOf(it.income, it.expenses) } ?: 1.0
+    val totalIncome = data.sumOf { it.income }
+    val totalExpenses = data.sumOf { it.expenses }
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.annual_summary, year),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Totals
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "↑ ${CurrencyFormatter.format(totalIncome)}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = IncomeGreen
+                )
+                Text(
+                    text = "↓ ${CurrencyFormatter.format(totalExpenses)}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = ExpenseRed
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Bar chart
+            val incomeColor = IncomeGreen
+            val expenseColor = ExpenseRed
+
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+            ) {
+                val chartWidth = size.width
+                val chartHeight = size.height - 20f
+                val barGroupWidth = chartWidth / 12f
+                val barWidth = barGroupWidth * 0.3f
+                val gap = barGroupWidth * 0.05f
+
+                data.forEachIndexed { index, monthly ->
+                    val x = index * barGroupWidth
+
+                    val incomeHeight = if (maxValue > 0) (monthly.income / maxValue * chartHeight).toFloat() else 0f
+                    drawRect(
+                        color = incomeColor,
+                        topLeft = Offset(x + gap, chartHeight - incomeHeight),
+                        size = Size(barWidth, incomeHeight)
+                    )
+
+                    val expenseHeight = if (maxValue > 0) (monthly.expenses / maxValue * chartHeight).toFloat() else 0f
+                    drawRect(
+                        color = expenseColor,
+                        topLeft = Offset(x + gap + barWidth + 1f, chartHeight - expenseHeight),
+                        size = Size(barWidth, expenseHeight)
+                    )
+                }
+            }
+
+            // Month labels
+            Row(modifier = Modifier.fillMaxWidth()) {
+                data.forEach { monthly ->
+                    Text(
+                        text = monthly.month.month.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.labelSmall,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Legend
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Canvas(modifier = Modifier.size(10.dp)) { drawRect(color = incomeColor) }
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = stringResource(R.string.income),
+                    style = MaterialTheme.typography.labelSmall
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Canvas(modifier = Modifier.size(10.dp)) { drawRect(color = expenseColor) }
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = stringResource(R.string.expenses),
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonthComparisonCard(
+    currentSummary: MonthSummary,
+    previousSummary: MonthSummary,
+    currentYearMonth: YearMonth
+) {
+    val prevMonth = currentYearMonth.minusMonths(1)
+    val curLabel = DateUtils.formatMonthYear(currentYearMonth)
+    val prevLabel = DateUtils.formatMonthYear(prevMonth)
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.month_comparison),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = prevLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.End
+                )
+                Text(
+                    text = curLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.End
+                )
+                Text(
+                    text = "Δ",
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.weight(0.6f),
+                    textAlign = TextAlign.End
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Divider()
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ComparisonRow(
+                label = stringResource(R.string.income),
+                previous = previousSummary.totalIncome,
+                current = currentSummary.totalIncome,
+                positiveIsGood = true
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            ComparisonRow(
+                label = stringResource(R.string.expenses),
+                previous = previousSummary.totalExpenses,
+                current = currentSummary.totalExpenses,
+                positiveIsGood = false
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            ComparisonRow(
+                label = stringResource(R.string.balance),
+                previous = previousSummary.balance,
+                current = currentSummary.balance,
+                positiveIsGood = true
+            )
+        }
+    }
+}
+
+@Composable
+private fun ComparisonRow(
+    label: String,
+    previous: Double,
+    current: Double,
+    positiveIsGood: Boolean
+) {
+    val diff = current - previous
+    val pctChange = if (previous != 0.0) ((diff / previous) * 100) else if (current > 0) 100.0 else 0.0
+    val isPositive = diff >= 0
+    val isGood = if (positiveIsGood) isPositive else !isPositive
+    val changeColor = if (diff == 0.0) MaterialTheme.colorScheme.onSurfaceVariant
+                      else if (isGood) IncomeGreen else ExpenseRed
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = CurrencyFormatter.format(previous),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+            textAlign = TextAlign.End
+        )
+        Text(
+            text = CurrencyFormatter.format(current),
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f),
+            textAlign = TextAlign.End
+        )
+        Text(
+            text = "${if (isPositive) "+" else ""}${pctChange.toInt()}%",
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = changeColor,
+            modifier = Modifier.weight(0.6f),
+            textAlign = TextAlign.End
+        )
+    }
+}
+
+@Composable
+private fun ForecastCard(
+    forecast: MainViewModel.MonthForecast
+) {
+    val balanceColor = if (forecast.projectedBalance >= 0) IncomeGreen else ExpenseRed
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Filled.TrendingUp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.forecast_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.forecast_based_on, forecast.daysElapsed, forecast.daysInMonth),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.forecast_expenses),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "~${CurrencyFormatter.format(forecast.projectedExpenses)}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = ExpenseRed
+                    )
+                    Text(
+                        text = "${CurrencyFormatter.format(forecast.dailyExpenseRate)}/${stringResource(R.string.forecast_day)}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.forecast_income),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "~${CurrencyFormatter.format(forecast.projectedIncome)}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = IncomeGreen
+                    )
+                    Text(
+                        text = "${CurrencyFormatter.format(forecast.dailyIncomeRate)}/${stringResource(R.string.forecast_day)}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = stringResource(R.string.forecast_balance),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "~${CurrencyFormatter.format(forecast.projectedBalance)}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = balanceColor
                     )
                 }
             }

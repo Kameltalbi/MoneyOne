@@ -39,6 +39,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val transactionRepo = app.transactionRepository
     private val prefs = application.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
+    // Theme color
+    private val _themeColor = MutableStateFlow(prefs.getString("theme_color", "emerald") ?: "emerald")
+    val themeColor: StateFlow<String> = _themeColor.asStateFlow()
+
+    fun setThemeColor(colorName: String) {
+        prefs.edit().putString("theme_color", colorName).apply()
+        _themeColor.value = colorName
+    }
+
     // Language
     private val _selectedLanguage = MutableStateFlow(prefs.getString("language", "") ?: "")
     val selectedLanguage: StateFlow<String> = _selectedLanguage.asStateFlow()
@@ -93,7 +102,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val allAccounts: StateFlow<List<Account>> = accountRepo.allAccounts
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addAccount(name: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun addAccount(name: String, currency: String = "", onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val count = accountRepo.getAccountCount()
             if (count >= 5) {
@@ -101,7 +110,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 return@launch
             }
             if (name.isBlank()) return@launch
-            accountRepo.insert(Account(name = name))
+            accountRepo.insert(Account(name = name, currency = currency))
             onSuccess()
         }
     }

@@ -1,15 +1,17 @@
 package com.smartbudget.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -73,17 +75,28 @@ fun CategoriesScreen(
             }
         }
     ) { paddingValues ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(vertical = 8.dp)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
             // Income categories
             if (incomeCategories.isNotEmpty()) {
-                item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(IncomeGreen)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.incomes),
                         style = MaterialTheme.typography.titleSmall,
@@ -91,22 +104,31 @@ fun CategoriesScreen(
                         color = IncomeGreen
                     )
                 }
-                items(incomeCategories, key = { it.id }) { category ->
-                    CategoryListItem(
-                        category = category,
-                        onEdit = {
-                            viewModel.loadCategory(category)
-                            showCategoryDialog = true
-                        },
-                        onDelete = { showDeleteConfirm = category }
-                    )
-                }
+                CategoryGrid(
+                    categories = incomeCategories,
+                    onEdit = { category ->
+                        viewModel.loadCategory(category)
+                        showCategoryDialog = true
+                    },
+                    onDelete = { showDeleteConfirm = it }
+                )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Expense categories
             if (expenseCategories.isNotEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(ExpenseRed)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.expenses),
                         style = MaterialTheme.typography.titleSmall,
@@ -114,19 +136,17 @@ fun CategoriesScreen(
                         color = ExpenseRed
                     )
                 }
-                items(expenseCategories, key = { it.id }) { category ->
-                    CategoryListItem(
-                        category = category,
-                        onEdit = {
-                            viewModel.loadCategory(category)
-                            showCategoryDialog = true
-                        },
-                        onDelete = { showDeleteConfirm = category }
-                    )
-                }
+                CategoryGrid(
+                    categories = expenseCategories,
+                    onEdit = { category ->
+                        viewModel.loadCategory(category)
+                        showCategoryDialog = true
+                    },
+                    onDelete = { showDeleteConfirm = it }
+                )
             }
 
-            item { Spacer(modifier = Modifier.height(72.dp)) }
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 
@@ -174,24 +194,63 @@ fun CategoriesScreen(
 }
 
 @Composable
-private fun CategoryListItem(
+private fun CategoryGrid(
+    categories: List<Category>,
+    onEdit: (Category) -> Unit,
+    onDelete: (Category) -> Unit
+) {
+    val columns = 4
+    val rows = (categories.size + columns - 1) / columns
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (row in 0 until rows) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                for (col in 0 until columns) {
+                    val index = row * columns + col
+                    if (index < categories.size) {
+                        val category = categories[index]
+                        CategoryGridItem(
+                            category = category,
+                            onEdit = { onEdit(category) },
+                            onDelete = { onDelete(category) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun CategoryGridItem(
     category: Category,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val catColor = category.color.toComposeColor()
 
     Card(
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        colors = CardDefaults.cardColors(containerColor = catColor.copy(alpha = 0.08f)),
+        modifier = modifier
+            .combinedClickable(
+                onClick = onEdit,
+                onLongClick = onDelete
+            )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = onEdit)
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(vertical = 12.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
@@ -207,33 +266,14 @@ private fun CategoryListItem(
                     modifier = Modifier.size(22.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = category.name,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.weight(1f)
+                maxLines = 1,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
-
-            IconButton(onClick = onEdit) {
-                Icon(
-                    Icons.Filled.Edit,
-                    contentDescription = stringResource(R.string.edit),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = stringResource(R.string.delete),
-                    tint = ExpenseRed.copy(alpha = 0.7f),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
         }
     }
 }

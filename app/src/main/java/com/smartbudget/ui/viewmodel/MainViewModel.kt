@@ -4,9 +4,12 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.smartbudget.SmartBudgetApp
+import com.smartbudget.data.RecurrenceManager
+import com.smartbudget.widget.BalanceWidgetProvider
 import com.smartbudget.data.dao.TransactionWithCategory
 import com.smartbudget.data.entity.Account
 import com.smartbudget.data.entity.Budget
+import com.smartbudget.data.entity.SavingsGoal
 import com.smartbudget.data.entity.Transaction
 import com.smartbudget.data.entity.TransactionType
 import com.smartbudget.ui.util.DateUtils
@@ -30,6 +33,12 @@ data class DayData(
     val date: LocalDate,
     val balance: Double = 0.0,
     val hasTransactions: Boolean = false
+)
+
+data class MonthlyTotal(
+    val month: YearMonth,
+    val income: Double,
+    val expenses: Double
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -70,8 +79,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _isConsolidated.value = true
     }
 
+    private val recurrenceManager = RecurrenceManager(transactionRepo)
+
     fun navigateMonth(offset: Int) {
-        _currentYearMonth.value = _currentYearMonth.value.plusMonths(offset.toLong())
+        val newMonth = _currentYearMonth.value.plusMonths(offset.toLong())
+        _currentYearMonth.value = newMonth
+        // Generate recurring transactions for the target month
+        viewModelScope.launch {
+            recurrenceManager.generateUpToMonth(newMonth)
+        }
     }
 
     fun selectDate(date: LocalDate) {
@@ -217,6 +233,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
             transactionRepo.delete(transaction)
+            BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
         }
     }
 
@@ -224,6 +241,203 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
             transactionRepo.insert(transaction.copy(id = 0))
+        }
+    }
+
+    fun duplicateTransactionToDate(transactionId: Long, dateMillis: Long) {
+        viewModelScope.launch {
+            val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            transactionRepo.insert(transaction.copy(id = 0, date = dateMillis))
+        }
+    }
+
+    fun createFirstAccount(name: String, initialBalance: Double) {
+        viewModelScope.launch {
+            val accountId = accountRepo.insert(Account(name = name, isDefault = true))
+            _currentAccount.value = accountRepo.getDefaultAccount()
+            if (initialBalance > 0) {
+                val transaction = Transaction(
+                    name = "Solde initial",
+                    amount = initialBalance,
+                    type = TransactionType.INCOME,
+                    accountId = accountId,
+                    date = System.currentTimeMillis(),
+                    note = "Solde initial du compte",
+                    isValidated = true
+                )
+                transactionRepo.insert(transaction)
+            }
+        }
+    }
+
+    // End of month forecast
+    data class MonthForecast(
+        val projectedExpenses: Double = 0.0,
+        val projectedIncome: Double = 0.0,
+        val projectedBalance: Double = 0.0,
+        val daysElapsed: Int = 0,
+        val daysInMonth: Int = 30,
+        val dailyExpenseRate: Double = 0.0,
+        val dailyIncomeRate: Double = 0.0
+    )
+
+    private val _monthForecast = MutableStateFlow(MonthForecast())
+    val monthForecast: StateFlow<MonthForecast> = _monthForecast.asStateFlow()
+
+    private fun loadMonthForecast() {
+        viewModelScope.launch {
+            val ym = _currentYearMonth.value
+            val today = java.time.LocalDate.now()
+            val daysInMonth = ym.lengthOfMonth()
+
+            // Only forecast for current month
+            if (ym != YearMonth.from(today)) {
+                _monthForecast.value = MonthForecast()
+                return@launch
+            }
+
+            val dayOfMonth = today.dayOfMonth
+            if (dayOfMonth <= 1) {
+                _monthForecast.value = MonthForecast()
+                return@launch
+            }
+
+            val start = DateUtils.monthStart(ym)
+            val nowEnd = DateUtils.dayEnd(today)
+            val account = _currentAccount.value
+            val consolidated = _isConsolidated.value
+
+            val currentIncome: Double
+            val currentExpenses: Double
+            if (consolidated || account == null) {
+                currentIncome = app.getDb().transactionDao().getAllTotalByType(TransactionType.INCOME, start, nowEnd)
+                currentExpenses = app.getDb().transactionDao().getAllTotalByType(TransactionType.EXPENSE, start, nowEnd)
+            } else {
+                currentIncome = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.INCOME, start, nowEnd)
+                currentExpenses = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.EXPENSE, start, nowEnd)
+            }
+
+            val dailyExpenseRate = currentExpenses / dayOfMonth
+            val dailyIncomeRate = currentIncome / dayOfMonth
+            val projectedExpenses = dailyExpenseRate * daysInMonth
+            val projectedIncome = dailyIncomeRate * daysInMonth
+
+            _monthForecast.value = MonthForecast(
+                projectedExpenses = projectedExpenses,
+                projectedIncome = projectedIncome,
+                projectedBalance = projectedIncome - projectedExpenses,
+                daysElapsed = dayOfMonth,
+                daysInMonth = daysInMonth,
+                dailyExpenseRate = dailyExpenseRate,
+                dailyIncomeRate = dailyIncomeRate
+            )
+        }
+    }
+
+    // Previous month summary for comparison
+    private val _previousMonthSummary = MutableStateFlow(MonthSummary())
+    val previousMonthSummary: StateFlow<MonthSummary> = _previousMonthSummary.asStateFlow()
+
+    private fun loadPreviousMonthSummary() {
+        viewModelScope.launch {
+            val ym = _currentYearMonth.value.minusMonths(1)
+            val start = DateUtils.monthStart(ym)
+            val end = DateUtils.monthEnd(ym)
+            val account = _currentAccount.value
+            val consolidated = _isConsolidated.value
+
+            val income: Double
+            val expenses: Double
+            if (consolidated || account == null) {
+                income = app.getDb().transactionDao().getAllTotalByType(TransactionType.INCOME, start, end)
+                expenses = app.getDb().transactionDao().getAllTotalByType(TransactionType.EXPENSE, start, end)
+            } else {
+                income = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.INCOME, start, end)
+                expenses = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.EXPENSE, start, end)
+            }
+            _previousMonthSummary.value = MonthSummary(
+                totalIncome = income,
+                totalExpenses = expenses,
+                balance = income - expenses
+            )
+        }
+    }
+
+    init {
+        // Reload previous month data and forecast when month or account changes
+        viewModelScope.launch {
+            combine(_currentYearMonth, _currentAccount, _isConsolidated) { _, _, _ -> Unit }
+                .collect {
+                    loadPreviousMonthSummary()
+                    loadMonthForecast()
+                }
+        }
+    }
+
+    // Search
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    val searchResults: StateFlow<List<com.smartbudget.data.dao.TransactionWithCategory>> =
+        _searchQuery.flatMapLatest { query ->
+            if (query.isBlank()) flowOf(emptyList())
+            else transactionRepo.searchTransactions(query)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    // Annual summary
+    private val _annualData = MutableStateFlow<List<MonthlyTotal>>(emptyList())
+    val annualData: StateFlow<List<MonthlyTotal>> = _annualData.asStateFlow()
+
+    fun loadAnnualData(year: Int) {
+        viewModelScope.launch {
+            val account = _currentAccount.value
+            val isConsolidatedMode = _isConsolidated.value
+            val results = mutableListOf<MonthlyTotal>()
+            for (m in 1..12) {
+                val ym = YearMonth.of(year, m)
+                val start = ym.atDay(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                val end = ym.plusMonths(1).atDay(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                val income: Double
+                val expenses: Double
+                if (isConsolidatedMode || account == null) {
+                    income = app.getDb().transactionDao().getAllTotalByType(TransactionType.INCOME, start, end)
+                    expenses = app.getDb().transactionDao().getAllTotalByType(TransactionType.EXPENSE, start, end)
+                } else {
+                    income = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.INCOME, start, end)
+                    expenses = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.EXPENSE, start, end)
+                }
+                results.add(MonthlyTotal(ym, income, expenses))
+            }
+            _annualData.value = results
+        }
+    }
+
+    // Savings Goals
+    private val savingsGoalRepo = app.savingsGoalRepository
+
+    val savingsGoals: StateFlow<List<SavingsGoal>> = savingsGoalRepo.getAllGoals()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun addSavingsGoal(name: String, targetAmount: Double) {
+        viewModelScope.launch {
+            savingsGoalRepo.insert(SavingsGoal(name = name, targetAmount = targetAmount))
+        }
+    }
+
+    fun addAmountToGoal(goalId: Long, amount: Double) {
+        viewModelScope.launch {
+            val goal = savingsGoalRepo.getGoalById(goalId) ?: return@launch
+            savingsGoalRepo.update(goal.copy(currentAmount = goal.currentAmount + amount))
+        }
+    }
+
+    fun deleteSavingsGoal(goal: SavingsGoal) {
+        viewModelScope.launch {
+            savingsGoalRepo.delete(goal)
         }
     }
 

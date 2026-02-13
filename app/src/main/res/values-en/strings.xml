@@ -162,14 +162,79 @@
     <string name="choose_your_language">Choose your language</string>
     <string name="choose_your_currency">Choose your currency</string>
 
-    <string name="initial_balance_title">Welcome to MoneyOne!</string>
-    <string name="initial_balance_message">What is your current account balance?</string>
-    <string name="initial_balance_hint">Initial balance</string>
+    <string name="initial_balance_title">Create your account</string>
+    <string name="initial_balance_message">Name your account and enter your current balance</string>
+    <string name="account_name_hint">Account name</string>
+    <string name="initial_balance_hint">Current balance (optional)</string>
     <string name="start">Start</string>
     <string name="current_balance">Current balance</string>
     <string name="new_balance">New balance</string>
     <string name="adjust">Adjust</string>
     <string name="balance_adjusted">Balance adjusted ✓</string>
+
+    <!-- Backup -->
+    <string name="backup_title">Google Drive Backup</string>
+    <string name="backup_sign_in">Sign in with Google</string>
+    <string name="backup_sign_in_failed">Sign in failed</string>
+    <string name="backup_save">Backup</string>
+    <string name="backup_restore">Restore</string>
+    <string name="backup_success">Backup successful ✓</string>
+    <string name="backup_error">Backup error</string>
+    <string name="backup_restored">Restore successful ✓ Restart the app</string>
+    <string name="backup_restore_error">Restore error</string>
+    <string name="backup_last">Last backup: %1$s</string>
+    <string name="backup_sign_out">Sign out</string>
+
+    <!-- Multi-currency -->
+    <string name="default_currency_label">App default currency</string>
+
+    <!-- Forecast -->
+    <string name="forecast_title">End of month forecast</string>
+    <string name="forecast_based_on">Based on %1$d days out of %2$d</string>
+    <string name="forecast_expenses">Projected expenses</string>
+    <string name="forecast_income">Projected income</string>
+    <string name="forecast_balance">Projected balance</string>
+    <string name="forecast_day">day</string>
+
+    <!-- Receipt Scan -->
+    <string name="scan_receipt">Scan a receipt</string>
+    <string name="scan_no_amount">No amount detected on the receipt</string>
+    <string name="scan_error">Scan error</string>
+
+    <!-- Comparison -->
+    <string name="month_comparison">Comparison with previous month</string>
+
+    <!-- Theme -->
+    <string name="theme_color">Theme color</string>
+
+    <!-- Export -->
+    <string name="export_csv">Export CSV</string>
+
+    <!-- Search -->
+    <string name="search_hint">Search a transaction…</string>
+    <string name="search_empty">Type to search by name, category, note or amount</string>
+    <string name="search_no_results">No results</string>
+    <string name="search_results_count">%1$d result(s)</string>
+
+    <!-- Budget Alerts -->
+    <string name="budget_alert_channel">Budget Alerts</string>
+    <string name="budget_alert_channel_desc">Notifications when budget reaches 80%%</string>
+    <string name="budget_alert_global_title">Global budget at %1$s</string>
+    <string name="budget_alert_category_title">Category budget at %1$s</string>
+    <string name="budget_alert_body">Spent %1$s of %2$s</string>
+
+    <!-- Annual Summary -->
+    <string name="annual_summary">Annual Summary %1$d</string>
+
+    <!-- Savings Goals -->
+    <string name="savings_goals_title">Savings Goals</string>
+    <string name="no_savings_goals">No savings goals</string>
+    <string name="add_savings_goal">New goal</string>
+    <string name="goal_name">Goal name</string>
+    <string name="goal_target_amount">Target amount</string>
+    <string name="add_savings">Save</string>
+    <string name="remaining_to_save">Remaining to save: %1$s</string>
+    <string name="delete_goal_confirm">Delete goal \"%1$s\"?</string>
 
     <!-- Pro -->
     <string name="pro">Pro</string>

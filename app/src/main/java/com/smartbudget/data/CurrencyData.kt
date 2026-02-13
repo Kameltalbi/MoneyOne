@@ -133,6 +133,10 @@ object CurrencyData {
         CurrencyInfo("XPF", "₣", "Franc CFP", "Nouvelle-Calédonie", "🇳🇨"),
     )
 
+    val allCurrencies: List<CurrencyInfo> by lazy {
+        currencies.distinctBy { it.code }
+    }
+
     fun search(query: String): List<CurrencyInfo> {
         if (query.isBlank()) return currencies
         val q = query.lowercase().trim()

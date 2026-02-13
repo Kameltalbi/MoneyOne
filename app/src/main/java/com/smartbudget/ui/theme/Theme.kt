@@ -11,15 +11,34 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val LightColorScheme = lightColorScheme(
-    primary = EmeraldGreen,
+data class ThemeColor(
+    val name: String,
+    val primary: Color,
+    val primaryLight: Color,
+    val primaryDark: Color,
+    val primaryContainer: Color
+)
+
+val availableThemeColors = listOf(
+    ThemeColor("emerald", Color(0xFF2E7D32), Color(0xFF4CAF50), Color(0xFF1B5E20), Color(0xFFC8E6C9)),
+    ThemeColor("blue", Color(0xFF1565C0), Color(0xFF42A5F5), Color(0xFF0D47A1), Color(0xFFBBDEFB)),
+    ThemeColor("purple", Color(0xFF7B1FA2), Color(0xFFAB47BC), Color(0xFF4A148C), Color(0xFFE1BEE7)),
+    ThemeColor("orange", Color(0xFFE65100), Color(0xFFFF9800), Color(0xFFBF360C), Color(0xFFFFE0B2)),
+    ThemeColor("red", Color(0xFFC62828), Color(0xFFEF5350), Color(0xFFB71C1C), Color(0xFFFFCDD2)),
+    ThemeColor("teal", Color(0xFF00695C), Color(0xFF26A69A), Color(0xFF004D40), Color(0xFFB2DFDB)),
+    ThemeColor("indigo", Color(0xFF283593), Color(0xFF5C6BC0), Color(0xFF1A237E), Color(0xFFC5CAE9)),
+    ThemeColor("pink", Color(0xFFAD1457), Color(0xFFEC407A), Color(0xFF880E4F), Color(0xFFF8BBD0))
+)
+
+private fun buildLightScheme(tc: ThemeColor) = lightColorScheme(
+    primary = tc.primary,
     onPrimary = TextOnPrimary,
-    primaryContainer = Color(0xFFC8E6C9),
-    onPrimaryContainer = EmeraldGreenDark,
-    secondary = Teal,
+    primaryContainer = tc.primaryContainer,
+    onPrimaryContainer = tc.primaryDark,
+    secondary = tc.primary,
     onSecondary = TextOnPrimary,
-    secondaryContainer = Color(0xFFB2DFDB),
-    onSecondaryContainer = Color(0xFF004D40),
+    secondaryContainer = tc.primaryContainer,
+    onSecondaryContainer = tc.primaryDark,
     background = SurfaceLight,
     onBackground = TextPrimary,
     surface = SurfaceWhite,
@@ -31,15 +50,15 @@ private val LightColorScheme = lightColorScheme(
     outline = Color(0xFFBDBDBD)
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = EmeraldGreenLight,
-    onPrimary = Color(0xFF003300),
-    primaryContainer = EmeraldGreenDark,
-    onPrimaryContainer = Color(0xFFC8E6C9),
-    secondary = TealLight,
-    onSecondary = Color(0xFF003737),
-    secondaryContainer = Color(0xFF004D40),
-    onSecondaryContainer = Color(0xFFB2DFDB),
+private fun buildDarkScheme(tc: ThemeColor) = darkColorScheme(
+    primary = tc.primaryLight,
+    onPrimary = tc.primaryDark,
+    primaryContainer = tc.primaryDark,
+    onPrimaryContainer = tc.primaryContainer,
+    secondary = tc.primaryLight,
+    onSecondary = tc.primaryDark,
+    secondaryContainer = tc.primaryDark,
+    onSecondaryContainer = tc.primaryContainer,
     background = SurfaceDark,
     onBackground = TextPrimaryDark,
     surface = SurfaceDarkVariant,
@@ -54,9 +73,11 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun SmartBudgetTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    themeColorName: String = "emerald",
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val tc = availableThemeColors.find { it.name == themeColorName } ?: availableThemeColors[0]
+    val colorScheme = if (darkTheme) buildDarkScheme(tc) else buildLightScheme(tc)
 
     val view = LocalView.current
     if (!view.isInEditMode) {

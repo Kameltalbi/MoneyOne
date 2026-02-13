@@ -41,12 +41,13 @@ private const val TOTAL_STEPS = 6
 
 @Composable
 fun OnboardingScreen(
-    onFinish: (initialBalance: Double) -> Unit
+    onFinish: (accountName: String, initialBalance: Double, langCode: String) -> Unit
 ) {
     val context = LocalContext.current
     var currentStep by remember { mutableStateOf(STEP_LANGUAGE) }
     var selectedLang by remember { mutableStateOf("") }
     var selectedCurrencyCode by remember { mutableStateOf("") }
+    var accountNameInput by remember { mutableStateOf("") }
     var balanceInput by remember { mutableStateOf("") }
     var currencySearch by remember { mutableStateOf("") }
 
@@ -141,12 +142,6 @@ fun OnboardingScreen(
 
                     Button(
                         onClick = {
-                            if (selectedLang.isNotEmpty()) {
-                                val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                                prefs.edit().putString("language", selectedLang).apply()
-                                val localeList = LocaleListCompat.forLanguageTags(selectedLang)
-                                AppCompatDelegate.setApplicationLocales(localeList)
-                            }
                             currentStep = STEP_CURRENCY
                         },
                         modifier = Modifier
@@ -395,19 +390,29 @@ fun OnboardingScreen(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    OutlinedTextField(
+                        value = accountNameInput,
+                        onValueChange = { accountNameInput = it },
+                        label = { Text(stringResource(R.string.account_name_hint)) },
+                        leadingIcon = { Icon(Icons.Filled.AccountBalance, contentDescription = null) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
                         value = balanceInput,
                         onValueChange = { balanceInput = it },
                         label = { Text(stringResource(R.string.initial_balance_hint)) },
+                        leadingIcon = { Icon(Icons.Filled.AttachMoney, contentDescription = null) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        textStyle = MaterialTheme.typography.titleLarge.copy(
-                            textAlign = TextAlign.Center
-                        )
+                        shape = RoundedCornerShape(12.dp)
                     )
 
                     Spacer(modifier = Modifier.weight(0.3f))
@@ -418,13 +423,15 @@ fun OnboardingScreen(
 
                     Button(
                         onClick = {
+                            val name = accountNameInput.trim().ifEmpty { "Compte principal" }
                             val amount = balanceInput.toDoubleOrNull() ?: 0.0
-                            onFinish(amount)
+                            onFinish(name, amount, selectedLang)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        enabled = accountNameInput.trim().isNotEmpty()
                     ) {
                         Icon(Icons.Filled.Check, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -432,15 +439,6 @@ fun OnboardingScreen(
                             stringResource(R.string.start),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    TextButton(onClick = { onFinish(0.0) }) {
-                        Text(
-                            stringResource(R.string.skip_balance),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 

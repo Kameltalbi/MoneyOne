@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.smartbudget.SmartBudgetApp
+import com.smartbudget.widget.BalanceWidgetProvider
 import com.smartbudget.data.entity.Category
 import com.smartbudget.data.entity.Recurrence
 import com.smartbudget.data.entity.Transaction
@@ -120,6 +121,12 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                 transactionRepo.insert(transaction)
             }
 
+            BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
+            // Check budget alerts after saving expense
+            if (form.type == TransactionType.EXPENSE) {
+                val app = getApplication<com.smartbudget.SmartBudgetApp>()
+                app.budgetAlertManager.checkBudgetAlerts(account.id)
+            }
             onSuccess()
         }
     }

@@ -1,8 +1,12 @@
 package com.smartbudget.ui.navigation
 
 import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -24,6 +28,8 @@ object Routes {
     const val DASHBOARD = "dashboard"
     const val PRO_UPGRADE = "pro_upgrade"
     const val ONBOARDING = "onboarding"
+    const val SAVINGS_GOALS = "savings_goals"
+    const val SEARCH = "search"
 }
 
 @Composable
@@ -44,14 +50,24 @@ fun SmartBudgetNavigation(
     ) {
         composable(Routes.ONBOARDING) {
             OnboardingScreen(
-                onFinish = { initialBalance ->
+                onFinish = { accountName, initialBalance, langCode ->
                     prefs.edit().putBoolean("onboarding_done", true).apply()
                     prefs.edit().putBoolean("initial_balance_set", true).apply()
-                    if (initialBalance > 0) {
-                        mainViewModel.setInitialBalance(initialBalance)
+                    // Save language preference
+                    if (langCode.isNotEmpty()) {
+                        context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                            .edit().putString("language", langCode).apply()
                     }
+                    // Create account and set initial balance
+                    mainViewModel.createFirstAccount(accountName, initialBalance)
+                    // Navigate to main screen
                     navController.navigate(Routes.MAIN) {
                         popUpTo(Routes.ONBOARDING) { inclusive = true }
+                    }
+                    // Apply locale after navigation (will restart activity, but onboarding_done is saved)
+                    if (langCode.isNotEmpty()) {
+                        val localeList = LocaleListCompat.forLanguageTags(langCode)
+                        AppCompatDelegate.setApplicationLocales(localeList)
                     }
                 }
             )
@@ -76,6 +92,12 @@ fun SmartBudgetNavigation(
                 },
                 onProUpgrade = {
                     navController.navigate(Routes.PRO_UPGRADE)
+                },
+                onSavingsGoals = {
+                    navController.navigate(Routes.SAVINGS_GOALS)
+                },
+                onSearch = {
+                    navController.navigate(Routes.SEARCH)
                 }
             )
         }
@@ -141,6 +163,28 @@ fun SmartBudgetNavigation(
                 onNavigateBack = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable(Routes.SEARCH) {
+            SearchScreen(
+                viewModel = mainViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onEditTransaction = { transactionId ->
+                    transactionViewModel.loadTransaction(transactionId)
+                    navController.navigate(Routes.ADD_TRANSACTION)
+                }
+            )
+        }
+
+        composable(Routes.SAVINGS_GOALS) {
+            val goals by mainViewModel.savingsGoals.collectAsState()
+            SavingsGoalsScreen(
+                goals = goals,
+                onAddGoal = { name, target -> mainViewModel.addSavingsGoal(name, target) },
+                onAddAmount = { goalId, amount -> mainViewModel.addAmountToGoal(goalId, amount) },
+                onDeleteGoal = { goal -> mainViewModel.deleteSavingsGoal(goal) },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

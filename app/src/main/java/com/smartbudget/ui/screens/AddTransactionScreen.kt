@@ -1,5 +1,11 @@
 package com.smartbudget.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,10 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smartbudget.R
 import com.smartbudget.data.entity.Recurrence
@@ -31,8 +40,11 @@ import com.smartbudget.data.entity.TransactionType
 import com.smartbudget.ui.theme.*
 import com.smartbudget.ui.util.DateUtils
 import com.smartbudget.ui.util.IconMapper
+import com.smartbudget.ui.util.ReceiptScanner
 import com.smartbudget.ui.util.toComposeColor
 import com.smartbudget.ui.viewmodel.TransactionViewModel
+import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,8 +54,53 @@ fun AddTransactionScreen(
 ) {
     val formState by viewModel.formState.collectAsStateWithLifecycle()
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var showDatePicker by remember { mutableStateOf(false) }
+    var isScanning by remember { mutableStateOf(false) }
+    var scanError by remember { mutableStateOf<String?>(null) }
+
+    // Camera photo URI
+    val photoFile = remember { File(context.cacheDir, "receipt_photo.jpg") }
+    val photoUri = remember {
+        FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", photoFile)
+    }
+
+    // Camera launcher
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            isScanning = true
+            scanError = null
+            scope.launch {
+                try {
+                    val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+                    if (bitmap != null) {
+                        val result = ReceiptScanner.scanReceipt(bitmap)
+                        if (result.amount != null) {
+                            viewModel.updateAmount(String.format("%.2f", result.amount))
+                        } else {
+                            scanError = context.getString(R.string.scan_no_amount)
+                        }
+                    }
+                } catch (e: Exception) {
+                    scanError = context.getString(R.string.scan_error)
+                }
+                isScanning = false
+            }
+        }
+    }
+
+    // Permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            cameraLauncher.launch(photoUri)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -129,7 +186,7 @@ fun AddTransactionScreen(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            // Amount
+            // Amount + Scan button
             OutlinedTextField(
                 value = formState.amount,
                 onValueChange = { viewModel.updateAmount(it) },
@@ -140,11 +197,42 @@ fun AddTransactionScreen(
                 leadingIcon = {
                     Icon(Icons.Filled.AttachMoney, contentDescription = null)
                 },
+                trailingIcon = {
+                    if (isScanning) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    } else {
+                        IconButton(onClick = {
+                            val hasPerm = ContextCompat.checkSelfPermission(
+                                context, Manifest.permission.CAMERA
+                            ) == PackageManager.PERMISSION_GRANTED
+                            if (hasPerm) {
+                                cameraLauncher.launch(photoUri)
+                            } else {
+                                permissionLauncher.launch(Manifest.permission.CAMERA)
+                            }
+                        }) {
+                            Icon(
+                                Icons.Filled.CameraAlt,
+                                contentDescription = stringResource(R.string.scan_receipt),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                },
                 shape = RoundedCornerShape(12.dp),
                 textStyle = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold
                 )
             )
+
+            // Scan feedback
+            scanError?.let { error ->
+                Text(
+                    text = error,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = ExpenseRed
+                )
+            }
 
             // Category selection
             Text(

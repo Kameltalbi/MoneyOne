@@ -23,4 +23,7 @@ class BudgetRepository(private val budgetDao: BudgetDao) {
 
     suspend fun deleteGlobalBudget(yearMonth: String) =
         budgetDao.deleteGlobalBudget(yearMonth)
+
+    suspend fun getAllBudgetsForMonthDirect(yearMonth: String): List<Budget> =
+        budgetDao.getAllBudgetsForMonthDirect(yearMonth)
 }

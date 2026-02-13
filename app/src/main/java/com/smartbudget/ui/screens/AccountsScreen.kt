@@ -15,8 +15,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smartbudget.R
+import com.smartbudget.data.CurrencyData
 import com.smartbudget.data.entity.Account
 import com.smartbudget.ui.theme.*
+import com.smartbudget.ui.util.CurrencyFormatter
 import com.smartbudget.ui.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,13 +100,18 @@ fun AccountsScreen(
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Medium
                             )
-                            if (account.isDefault) {
-                                Text(
-                                    text = stringResource(R.string.default_account),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                            val currencyLabel = if (account.currency.isNotBlank()) {
+                                val ci = CurrencyData.getByCode(account.currency)
+                                "${ci?.flag ?: ""} ${ci?.symbol ?: account.currency}"
+                            } else null
+                            Text(
+                                text = listOfNotNull(
+                                    if (account.isDefault) stringResource(R.string.default_account) else null,
+                                    currencyLabel
+                                ).joinToString(" · ").ifEmpty { "" },
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
 
                         if (!account.isDefault) {
@@ -156,24 +163,55 @@ fun AccountsScreen(
     // Add account dialog
     if (showAddDialog) {
         var newName by remember { mutableStateOf("") }
+        var selectedCurrency by remember { mutableStateOf("") }
+        var showCurrencyPicker by remember { mutableStateOf(false) }
+        val currencyDisplay = if (selectedCurrency.isBlank()) stringResource(R.string.default_currency_label)
+            else CurrencyData.getByCode(selectedCurrency)?.let { "${it.flag} ${it.code}" } ?: selectedCurrency
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
             title = { Text(stringResource(R.string.new_account)) },
             text = {
-                OutlinedTextField(
-                    value = newName,
-                    onValueChange = { newName = it },
-                    label = { Text(stringResource(R.string.account_name)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp)
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = newName,
+                        onValueChange = { newName = it },
+                        label = { Text(stringResource(R.string.account_name)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    OutlinedButton(
+                        onClick = { showCurrencyPicker = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Filled.Language, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(currencyDisplay)
+                    }
+                    DropdownMenu(
+                        expanded = showCurrencyPicker,
+                        onDismissRequest = { showCurrencyPicker = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.default_currency_label)) },
+                            onClick = { selectedCurrency = ""; showCurrencyPicker = false }
+                        )
+                        CurrencyData.allCurrencies.forEach { ci ->
+                            DropdownMenuItem(
+                                text = { Text("${ci.flag} ${ci.code} - ${ci.name}") },
+                                onClick = { selectedCurrency = ci.code; showCurrencyPicker = false }
+                            )
+                        }
+                    }
+                }
             },
             confirmButton = {
                 Button(
                     onClick = {
                         viewModel.addAccount(
                             name = newName,
+                            currency = selectedCurrency,
                             onSuccess = { showAddDialog = false },
                             onError = { errorMessage = it }
                         )
@@ -195,23 +233,53 @@ fun AccountsScreen(
     // Rename dialog
     showRenameDialog?.let { account ->
         var newName by remember { mutableStateOf(account.name) }
+        var selectedCurrency by remember { mutableStateOf(account.currency) }
+        var showCurrencyPicker by remember { mutableStateOf(false) }
+        val currencyDisplay = if (selectedCurrency.isBlank()) stringResource(R.string.default_currency_label)
+            else CurrencyData.getByCode(selectedCurrency)?.let { "${it.flag} ${it.code}" } ?: selectedCurrency
         AlertDialog(
             onDismissRequest = { showRenameDialog = null },
             title = { Text(stringResource(R.string.rename_account)) },
             text = {
-                OutlinedTextField(
-                    value = newName,
-                    onValueChange = { newName = it },
-                    label = { Text(stringResource(R.string.account_name)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp)
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = newName,
+                        onValueChange = { newName = it },
+                        label = { Text(stringResource(R.string.account_name)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    OutlinedButton(
+                        onClick = { showCurrencyPicker = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Filled.Language, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(currencyDisplay)
+                    }
+                    DropdownMenu(
+                        expanded = showCurrencyPicker,
+                        onDismissRequest = { showCurrencyPicker = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.default_currency_label)) },
+                            onClick = { selectedCurrency = ""; showCurrencyPicker = false }
+                        )
+                        CurrencyData.allCurrencies.forEach { ci ->
+                            DropdownMenuItem(
+                                text = { Text("${ci.flag} ${ci.code} - ${ci.name}") },
+                                onClick = { selectedCurrency = ci.code; showCurrencyPicker = false }
+                            )
+                        }
+                    }
+                }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.renameAccount(account, newName) {
+                        viewModel.renameAccount(account.copy(currency = selectedCurrency), newName) {
                             showRenameDialog = null
                         }
                     },

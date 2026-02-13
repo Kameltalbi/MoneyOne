@@ -15,6 +15,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,7 +43,9 @@ fun MainScreen(
     onEditTransaction: (Long) -> Unit,
     onSettings: () -> Unit,
     onDashboard: () -> Unit,
-    onProUpgrade: () -> Unit
+    onProUpgrade: () -> Unit,
+    onSavingsGoals: () -> Unit = {},
+    onSearch: () -> Unit = {}
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as SmartBudgetApp
@@ -64,6 +68,7 @@ fun MainScreen(
     var showDeleteConfirm by remember { mutableStateOf<TransactionWithCategory?>(null) }
     var sortMode by remember { mutableStateOf("date") } // date, amount, category
     var showDuplicatedSnackbar by remember { mutableStateOf(false) }
+    var duplicatingTransaction by remember { mutableStateOf<TransactionWithCategory?>(null) }
 
     val sortedTransactions = remember(dailyTransactions, sortMode) {
         when (sortMode) {
@@ -147,6 +152,15 @@ fun MainScreen(
                         }
                     }
 
+                    // Search
+                    IconButton(onClick = onSearch) {
+                        Icon(
+                            Icons.Filled.Search,
+                            contentDescription = stringResource(R.string.search),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
                     // Month summary toggle
                     IconButton(onClick = { showMonthSummary = !showMonthSummary }) {
                         Icon(
@@ -172,6 +186,24 @@ fun MainScreen(
                                 if (isPro) onDashboard() else onProUpgrade()
                             },
                             leadingIcon = { Icon(Icons.Filled.PieChart, contentDescription = null) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.savings_goals_title) + if (!isPro) " ⭐" else "") },
+                            onClick = {
+                                showOverflowMenu = false
+                                if (isPro) onSavingsGoals() else onProUpgrade()
+                            },
+                            leadingIcon = { Icon(Icons.Filled.Star, contentDescription = null) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.export_csv)) },
+                            onClick = {
+                                showOverflowMenu = false
+                                val monthLabel = DateUtils.formatMonthYear(currentYearMonth)
+                                val transactions = viewModel.monthlyTransactions.value
+                                com.smartbudget.ui.util.CsvExporter.exportAndShare(context, transactions, monthLabel)
+                            },
+                            leadingIcon = { Icon(Icons.Filled.Share, contentDescription = null) }
                         )
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.settings)) },
@@ -278,29 +310,6 @@ fun MainScreen(
                 )
             }
 
-            if (dailyTransactions.size > 1) {
-                item {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf(
-                            "date" to R.string.sort_date,
-                            "amount" to R.string.sort_amount,
-                            "category" to R.string.sort_category
-                        ).forEach { (mode, labelRes) ->
-                            FilterChip(
-                                selected = sortMode == mode,
-                                onClick = { sortMode = mode },
-                                label = { Text(stringResource(labelRes), style = MaterialTheme.typography.labelSmall) },
-                                leadingIcon = if (sortMode == mode) {
-                                    { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(14.dp)) }
-                                } else null
-                            )
-                        }
-                    }
-                }
-            }
-
             if (dailyTransactions.isEmpty()) {
                 item {
                     Card(
@@ -334,10 +343,60 @@ fun MainScreen(
                 }
             } else {
                 items(sortedTransactions, key = { it.id }) { transaction ->
-                    TransactionItem(
-                        transaction = transaction,
-                        onToggleValidation = { viewModel.toggleTransactionValidation(it) },
-                        onClick = { selectedTransaction = transaction }
+                    val dismissState = rememberDismissState(
+                        confirmValueChange = { dismissValue ->
+                            when (dismissValue) {
+                                DismissValue.DismissedToStart -> {
+                                    // Swipe left -> delete
+                                    showDeleteConfirm = transaction
+                                    false
+                                }
+                                DismissValue.DismissedToEnd -> {
+                                    // Swipe right -> duplicate with date picker
+                                    duplicatingTransaction = transaction
+                                    false
+                                }
+                                else -> false
+                            }
+                        }
+                    )
+                    SwipeToDismiss(
+                        state = dismissState,
+                        background = {
+                            val direction = dismissState.dismissDirection
+                            val bgColor = when (direction) {
+                                DismissDirection.EndToStart -> ExpenseRed
+                                DismissDirection.StartToEnd -> MaterialTheme.colorScheme.primary
+                                else -> Color.Transparent
+                            }
+                            val icon = when (direction) {
+                                DismissDirection.EndToStart -> Icons.Filled.Delete
+                                DismissDirection.StartToEnd -> Icons.Filled.ContentCopy
+                                else -> Icons.Filled.Delete
+                            }
+                            val alignment = when (direction) {
+                                DismissDirection.EndToStart -> Alignment.CenterEnd
+                                else -> Alignment.CenterStart
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(bgColor.copy(alpha = 0.2f))
+                                    .padding(horizontal = 20.dp),
+                                contentAlignment = alignment
+                            ) {
+                                Icon(icon, contentDescription = null, tint = bgColor)
+                            }
+                        },
+                        dismissContent = {
+                            TransactionItem(
+                                transaction = transaction,
+                                onToggleValidation = { viewModel.toggleTransactionValidation(it) },
+                                onClick = { selectedTransaction = transaction }
+                            )
+                        },
+                        directions = setOf(DismissDirection.EndToStart, DismissDirection.StartToEnd)
                     )
                 }
             }
@@ -424,10 +483,8 @@ fun MainScreen(
                     // Duplicate button
                     Surface(
                         onClick = {
-                            val id = txn.id
+                            duplicatingTransaction = txn
                             selectedTransaction = null
-                            viewModel.duplicateTransaction(id)
-                            showDuplicatedSnackbar = true
                         },
                         shape = RoundedCornerShape(12.dp),
                         color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.08f)
@@ -538,4 +595,32 @@ fun MainScreen(
         }
     }
 
+    // DatePicker for duplicate transaction
+    duplicatingTransaction?.let { txn ->
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = DateUtils.toUtcMillis(selectedDate)
+        )
+        DatePickerDialog(
+            onDismissRequest = { duplicatingTransaction = null },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val newDate = DateUtils.fromUtcMillis(millis)
+                        viewModel.duplicateTransactionToDate(txn.id, DateUtils.toEpochMillis(newDate))
+                        showDuplicatedSnackbar = true
+                    }
+                    duplicatingTransaction = null
+                }) {
+                    Text(stringResource(R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { duplicatingTransaction = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 }

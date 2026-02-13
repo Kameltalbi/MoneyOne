@@ -1,7 +1,14 @@
 package com.smartbudget.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -23,6 +30,7 @@ import com.smartbudget.ui.theme.*
 import com.smartbudget.ui.util.CurrencyFormatter
 import com.smartbudget.ui.util.DateUtils
 import com.smartbudget.ui.viewmodel.SettingsViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +52,7 @@ fun SettingsScreen(
     val accounts by viewModel.allAccounts.collectAsStateWithLifecycle()
     val selectedCurrencyCode by viewModel.currencyCode.collectAsStateWithLifecycle()
     val selectedLanguage by viewModel.selectedLanguage.collectAsStateWithLifecycle()
+    val themeColor by viewModel.themeColor.collectAsStateWithLifecycle()
     val currentBalance by viewModel.currentBalance.collectAsStateWithLifecycle()
     var budgetSaved by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -145,6 +154,232 @@ fun SettingsScreen(
                     subtitle = "${currentCurrency?.flag ?: ""} ${currentCurrency?.name ?: selectedCurrencyCode} (${currentCurrency?.symbol ?: ""})",
                     onClick = onNavigateCurrency
                 )
+            }
+
+            // Theme color picker
+            item {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Filled.Palette,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = stringResource(R.string.theme_color),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(availableThemeColors) { tc ->
+                                val isSelected = tc.name == themeColor
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .background(tc.primary, CircleShape)
+                                        .then(
+                                            if (isSelected) Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                            else Modifier
+                                        )
+                                        .clickable {
+                                            if (isPro) viewModel.setThemeColor(tc.name)
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isSelected) {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        if (!isPro) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = stringResource(R.string.pro_required_desc) + " ⭐",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Google Drive backup
+            item {
+                val driveManager = remember { com.smartbudget.backup.DriveBackupManager(context) }
+                val scope = rememberCoroutineScope()
+                var isBackingUp by remember { mutableStateOf(false) }
+                var isRestoring by remember { mutableStateOf(false) }
+                var backupMessage by remember { mutableStateOf<String?>(null) }
+                val isSignedIn = remember { mutableStateOf(driveManager.isSignedIn()) }
+                val accountEmail = remember { mutableStateOf(driveManager.getAccountEmail()) }
+                val lastBackupTime = remember {
+                    val prefs = context.getSharedPreferences("settings", android.content.Context.MODE_PRIVATE)
+                    mutableStateOf(prefs.getLong("last_backup_time", 0L))
+                }
+
+                val signInLauncher = rememberLauncherForActivityResult(
+                    contract = androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
+                ) { result ->
+                    val task = com.google.android.gms.auth.api.signin.GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                    try {
+                        task.getResult(com.google.android.gms.common.api.ApiException::class.java)
+                        isSignedIn.value = true
+                        accountEmail.value = driveManager.getAccountEmail()
+                    } catch (_: Exception) {
+                        backupMessage = context.getString(R.string.backup_sign_in_failed)
+                    }
+                }
+
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Filled.Cloud,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.backup_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        if (!isSignedIn.value) {
+                            OutlinedButton(
+                                onClick = { signInLauncher.launch(driveManager.getSignInIntent()) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(stringResource(R.string.backup_sign_in))
+                            }
+                        } else {
+                            Text(
+                                text = accountEmail.value ?: "",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (lastBackupTime.value > 0) {
+                                val dateStr = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
+                                    .format(java.util.Date(lastBackupTime.value))
+                                Text(
+                                    text = stringResource(R.string.backup_last, dateStr),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Button(
+                                    onClick = {
+                                        isBackingUp = true
+                                        backupMessage = null
+                                        scope.launch {
+                                            // Checkpoint DB before backup
+                                            (context.applicationContext as SmartBudgetApp).getDb().close()
+                                            val result = driveManager.backup()
+                                            // Reopen DB
+                                            (context.applicationContext as SmartBudgetApp).reopenDatabase()
+                                            result.onSuccess {
+                                                backupMessage = context.getString(R.string.backup_success)
+                                                lastBackupTime.value = System.currentTimeMillis()
+                                            }.onFailure {
+                                                backupMessage = context.getString(R.string.backup_error) + ": ${it.message}"
+                                            }
+                                            isBackingUp = false
+                                        }
+                                    },
+                                    enabled = !isBackingUp && !isRestoring,
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    if (isBackingUp) {
+                                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                                    } else {
+                                        Icon(Icons.Filled.CloudUpload, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    }
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(stringResource(R.string.backup_save))
+                                }
+                                OutlinedButton(
+                                    onClick = {
+                                        isRestoring = true
+                                        backupMessage = null
+                                        scope.launch {
+                                            (context.applicationContext as SmartBudgetApp).getDb().close()
+                                            val result = driveManager.restore()
+                                            (context.applicationContext as SmartBudgetApp).reopenDatabase()
+                                            result.onSuccess {
+                                                backupMessage = context.getString(R.string.backup_restored)
+                                            }.onFailure {
+                                                backupMessage = context.getString(R.string.backup_restore_error) + ": ${it.message}"
+                                            }
+                                            isRestoring = false
+                                        }
+                                    },
+                                    enabled = !isBackingUp && !isRestoring,
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    if (isRestoring) {
+                                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                    } else {
+                                        Icon(Icons.Filled.CloudDownload, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    }
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(stringResource(R.string.backup_restore))
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            TextButton(onClick = {
+                                scope.launch {
+                                    driveManager.signOut()
+                                    isSignedIn.value = false
+                                    accountEmail.value = null
+                                }
+                            }) {
+                                Text(stringResource(R.string.backup_sign_out), style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+
+                        backupMessage?.let { msg ->
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = msg,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (msg.contains("✓")) IncomeGreen else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
             }
 
             // Budget global
