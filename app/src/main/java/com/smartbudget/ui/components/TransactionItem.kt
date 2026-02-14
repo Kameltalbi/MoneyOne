@@ -112,7 +112,7 @@ fun TransactionItem(
 
             // Amount
             Text(
-                text = "$amountPrefix${CurrencyFormatter.format(transaction.amount)}",
+                text = "\u200E$amountPrefix${CurrencyFormatter.format(transaction.amount)}",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = amountColor

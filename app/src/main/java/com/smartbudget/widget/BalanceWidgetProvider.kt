@@ -78,8 +78,8 @@ class BalanceWidgetProvider : AppWidgetProvider() {
                 val views = RemoteViews(context.packageName, R.layout.widget_balance)
                 views.setTextViewText(R.id.widget_account_name, accountName)
                 views.setTextViewText(R.id.widget_balance, CurrencyFormatter.format(balance))
-                views.setTextViewText(R.id.widget_income, "↑ ${CurrencyFormatter.format(monthIncome)}")
-                views.setTextViewText(R.id.widget_expense, "↓ ${CurrencyFormatter.format(monthExpense)}")
+                views.setTextViewText(R.id.widget_income, "\u200E↑ ${CurrencyFormatter.format(monthIncome)}")
+                views.setTextViewText(R.id.widget_expense, "\u200E↓ ${CurrencyFormatter.format(monthExpense)}")
 
                 // Click opens the app
                 val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)

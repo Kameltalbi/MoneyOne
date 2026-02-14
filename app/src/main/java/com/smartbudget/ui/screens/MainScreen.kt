@@ -314,7 +314,8 @@ fun MainScreen(
                 }
             }
 
-            // Daily transactions header + sort chips
+            // Daily transactions (hidden when month summary is shown)
+            if (!showMonthSummary) {
             item {
                 Text(
                     text = stringResource(R.string.transactions_for, DateUtils.formatDate(selectedDate)),
@@ -394,6 +395,7 @@ fun MainScreen(
                     )
                 }
             }
+            } // end if (!showMonthSummary)
 
             // Bottom spacer for FAB
             item { Spacer(modifier = Modifier.height(72.dp)) }
@@ -432,7 +434,7 @@ fun MainScreen(
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = "$amountPrefix${CurrencyFormatter.format(txn.amount)}",
+                            text = "\u200E$amountPrefix${CurrencyFormatter.format(txn.amount)}",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold,
                             color = amountColor

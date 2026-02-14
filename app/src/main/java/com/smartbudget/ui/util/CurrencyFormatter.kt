@@ -42,12 +42,12 @@ object CurrencyFormatter {
     }
 
     fun format(amount: Double): String {
-        return "${getFormatter().format(amount)} $symbol"
+        return "\u200E${getFormatter().format(amount)} $symbol\u200E"
     }
 
     fun formatSigned(amount: Double): String {
         val prefix = if (amount >= 0) "+" else ""
-        return "$prefix${getFormatter().format(amount)} $symbol"
+        return "\u200E$prefix${getFormatter().format(amount)} $symbol\u200E"
     }
 
     fun formatCompact(amount: Double): String {
