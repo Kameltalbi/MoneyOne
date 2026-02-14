@@ -222,46 +222,39 @@ private fun ExpenseByCategoryChart(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Pie chart (camembert plein)
-                    Box(
-                        modifier = Modifier.size(160.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            val padding = 8f
-                            var startAngle = -90f
+                    // Pie chart (vrai camembert plein)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier.size(160.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                val padding = 4f
+                                var startAngle = -90f
 
-                            expensesByCategory.forEach { (category, amount) ->
-                                val sweep = (amount / totalExpenses * 360).toFloat()
-                                val color = chartColors[category] ?: Color.Gray
+                                expensesByCategory.forEach { (category, amount) ->
+                                    val sweep = (amount / totalExpenses * 360).toFloat()
+                                    val color = chartColors[category] ?: Color.Gray
 
-                                drawArc(
-                                    color = color,
-                                    startAngle = startAngle,
-                                    sweepAngle = sweep,
-                                    useCenter = true,
-                                    topLeft = Offset(padding, padding),
-                                    size = Size(size.width - padding * 2, size.height - padding * 2)
-                                )
-                                startAngle += sweep
+                                    drawArc(
+                                        color = color,
+                                        startAngle = startAngle,
+                                        sweepAngle = sweep,
+                                        useCenter = true,
+                                        topLeft = Offset(padding, padding),
+                                        size = Size(size.width - padding * 2, size.height - padding * 2)
+                                    )
+                                    startAngle += sweep
+                                }
                             }
-
-                            // White center circle for donut effect
-                            drawCircle(
-                                color = Color.White,
-                                radius = size.minDimension * 0.25f,
-                                center = Offset(size.width / 2, size.height / 2)
-                            )
                         }
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = CurrencyFormatter.format(totalExpenses),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = ExpenseRed
-                            )
-                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = CurrencyFormatter.format(totalExpenses),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = ExpenseRed
+                        )
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
