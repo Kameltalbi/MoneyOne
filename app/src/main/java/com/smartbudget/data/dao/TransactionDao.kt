@@ -172,11 +172,36 @@ interface TransactionDao {
     """)
     fun searchTransactions(query: String): Flow<List<TransactionWithCategory>>
 
-    @Query("SELECT * FROM transactions WHERE recurrence != 'NONE'")
+    @Query("SELECT * FROM transactions WHERE recurrence != 'NONE' AND recurrenceGroupId IS NOT NULL")
     suspend fun getRecurringTransactions(): List<Transaction>
+
+    @Query("""
+        UPDATE transactions SET recurrenceGroupId = (
+            SELECT MIN(t2.id) FROM transactions t2 
+            WHERE t2.name = transactions.name 
+            AND t2.accountId = transactions.accountId 
+            AND t2.type = transactions.type 
+            AND t2.categoryId IS transactions.categoryId 
+            AND t2.recurrence = transactions.recurrence
+            AND t2.recurrence != 'NONE'
+        )
+        WHERE recurrence != 'NONE' AND recurrenceGroupId IS NULL
+    """)
+    suspend fun fixNullRecurrenceGroupIds()
 
     @Query("SELECT COUNT(*) FROM transactions WHERE recurrenceGroupId = :groupId AND date = :date")
     suspend fun countTransactionsForGroupAtDate(groupId: Long, date: Long): Int
+
+    @Query("""
+        UPDATE transactions 
+        SET name = :name, amount = :amount, type = :type, categoryId = :categoryId, 
+            note = :note, date = :date
+        WHERE id = :id
+    """)
+    suspend fun updateSingleTransaction(
+        id: Long, name: String, amount: Double, type: TransactionType,
+        categoryId: Long?, note: String, date: Long
+    )
 
     @Query("""
         SELECT MAX(date) FROM transactions 

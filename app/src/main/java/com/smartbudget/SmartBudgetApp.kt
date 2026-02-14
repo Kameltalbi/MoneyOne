@@ -52,6 +52,8 @@ class SmartBudgetApp : Application() {
 
     private fun processRecurringTransactions() {
         CoroutineScope(Dispatchers.IO).launch {
+            // Fix any recurring transactions that don't have a recurrenceGroupId yet
+            transactionRepository.fixNullRecurrenceGroupIds()
             val recurrenceManager = RecurrenceManager(transactionRepository)
             recurrenceManager.generateUpToMonth(java.time.YearMonth.now())
         }

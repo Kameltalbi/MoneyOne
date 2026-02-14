@@ -73,6 +73,9 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
     suspend fun getRecurringTransactions(): List<Transaction> =
         transactionDao.getRecurringTransactions()
 
+    suspend fun fixNullRecurrenceGroupIds() =
+        transactionDao.fixNullRecurrenceGroupIds()
+
     suspend fun getLastOccurrenceDate(
         name: String, accountId: Long, type: TransactionType, 
         categoryId: Long?, amount: Double
@@ -83,6 +86,11 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
 
     suspend fun countTransactionsForGroupAtDate(groupId: Long, date: Long): Int =
         transactionDao.countTransactionsForGroupAtDate(groupId, date)
+
+    suspend fun updateSingleTransaction(
+        id: Long, name: String, amount: Double, type: TransactionType,
+        categoryId: Long?, note: String, date: Long
+    ) = transactionDao.updateSingleTransaction(id, name, amount, type, categoryId, note, date)
 
     suspend fun getFutureRecurringTransactions(groupId: Long, fromDate: Long): List<Transaction> =
         transactionDao.getFutureRecurringTransactions(groupId, fromDate)

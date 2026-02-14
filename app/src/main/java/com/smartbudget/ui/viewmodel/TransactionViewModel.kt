@@ -58,30 +58,28 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             val form = _formState.value
             val amount = form.amount.toDoubleOrNull() ?: return@launch
             if (amount <= 0) return@launch
-
-            val account = accountRepo.getDefaultAccount() ?: return@launch
+            val id = form.editingId ?: return@launch
 
             val dateMillis = DateUtils.toEpochMillis(form.date)
-            // Update only this transaction, keep recurrence and groupId intact
-            val transaction = Transaction(
-                id = form.editingId ?: 0,
+
+            // Direct SQL update by ID only — guaranteed to touch only this one row
+            transactionRepo.updateSingleTransaction(
+                id = id,
                 name = form.name,
                 amount = amount,
                 type = form.type,
                 categoryId = form.categoryId,
-                accountId = account.id,
-                date = dateMillis,
                 note = form.note,
-                recurrence = form.recurrence,
-                recurrenceGroupId = form.recurrenceGroupId
+                date = dateMillis
             )
-
-            transactionRepo.update(transaction)
 
             BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
             if (form.type == TransactionType.EXPENSE) {
-                val app = getApplication<com.smartbudget.SmartBudgetApp>()
-                app.budgetAlertManager.checkBudgetAlerts(account.id)
+                val account = accountRepo.getDefaultAccount()
+                if (account != null) {
+                    val app = getApplication<com.smartbudget.SmartBudgetApp>()
+                    app.budgetAlertManager.checkBudgetAlerts(account.id)
+                }
             }
             onSuccess()
         }
