@@ -175,6 +175,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE recurrence != 'NONE'")
     suspend fun getRecurringTransactions(): List<Transaction>
 
+    @Query("SELECT COUNT(*) FROM transactions WHERE recurrenceGroupId = :groupId AND date = :date")
+    suspend fun countTransactionsForGroupAtDate(groupId: Long, date: Long): Int
+
     @Query("""
         SELECT MAX(date) FROM transactions 
         WHERE name = :name AND accountId = :accountId AND type = :type 

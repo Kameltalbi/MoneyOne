@@ -19,18 +19,18 @@ class RecurrenceManager(private val transactionRepo: TransactionRepository) {
         val recurringTransactions = transactionRepo.getRecurringTransactions()
         val generateUntil = targetMonth.atEndOfMonth()
 
-        // Track which recurrenceGroupIds we've already processed to avoid duplicates
-        val processedGroups = mutableSetOf<Long>()
+        // Group by recurrenceGroupId, pick the earliest transaction as template
+        val templates = mutableMapOf<Long, Transaction>()
+        for (txn in recurringTransactions) {
+            if (txn.recurrence == Recurrence.NONE) continue
+            val groupId = txn.recurrenceGroupId ?: txn.id
+            val existing = templates[groupId]
+            if (existing == null || txn.date < existing.date) {
+                templates[groupId] = txn
+            }
+        }
 
-        for (template in recurringTransactions) {
-            if (template.recurrence == Recurrence.NONE) continue
-
-            val groupId = template.recurrenceGroupId ?: template.id
-
-            // Skip if we already processed this group
-            if (groupId in processedGroups) continue
-            processedGroups.add(groupId)
-
+        for ((groupId, template) in templates) {
             // Respect end date if set
             val endDate = template.recurrenceEndDate?.let {
                 Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
@@ -51,21 +51,26 @@ class RecurrenceManager(private val transactionRepo: TransactionRepository) {
                 if (endDate != null && nextDate.isAfter(endDate)) break
 
                 val millis = nextDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                transactionRepo.insert(
-                    Transaction(
-                        name = template.name,
-                        amount = template.amount,
-                        type = template.type,
-                        categoryId = template.categoryId,
-                        accountId = template.accountId,
-                        date = millis,
-                        note = template.note,
-                        isValidated = false,
-                        recurrence = template.recurrence,
-                        recurrenceEndDate = template.recurrenceEndDate,
-                        recurrenceGroupId = groupId
+
+                // Check if a transaction already exists for this group at this date
+                val count = transactionRepo.countTransactionsForGroupAtDate(groupId, millis)
+                if (count == 0) {
+                    transactionRepo.insert(
+                        Transaction(
+                            name = template.name,
+                            amount = template.amount,
+                            type = template.type,
+                            categoryId = template.categoryId,
+                            accountId = template.accountId,
+                            date = millis,
+                            note = template.note,
+                            isValidated = false,
+                            recurrence = template.recurrence,
+                            recurrenceEndDate = template.recurrenceEndDate,
+                            recurrenceGroupId = groupId
+                        )
                     )
-                )
+                }
                 nextDate = getNextDate(nextDate, template.recurrence)
             }
         }

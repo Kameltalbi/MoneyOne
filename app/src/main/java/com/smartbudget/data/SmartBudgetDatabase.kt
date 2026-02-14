@@ -20,7 +20,7 @@ import com.smartbudget.data.entity.Transaction
 
 @Database(
     entities = [Account::class, Transaction::class, Category::class, Budget::class, SavingsGoal::class],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -76,13 +76,31 @@ abstract class SmartBudgetDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Fix NULL recurrenceGroupId for existing recurring transactions
+                database.execSQL("""
+                    UPDATE transactions SET recurrenceGroupId = (
+                        SELECT MIN(t2.id) FROM transactions t2 
+                        WHERE t2.name = transactions.name 
+                        AND t2.accountId = transactions.accountId 
+                        AND t2.type = transactions.type 
+                        AND t2.categoryId IS transactions.categoryId 
+                        AND t2.recurrence = transactions.recurrence
+                        AND t2.recurrence != 'NONE'
+                    )
+                    WHERE recurrence != 'NONE' AND recurrenceGroupId IS NULL
+                """)
+            }
+        }
+
         fun getDatabase(context: Context): SmartBudgetDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     SmartBudgetDatabase::class.java,
                     "smartbudget_database"
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                 .build()
                 INSTANCE = instance
                 instance

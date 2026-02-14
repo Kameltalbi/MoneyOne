@@ -81,6 +81,9 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
     suspend fun getLastOccurrenceDateByGroupId(groupId: Long): Long? =
         transactionDao.getLastOccurrenceDateByGroupId(groupId)
 
+    suspend fun countTransactionsForGroupAtDate(groupId: Long, date: Long): Int =
+        transactionDao.countTransactionsForGroupAtDate(groupId, date)
+
     suspend fun getFutureRecurringTransactions(groupId: Long, fromDate: Long): List<Transaction> =
         transactionDao.getFutureRecurringTransactions(groupId, fromDate)
 
