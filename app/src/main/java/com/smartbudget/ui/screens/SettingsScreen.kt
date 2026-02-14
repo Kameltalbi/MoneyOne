@@ -223,6 +223,17 @@ fun SettingsScreen(
                     mutableStateOf(prefs.getLong("last_backup_time", 0L))
                 }
 
+                // Try silent sign-in to restore session
+                LaunchedEffect(Unit) {
+                    if (!isSignedIn.value || com.google.android.gms.auth.api.signin.GoogleSignIn.getLastSignedInAccount(context) == null) {
+                        val success = driveManager.silentSignIn()
+                        if (success) {
+                            isSignedIn.value = true
+                            accountEmail.value = driveManager.getAccountEmail()
+                        }
+                    }
+                }
+
                 val signInLauncher = rememberLauncherForActivityResult(
                     contract = androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
                 ) { result ->

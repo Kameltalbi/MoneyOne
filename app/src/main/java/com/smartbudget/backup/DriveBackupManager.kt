@@ -26,10 +26,12 @@ class DriveBackupManager(private val context: Context) {
         private const val DB_NAME = "smartbudget_database"
     }
 
+    private val prefs = context.getSharedPreferences("drive_backup", Context.MODE_PRIVATE)
+
     fun getSignInClient(): GoogleSignInClient {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
-            .requestScopes(Scope(DriveScopes.DRIVE_FILE))
+            .requestScopes(Scope(DriveScopes.DRIVE_APPDATA))
             .build()
         return GoogleSignIn.getClient(context, gso)
     }
@@ -38,16 +40,42 @@ class DriveBackupManager(private val context: Context) {
 
     fun isSignedIn(): Boolean {
         val account = GoogleSignIn.getLastSignedInAccount(context)
-        return account != null && GoogleSignIn.hasPermissions(account, Scope(DriveScopes.DRIVE_FILE))
+        if (account != null) {
+            // Persist email when we detect a valid account
+            prefs.edit().putString("account_email", account.email).putBoolean("signed_in", true).apply()
+            return true
+        }
+        return prefs.getBoolean("signed_in", false)
     }
 
     fun getAccountEmail(): String? {
         return GoogleSignIn.getLastSignedInAccount(context)?.email
+            ?: prefs.getString("account_email", null)
+    }
+
+    suspend fun silentSignIn(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val task = getSignInClient().silentSignIn()
+            if (task.isSuccessful) {
+                val account = task.result
+                prefs.edit().putString("account_email", account?.email).putBoolean("signed_in", true).apply()
+                true
+            } else {
+                com.google.android.gms.tasks.Tasks.await(task)
+                true
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun markSignedOut() {
+        prefs.edit().putBoolean("signed_in", false).remove("account_email").apply()
     }
 
     private fun getDriveService(account: GoogleSignInAccount): Drive {
         val credential = GoogleAccountCredential.usingOAuth2(
-            context, Collections.singleton(DriveScopes.DRIVE_FILE)
+            context, Collections.singleton(DriveScopes.DRIVE_APPDATA)
         )
         credential.selectedAccount = account.account
         return Drive.Builder(
@@ -58,10 +86,10 @@ class DriveBackupManager(private val context: Context) {
     }
 
     private suspend fun getOrCreateFolder(driveService: Drive): String = withContext(Dispatchers.IO) {
-        // Check if folder exists
+        // Check if folder exists in appDataFolder
         val result = driveService.files().list()
             .setQ("name='$BACKUP_FOLDER' and mimeType='application/vnd.google-apps.folder' and trashed=false")
-            .setSpaces("drive")
+            .setSpaces("appDataFolder")
             .execute()
 
         if (result.files.isNotEmpty()) {
@@ -70,6 +98,7 @@ class DriveBackupManager(private val context: Context) {
             val folderMetadata = com.google.api.services.drive.model.File().apply {
                 name = BACKUP_FOLDER
                 mimeType = "application/vnd.google-apps.folder"
+                parents = listOf("appDataFolder")
             }
             driveService.files().create(folderMetadata)
                 .setFields("id")
@@ -102,7 +131,7 @@ class DriveBackupManager(private val context: Context) {
             // Delete existing backup files in Drive
             val existing = driveService.files().list()
                 .setQ("'$folderId' in parents and name='$DB_NAME' and trashed=false")
-                .setSpaces("drive")
+                .setSpaces("appDataFolder")
                 .execute()
             for (f in existing.files) {
                 driveService.files().delete(f.id).execute()
@@ -143,7 +172,7 @@ class DriveBackupManager(private val context: Context) {
             // Find backup file
             val result = driveService.files().list()
                 .setQ("'$folderId' in parents and name='$DB_NAME' and trashed=false")
-                .setSpaces("drive")
+                .setSpaces("appDataFolder")
                 .execute()
 
             if (result.files.isEmpty()) {
@@ -180,6 +209,7 @@ class DriveBackupManager(private val context: Context) {
     suspend fun signOut() {
         withContext(Dispatchers.IO) {
             getSignInClient().signOut()
+            markSignedOut()
         }
     }
 }
