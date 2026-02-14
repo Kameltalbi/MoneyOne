@@ -60,7 +60,7 @@ fun AddTransactionScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var isScanning by remember { mutableStateOf(false) }
     var scanError by remember { mutableStateOf<String?>(null) }
-    var showRecurringEditDialog by remember { mutableStateOf(false) }
+    val showRecurringEditDialog by viewModel.showRecurringEditDialog.collectAsStateWithLifecycle()
 
     // Camera photo URI
     val photoFile = remember { File(context.cacheDir, "receipt_photo.jpg") }
@@ -403,13 +403,7 @@ fun AddTransactionScreen(
 
             // Save button
             Button(
-                onClick = {
-                    if (formState.isEditing && formState.isRecurring) {
-                        showRecurringEditDialog = true
-                    } else {
-                        viewModel.saveTransaction(onNavigateBack)
-                    }
-                },
+                onClick = { viewModel.requestSave(onNavigateBack) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -435,20 +429,27 @@ fun AddTransactionScreen(
 
     // Recurring edit choice dialog
     if (showRecurringEditDialog) {
-        AlertDialog(
-            onDismissRequest = { showRecurringEditDialog = false },
-            title = {
-                Text(
-                    text = stringResource(R.string.edit_recurring_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { viewModel.dismissRecurringDialog() }
+        ) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.edit_recurring_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
                     OutlinedButton(
                         onClick = {
-                            showRecurringEditDialog = false
+                            viewModel.dismissRecurringDialog()
                             viewModel.saveTransaction(onNavigateBack)
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -458,7 +459,7 @@ fun AddTransactionScreen(
                     }
                     Button(
                         onClick = {
-                            showRecurringEditDialog = false
+                            viewModel.dismissRecurringDialog()
                             viewModel.saveTransactionAndFuture(onNavigateBack)
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -466,15 +467,15 @@ fun AddTransactionScreen(
                     ) {
                         Text(stringResource(R.string.edit_recurring_this_and_future))
                     }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showRecurringEditDialog = false }) {
-                    Text(stringResource(R.string.cancel))
+                    TextButton(
+                        onClick = { viewModel.dismissRecurringDialog() },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
                 }
             }
-        )
+        }
     }
 
     // Date picker dialog

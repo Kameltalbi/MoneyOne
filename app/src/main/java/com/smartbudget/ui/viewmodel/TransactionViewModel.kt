@@ -37,6 +37,22 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private val _formState = MutableStateFlow(TransactionFormState())
     val formState: StateFlow<TransactionFormState> = _formState.asStateFlow()
 
+    private val _showRecurringEditDialog = MutableStateFlow(false)
+    val showRecurringEditDialog: StateFlow<Boolean> = _showRecurringEditDialog.asStateFlow()
+
+    fun requestSave(onNavigateBack: () -> Unit) {
+        val form = _formState.value
+        if (form.isEditing && form.isRecurring) {
+            _showRecurringEditDialog.value = true
+        } else {
+            saveTransaction(onNavigateBack)
+        }
+    }
+
+    fun dismissRecurringDialog() {
+        _showRecurringEditDialog.value = false
+    }
+
     val allCategories: StateFlow<List<Category>> = categoryRepo.allCategories
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
