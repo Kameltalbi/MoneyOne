@@ -83,7 +83,7 @@ fun MainScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(MaterialTheme.colorScheme.primary)
                     .statusBarsPadding()
             ) {
                 // Line 1: Title + action icons
@@ -97,7 +97,7 @@ fun MainScreen(
                         text = "MoneyOne",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.weight(1f))
 
@@ -106,7 +106,7 @@ fun MainScreen(
                         Icon(
                             Icons.Filled.Search,
                             contentDescription = stringResource(R.string.search),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                         )
                     }
 
@@ -115,14 +115,15 @@ fun MainScreen(
                         Icon(
                             Icons.Filled.BarChart,
                             contentDescription = stringResource(R.string.month_summary),
-                            tint = if (showMonthSummary) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (showMonthSummary) MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
                         )
                     }
 
                     // Overflow menu
                     IconButton(onClick = { showOverflowMenu = true }) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.menu))
+                        Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.menu),
+                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f))
                     }
                     DropdownMenu(
                         expanded = showOverflowMenu,
@@ -170,14 +171,19 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp)
-                        .offset(y = (-8).dp),
+                        .offset(y = (-4).dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextButton(onClick = { showAccountMenu = true }) {
+                    TextButton(
+                        onClick = { showAccountMenu = true },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
+                        )
+                    ) {
                         Icon(
                             Icons.Filled.AccountBalance,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -188,7 +194,7 @@ fun MainScreen(
                         Icon(
                             Icons.Filled.ArrowDropDown,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                     DropdownMenu(
@@ -251,7 +257,7 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             // Calendar
@@ -273,31 +279,25 @@ fun MainScreen(
                 else
                     com.smartbudget.ui.theme.ExpenseRed
 
-                Card(
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.balance_at, DateUtils.formatDate(selectedDate)),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = com.smartbudget.ui.util.CurrencyFormatter.format(balanceUpToDate),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = balanceColor
-                        )
-                    }
+                    Text(
+                        text = stringResource(R.string.balance_at, DateUtils.formatDate(selectedDate)),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = com.smartbudget.ui.util.CurrencyFormatter.format(balanceUpToDate),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = balanceColor
+                    )
                 }
             }
 
@@ -327,34 +327,12 @@ fun MainScreen(
 
             if (dailyTransactions.isEmpty()) {
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    Icons.Filled.Receipt,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(48.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = stringResource(R.string.no_transaction),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
+                    Text(
+                        text = stringResource(R.string.no_transaction),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 12.dp)
+                    )
                 }
             } else {
                 items(sortedTransactions, key = { it.id }) { transaction ->
@@ -379,7 +357,7 @@ fun MainScreen(
                         state = dismissState,
                         background = {
                             val direction = dismissState.dismissDirection
-                            val bgColor = when (direction) {
+                            val swipeBgColor = when (direction) {
                                 DismissDirection.EndToStart -> ExpenseRed
                                 DismissDirection.StartToEnd -> MaterialTheme.colorScheme.primary
                                 else -> Color.Transparent
@@ -396,12 +374,13 @@ fun MainScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(bgColor.copy(alpha = 0.2f))
+                                    .background(swipeBgColor.copy(alpha = 0.15f))
                                     .padding(horizontal = 20.dp),
                                 contentAlignment = alignment
                             ) {
-                                Icon(icon, contentDescription = null, tint = bgColor)
+                                if (direction != null) {
+                                    Icon(icon, contentDescription = null, tint = swipeBgColor)
+                                }
                             }
                         },
                         dismissContent = {

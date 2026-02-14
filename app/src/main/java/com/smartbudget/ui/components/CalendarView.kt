@@ -41,13 +41,11 @@ fun CalendarView(
     onNextMonth: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp, vertical = 8.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
             // Month navigation header
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -108,30 +106,29 @@ fun CalendarView(
             val totalCells = startOffset + daysInMonth
             val rows = (totalCells + 6) / 7
 
-            for (row in 0 until rows) {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    for (col in 0..6) {
-                        val cellIndex = row * 7 + col
-                        val dayNumber = cellIndex - startOffset + 1
+        for (row in 0 until rows) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                for (col in 0..6) {
+                    val cellIndex = row * 7 + col
+                    val dayNumber = cellIndex - startOffset + 1
 
-                        if (dayNumber in 1..daysInMonth) {
-                            val date = yearMonth.atDay(dayNumber)
-                            val isToday = date == LocalDate.now()
-                            val isSelected = date == selectedDate
-                            val balance = dayBalances[date]
+                    if (dayNumber in 1..daysInMonth) {
+                        val date = yearMonth.atDay(dayNumber)
+                        val isToday = date == LocalDate.now()
+                        val isSelected = date == selectedDate
+                        val balance = dayBalances[date]
 
-                            CalendarDayCell(
-                                day = dayNumber,
-                                isToday = isToday,
-                                isSelected = isSelected,
-                                balance = balance,
-                                onClick = { onDateSelected(date) },
-                                modifier = Modifier.weight(1f)
-                            )
-                        } else {
-                            // Empty cell for days outside month
-                            Box(modifier = Modifier.weight(1f).height(52.dp))
-                        }
+                        CalendarDayCell(
+                            day = dayNumber,
+                            isToday = isToday,
+                            isSelected = isSelected,
+                            balance = balance,
+                            onClick = { onDateSelected(date) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        // Empty cell for days outside month
+                        Box(modifier = Modifier.weight(1f).height(52.dp))
                     }
                 }
             }
@@ -190,7 +187,7 @@ private fun CalendarDayCell(
         if (balance != null && balance != 0.0) {
             Text(
                 text = CurrencyFormatter.formatCompact(balance),
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 7.sp),
                 color = if (balance >= 0) IncomeGreen else ExpenseRed,
                 textAlign = TextAlign.Center,
                 maxLines = 1

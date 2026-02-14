@@ -37,29 +37,21 @@ fun TransactionItem(
     val amountPrefix = if (isIncome) "+" else "-"
     val categoryColor = transaction.categoryColor?.toComposeColor() ?: MaterialTheme.colorScheme.primary
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (transaction.isValidated)
-                MaterialTheme.colorScheme.surface
-            else
-                MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    Column(modifier = modifier
+        .fillMaxWidth()
+        .background(MaterialTheme.colorScheme.background)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .clickable(onClick = onClick)
+                .padding(vertical = 6.dp, horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Category icon
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
                     .background(categoryColor.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
@@ -68,7 +60,7 @@ fun TransactionItem(
                     imageVector = IconMapper.getIcon(transaction.categoryIcon ?: "more_horiz"),
                     contentDescription = null,
                     tint = categoryColor,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
@@ -81,7 +73,8 @@ fun TransactionItem(
                         text = transaction.name.ifBlank { transaction.categoryName ?: stringResource(R.string.no_category) },
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = if (transaction.isValidated) MaterialTheme.colorScheme.onSurface
+                               else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -120,23 +113,11 @@ fun TransactionItem(
             // Amount
             Text(
                 text = "$amountPrefix${CurrencyFormatter.format(transaction.amount)}",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = amountColor
             )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Validation checkbox
-            Checkbox(
-                checked = transaction.isValidated,
-                onCheckedChange = { onToggleValidation(transaction.id) },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                modifier = Modifier.size(24.dp)
-            )
         }
+        Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     }
 }
