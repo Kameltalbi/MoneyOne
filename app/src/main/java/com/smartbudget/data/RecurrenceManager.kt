@@ -19,13 +19,13 @@ class RecurrenceManager(private val transactionRepo: TransactionRepository) {
         val recurringTransactions = transactionRepo.getRecurringTransactions()
         val generateUntil = targetMonth.atEndOfMonth()
 
-        // Group by recurrenceGroupId, pick the earliest transaction as template
+        // Group by recurrenceGroupId, use ONLY the original template (id = recurrenceGroupId)
         val templates = mutableMapOf<Long, Transaction>()
         for (txn in recurringTransactions) {
             if (txn.recurrence == Recurrence.NONE) continue
             val groupId = txn.recurrenceGroupId ?: txn.id
-            val existing = templates[groupId]
-            if (existing == null || txn.date < existing.date) {
+            // Only use the original template where id matches recurrenceGroupId
+            if (txn.id == groupId && !templates.containsKey(groupId)) {
                 templates[groupId] = txn
             }
         }
