@@ -166,7 +166,7 @@ fun MainScreen(
                     IconButton(onClick = {
                         val monthLabel = DateUtils.formatMonthYear(currentYearMonth)
                         val transactions = viewModel.monthlyTransactions.value
-                        com.smartbudget.ui.util.CsvExporter.exportAndShare(context, transactions, monthLabel)
+                        com.smartbudget.ui.util.PdfExporter.exportAndShare(context, transactions, monthLabel)
                     }, modifier = Modifier.size(32.dp)) {
                         Icon(Icons.Filled.Share, contentDescription = stringResource(R.string.export_csv),
                             tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
