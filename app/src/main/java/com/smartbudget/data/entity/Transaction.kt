@@ -39,7 +39,8 @@ data class Transaction(
     val note: String = "",
     val isValidated: Boolean = true,
     val recurrence: Recurrence = Recurrence.NONE,
-    val recurrenceEndDate: Long? = null  // null = indéfini
+    val recurrenceEndDate: Long? = null,  // null = indéfini
+    val recurrenceGroupId: Long? = null   // links recurring occurrences together
 )
 
 enum class Recurrence {

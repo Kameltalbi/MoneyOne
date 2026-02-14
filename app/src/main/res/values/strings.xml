@@ -44,6 +44,9 @@
     <string name="recurrence">Récurrence</string>
     <string name="save_transaction">Enregistrer</string>
     <string name="edit_save">Modifier</string>
+    <string name="edit_recurring_title">Modifier la transaction récurrente</string>
+    <string name="edit_recurring_this_only">Cette transaction uniquement</string>
+    <string name="edit_recurring_this_and_future">Cette transaction et toutes les suivantes</string>
     <string name="no_category">Sans catégorie</string>
     <string name="transaction_actions">Actions</string>
     <string name="delete_transaction">Supprimer la transaction</string>

@@ -58,7 +58,8 @@ class RecurrenceManager(private val transactionRepo: TransactionRepository) {
                         note = template.note,
                         isValidated = false,
                         recurrence = template.recurrence,
-                        recurrenceEndDate = template.recurrenceEndDate
+                        recurrenceEndDate = template.recurrenceEndDate,
+                        recurrenceGroupId = template.recurrenceGroupId ?: template.id
                     )
                 )
                 nextDate = getNextDate(nextDate, template.recurrence)

@@ -1,6 +1,7 @@
 package com.smartbudget.data.dao
 
 import androidx.room.*
+import com.smartbudget.data.entity.Recurrence
 import com.smartbudget.data.entity.Transaction
 import com.smartbudget.data.entity.TransactionType
 import kotlinx.coroutines.flow.Flow
@@ -183,4 +184,22 @@ interface TransactionDao {
         name: String, accountId: Long, type: TransactionType, 
         categoryId: Long?, amount: Double
     ): Long?
+
+    @Query("""
+        SELECT * FROM transactions 
+        WHERE recurrenceGroupId = :groupId AND date >= :fromDate
+        ORDER BY date ASC
+    """)
+    suspend fun getFutureRecurringTransactions(groupId: Long, fromDate: Long): List<Transaction>
+
+    @Query("""
+        UPDATE transactions 
+        SET name = :name, amount = :amount, type = :type, categoryId = :categoryId, 
+            note = :note, recurrence = :recurrence
+        WHERE recurrenceGroupId = :groupId AND date >= :fromDate
+    """)
+    suspend fun updateFutureRecurringTransactions(
+        groupId: Long, fromDate: Long, name: String, amount: Double,
+        type: TransactionType, categoryId: Long?, note: String, recurrence: Recurrence
+    )
 }

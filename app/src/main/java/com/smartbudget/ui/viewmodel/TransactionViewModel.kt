@@ -23,7 +23,9 @@ data class TransactionFormState(
     val note: String = "",
     val recurrence: Recurrence = Recurrence.NONE,
     val isEditing: Boolean = false,
-    val editingId: Long? = null
+    val editingId: Long? = null,
+    val recurrenceGroupId: Long? = null,
+    val isRecurring: Boolean = false
 )
 
 class TransactionViewModel(application: Application) : AndroidViewModel(application) {
@@ -90,7 +92,9 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                 note = transaction.note,
                 recurrence = transaction.recurrence,
                 isEditing = true,
-                editingId = transaction.id
+                editingId = transaction.id,
+                recurrenceGroupId = transaction.recurrenceGroupId,
+                isRecurring = transaction.recurrence != Recurrence.NONE
             )
         }
     }
@@ -103,6 +107,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
             val account = accountRepo.getDefaultAccount() ?: return@launch
 
+            val dateMillis = DateUtils.toEpochMillis(form.date)
             val transaction = Transaction(
                 id = form.editingId ?: 0,
                 name = form.name,
@@ -110,19 +115,73 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                 type = form.type,
                 categoryId = form.categoryId,
                 accountId = account.id,
-                date = DateUtils.toEpochMillis(form.date),
+                date = dateMillis,
                 note = form.note,
-                recurrence = form.recurrence
+                recurrence = form.recurrence,
+                recurrenceGroupId = form.recurrenceGroupId
             )
 
             if (form.isEditing) {
                 transactionRepo.update(transaction)
             } else {
-                transactionRepo.insert(transaction)
+                val insertedId = transactionRepo.insert(transaction)
+                // Set recurrenceGroupId to own id if recurring and no group yet
+                if (form.recurrence != Recurrence.NONE && form.recurrenceGroupId == null) {
+                    val updated = transaction.copy(id = insertedId, recurrenceGroupId = insertedId)
+                    transactionRepo.update(updated)
+                }
             }
 
             BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
             // Check budget alerts after saving expense
+            if (form.type == TransactionType.EXPENSE) {
+                val app = getApplication<com.smartbudget.SmartBudgetApp>()
+                app.budgetAlertManager.checkBudgetAlerts(account.id)
+            }
+            onSuccess()
+        }
+    }
+
+    fun saveTransactionAndFuture(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            val form = _formState.value
+            val amount = form.amount.toDoubleOrNull() ?: return@launch
+            if (amount <= 0) return@launch
+
+            val account = accountRepo.getDefaultAccount() ?: return@launch
+            val dateMillis = DateUtils.toEpochMillis(form.date)
+
+            // Update this transaction
+            val transaction = Transaction(
+                id = form.editingId ?: 0,
+                name = form.name,
+                amount = amount,
+                type = form.type,
+                categoryId = form.categoryId,
+                accountId = account.id,
+                date = dateMillis,
+                note = form.note,
+                recurrence = form.recurrence,
+                recurrenceGroupId = form.recurrenceGroupId
+            )
+            transactionRepo.update(transaction)
+
+            // Update all future occurrences with same group
+            val groupId = form.recurrenceGroupId
+            if (groupId != null) {
+                transactionRepo.updateFutureRecurringTransactions(
+                    groupId = groupId,
+                    fromDate = dateMillis,
+                    name = form.name,
+                    amount = amount,
+                    type = form.type,
+                    categoryId = form.categoryId,
+                    note = form.note,
+                    recurrence = form.recurrence
+                )
+            }
+
+            BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
             if (form.type == TransactionType.EXPENSE) {
                 val app = getApplication<com.smartbudget.SmartBudgetApp>()
                 app.budgetAlertManager.checkBudgetAlerts(account.id)

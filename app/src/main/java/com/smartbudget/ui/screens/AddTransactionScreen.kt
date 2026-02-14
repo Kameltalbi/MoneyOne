@@ -401,8 +401,16 @@ fun AddTransactionScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Save button
+            var showRecurringEditDialog by remember { mutableStateOf(false) }
+
             Button(
-                onClick = { viewModel.saveTransaction(onNavigateBack) },
+                onClick = {
+                    if (formState.isEditing && formState.isRecurring) {
+                        showRecurringEditDialog = true
+                    } else {
+                        viewModel.saveTransaction(onNavigateBack)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -419,6 +427,50 @@ fun AddTransactionScreen(
                     text = if (formState.isEditing) stringResource(R.string.edit_save) else stringResource(R.string.save_transaction),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
+                )
+            }
+
+            // Recurring edit choice dialog
+            if (showRecurringEditDialog) {
+                AlertDialog(
+                    onDismissRequest = { showRecurringEditDialog = false },
+                    title = {
+                        Text(
+                            text = stringResource(R.string.edit_recurring_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(
+                                onClick = {
+                                    showRecurringEditDialog = false
+                                    viewModel.saveTransaction(onNavigateBack)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(stringResource(R.string.edit_recurring_this_only))
+                            }
+                            Button(
+                                onClick = {
+                                    showRecurringEditDialog = false
+                                    viewModel.saveTransactionAndFuture(onNavigateBack)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(stringResource(R.string.edit_recurring_this_and_future))
+                            }
+                        }
+                    },
+                    confirmButton = {},
+                    dismissButton = {
+                        TextButton(onClick = { showRecurringEditDialog = false }) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    }
                 )
             }
 

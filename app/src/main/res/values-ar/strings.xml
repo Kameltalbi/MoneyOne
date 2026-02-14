@@ -44,6 +44,9 @@
     <string name="recurrence">التكرار</string>
     <string name="save_transaction">حفظ</string>
     <string name="edit_save">تعديل</string>
+    <string name="edit_recurring_title">تعديل المعاملة المتكررة</string>
+    <string name="edit_recurring_this_only">هذه المعاملة فقط</string>
+    <string name="edit_recurring_this_and_future">هذه المعاملة وجميع المعاملات التالية</string>
     <string name="no_category">بدون فئة</string>
     <string name="transaction_actions">إجراءات</string>
     <string name="delete_transaction">حذف المعاملة</string>
