@@ -185,6 +185,9 @@ interface TransactionDao {
         categoryId: Long?, amount: Double
     ): Long?
 
+    @Query("SELECT MAX(date) FROM transactions WHERE recurrenceGroupId = :groupId")
+    suspend fun getLastOccurrenceDateByGroupId(groupId: Long): Long?
+
     @Query("""
         SELECT * FROM transactions 
         WHERE recurrenceGroupId = :groupId AND date >= :fromDate

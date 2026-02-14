@@ -19,22 +19,26 @@ class RecurrenceManager(private val transactionRepo: TransactionRepository) {
         val recurringTransactions = transactionRepo.getRecurringTransactions()
         val generateUntil = targetMonth.atEndOfMonth()
 
+        // Track which recurrenceGroupIds we've already processed to avoid duplicates
+        val processedGroups = mutableSetOf<Long>()
+
         for (template in recurringTransactions) {
             if (template.recurrence == Recurrence.NONE) continue
+
+            val groupId = template.recurrenceGroupId ?: template.id
+
+            // Skip if we already processed this group
+            if (groupId in processedGroups) continue
+            processedGroups.add(groupId)
 
             // Respect end date if set
             val endDate = template.recurrenceEndDate?.let {
                 Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
             }
 
-            // Find the last occurrence date for this recurring transaction
-            val lastOccurrenceMillis = transactionRepo.getLastOccurrenceDate(
-                name = template.name,
-                accountId = template.accountId,
-                type = template.type,
-                categoryId = template.categoryId,
-                amount = template.amount
-            ) ?: template.date
+            // Find the last occurrence date using groupId
+            val lastOccurrenceMillis = transactionRepo.getLastOccurrenceDateByGroupId(groupId)
+                ?: template.date
 
             val lastDate = Instant.ofEpochMilli(lastOccurrenceMillis)
                 .atZone(ZoneId.systemDefault())
@@ -59,7 +63,7 @@ class RecurrenceManager(private val transactionRepo: TransactionRepository) {
                         isValidated = false,
                         recurrence = template.recurrence,
                         recurrenceEndDate = template.recurrenceEndDate,
-                        recurrenceGroupId = template.recurrenceGroupId ?: template.id
+                        recurrenceGroupId = groupId
                     )
                 )
                 nextDate = getNextDate(nextDate, template.recurrence)

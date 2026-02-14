@@ -62,7 +62,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             val account = accountRepo.getDefaultAccount() ?: return@launch
 
             val dateMillis = DateUtils.toEpochMillis(form.date)
-            // Remove recurrence so this becomes a standalone transaction
+            // Update only this transaction, keep recurrence and groupId intact
             val transaction = Transaction(
                 id = form.editingId ?: 0,
                 name = form.name,
@@ -72,8 +72,8 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                 accountId = account.id,
                 date = dateMillis,
                 note = form.note,
-                recurrence = Recurrence.NONE,
-                recurrenceGroupId = null
+                recurrence = form.recurrence,
+                recurrenceGroupId = form.recurrenceGroupId
             )
 
             transactionRepo.update(transaction)
