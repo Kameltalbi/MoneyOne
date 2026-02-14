@@ -86,7 +86,7 @@ fun MainScreen(
                     .background(MaterialTheme.colorScheme.primary)
                     .statusBarsPadding()
             ) {
-                // Line 1: Title + action icons
+                // Line 1: Title + main action icons
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -102,71 +102,28 @@ fun MainScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     // Search
-                    IconButton(onClick = onSearch) {
-                        Icon(
-                            Icons.Filled.Search,
-                            contentDescription = stringResource(R.string.search),
-                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
-                        )
+                    IconButton(onClick = onSearch, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search),
+                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
                     }
-
-                    // Month summary toggle
-                    IconButton(onClick = { showMonthSummary = !showMonthSummary }) {
-                        Icon(
-                            Icons.Filled.BarChart,
-                            contentDescription = stringResource(R.string.month_summary),
-                            tint = if (showMonthSummary) MaterialTheme.colorScheme.onPrimary
-                                else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
-                        )
+                    // Dashboard
+                    IconButton(onClick = { if (isPro) onDashboard() else onProUpgrade() }, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Filled.PieChart, contentDescription = stringResource(R.string.dashboard),
+                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
                     }
-
-                    // Overflow menu
-                    IconButton(onClick = { showOverflowMenu = true }) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.menu),
-                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f))
+                    // Savings goals
+                    IconButton(onClick = { if (isPro) onSavingsGoals() else onProUpgrade() }, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Filled.Star, contentDescription = stringResource(R.string.savings_goals_title),
+                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
                     }
-                    DropdownMenu(
-                        expanded = showOverflowMenu,
-                        onDismissRequest = { showOverflowMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.dashboard) + if (!isPro) " ⭐" else "") },
-                            onClick = {
-                                showOverflowMenu = false
-                                if (isPro) onDashboard() else onProUpgrade()
-                            },
-                            leadingIcon = { Icon(Icons.Filled.PieChart, contentDescription = null) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.savings_goals_title) + if (!isPro) " ⭐" else "") },
-                            onClick = {
-                                showOverflowMenu = false
-                                if (isPro) onSavingsGoals() else onProUpgrade()
-                            },
-                            leadingIcon = { Icon(Icons.Filled.Star, contentDescription = null) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.export_csv)) },
-                            onClick = {
-                                showOverflowMenu = false
-                                val monthLabel = DateUtils.formatMonthYear(currentYearMonth)
-                                val transactions = viewModel.monthlyTransactions.value
-                                com.smartbudget.ui.util.CsvExporter.exportAndShare(context, transactions, monthLabel)
-                            },
-                            leadingIcon = { Icon(Icons.Filled.Share, contentDescription = null) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.settings)) },
-                            onClick = {
-                                showOverflowMenu = false
-                                onSettings()
-                            },
-                            leadingIcon = { Icon(Icons.Filled.Settings, contentDescription = null) }
-                        )
+                    // Settings
+                    IconButton(onClick = onSettings, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings),
+                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
                     }
                 }
 
-                // Line 2: Account selector
+                // Line 2: Account selector + summary toggle + export
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -196,6 +153,24 @@ fun MainScreen(
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    // Month summary toggle
+                    IconButton(onClick = { showMonthSummary = !showMonthSummary }, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Filled.BarChart, contentDescription = stringResource(R.string.month_summary),
+                            tint = if (showMonthSummary) MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
+                            modifier = Modifier.size(20.dp))
+                    }
+                    // Export
+                    IconButton(onClick = {
+                        val monthLabel = DateUtils.formatMonthYear(currentYearMonth)
+                        val transactions = viewModel.monthlyTransactions.value
+                        com.smartbudget.ui.util.CsvExporter.exportAndShare(context, transactions, monthLabel)
+                    }, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Filled.Share, contentDescription = stringResource(R.string.export_csv),
+                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
+                            modifier = Modifier.size(20.dp))
                     }
                     DropdownMenu(
                         expanded = showAccountMenu,
