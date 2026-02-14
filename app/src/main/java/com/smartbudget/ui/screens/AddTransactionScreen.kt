@@ -427,56 +427,6 @@ fun AddTransactionScreen(
         }
     }
 
-    // Recurring edit choice dialog
-    if (showRecurringEditDialog) {
-        androidx.compose.ui.window.Dialog(
-            onDismissRequest = { viewModel.dismissRecurringDialog() }
-        ) {
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                modifier = Modifier.fillMaxWidth().padding(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.edit_recurring_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    OutlinedButton(
-                        onClick = {
-                            viewModel.dismissRecurringDialog()
-                            viewModel.saveThisOnly(onNavigateBack)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(stringResource(R.string.edit_recurring_this_only))
-                    }
-                    Button(
-                        onClick = {
-                            viewModel.dismissRecurringDialog()
-                            viewModel.saveTransactionAndFuture(onNavigateBack)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(stringResource(R.string.edit_recurring_this_and_future))
-                    }
-                    TextButton(
-                        onClick = { viewModel.dismissRecurringDialog() },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                }
-            }
-        }
-    }
 
     // Date picker dialog
     if (showDatePicker) {

@@ -41,64 +41,13 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     val showRecurringEditDialog: StateFlow<Boolean> = _showRecurringEditDialog.asStateFlow()
 
     fun requestSave(onNavigateBack: () -> Unit) {
-        val form = _formState.value
-        if (form.isEditing && form.isRecurring) {
-            _showRecurringEditDialog.value = true
-        } else {
-            saveTransaction(onNavigateBack)
-        }
+        saveTransaction(onNavigateBack)
     }
 
     fun dismissRecurringDialog() {
         _showRecurringEditDialog.value = false
     }
 
-    fun saveThisOnly(onSuccess: () -> Unit) {
-        viewModelScope.launch {
-            val form = _formState.value
-            val amount = form.amount.toDoubleOrNull() ?: return@launch
-            if (amount <= 0) return@launch
-            val id = form.editingId ?: return@launch
-
-            val dateMillis = DateUtils.toEpochMillis(form.date)
-
-            // DEBUG: check how many have old amount before update
-            val groupId = form.recurrenceGroupId
-            val allBefore = transactionRepo.getRecurringTransactions()
-            val groupBefore = allBefore.filter { it.recurrenceGroupId == groupId }
-            val countOldAmt = groupBefore.count { it.amount != amount }
-            val totalInGroup = groupBefore.size
-
-            // Direct SQL update by ID only — guaranteed to touch only this one row
-            transactionRepo.updateSingleTransaction(
-                id = id,
-                name = form.name,
-                amount = amount,
-                type = form.type,
-                categoryId = form.categoryId,
-                note = form.note,
-                date = dateMillis
-            )
-
-            // DEBUG: check after update
-            val allAfter = transactionRepo.getRecurringTransactions()
-            val groupAfter = allAfter.filter { it.recurrenceGroupId == groupId }
-            val countNewAmt = groupAfter.count { it.amount == amount }
-
-            val debugMsg = "ID=$id grp=$groupId\nGROUP=$totalInGroup\nBEFORE diff=$countOldAmt\nAFTER same=$countNewAmt"
-            android.widget.Toast.makeText(getApplication(), debugMsg, android.widget.Toast.LENGTH_LONG).show()
-
-            BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
-            if (form.type == TransactionType.EXPENSE) {
-                val account = accountRepo.getDefaultAccount()
-                if (account != null) {
-                    val app = getApplication<com.smartbudget.SmartBudgetApp>()
-                    app.budgetAlertManager.checkBudgetAlerts(account.id)
-                }
-            }
-            onSuccess()
-        }
-    }
 
     val allCategories: StateFlow<List<Category>> = categoryRepo.allCategories
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -165,7 +114,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     fun saveTransaction(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            android.widget.Toast.makeText(getApplication(), ">>> saveTransaction CALLED", android.widget.Toast.LENGTH_LONG).show()
             val form = _formState.value
             val amount = form.amount.toDoubleOrNull() ?: return@launch
             if (amount <= 0) return@launch
@@ -209,7 +157,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     fun saveTransactionAndFuture(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            android.widget.Toast.makeText(getApplication(), ">>> saveTransactionAndFuture CALLED", android.widget.Toast.LENGTH_LONG).show()
             val form = _formState.value
             val amount = form.amount.toDoubleOrNull() ?: return@launch
             if (amount <= 0) return@launch
