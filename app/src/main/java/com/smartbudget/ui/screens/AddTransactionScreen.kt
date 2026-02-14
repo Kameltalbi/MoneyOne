@@ -450,7 +450,7 @@ fun AddTransactionScreen(
                     OutlinedButton(
                         onClick = {
                             viewModel.dismissRecurringDialog()
-                            viewModel.saveTransaction(onNavigateBack)
+                            viewModel.saveThisOnly(onNavigateBack)
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)

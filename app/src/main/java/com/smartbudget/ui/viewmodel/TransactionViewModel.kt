@@ -53,6 +53,40 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         _showRecurringEditDialog.value = false
     }
 
+    fun saveThisOnly(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            val form = _formState.value
+            val amount = form.amount.toDoubleOrNull() ?: return@launch
+            if (amount <= 0) return@launch
+
+            val account = accountRepo.getDefaultAccount() ?: return@launch
+
+            val dateMillis = DateUtils.toEpochMillis(form.date)
+            // Remove recurrence so this becomes a standalone transaction
+            val transaction = Transaction(
+                id = form.editingId ?: 0,
+                name = form.name,
+                amount = amount,
+                type = form.type,
+                categoryId = form.categoryId,
+                accountId = account.id,
+                date = dateMillis,
+                note = form.note,
+                recurrence = Recurrence.NONE,
+                recurrenceGroupId = null
+            )
+
+            transactionRepo.update(transaction)
+
+            BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
+            if (form.type == TransactionType.EXPENSE) {
+                val app = getApplication<com.smartbudget.SmartBudgetApp>()
+                app.budgetAlertManager.checkBudgetAlerts(account.id)
+            }
+            onSuccess()
+        }
+    }
+
     val allCategories: StateFlow<List<Category>> = categoryRepo.allCategories
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
