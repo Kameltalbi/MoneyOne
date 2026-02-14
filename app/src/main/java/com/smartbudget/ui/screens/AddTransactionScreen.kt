@@ -60,6 +60,7 @@ fun AddTransactionScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var isScanning by remember { mutableStateOf(false) }
     var scanError by remember { mutableStateOf<String?>(null) }
+    var showRecurringEditDialog by remember { mutableStateOf(false) }
 
     // Camera photo URI
     val photoFile = remember { File(context.cacheDir, "receipt_photo.jpg") }
@@ -401,8 +402,6 @@ fun AddTransactionScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Save button
-            var showRecurringEditDialog by remember { mutableStateOf(false) }
-
             Button(
                 onClick = {
                     if (formState.isEditing && formState.isRecurring) {
@@ -430,52 +429,52 @@ fun AddTransactionScreen(
                 )
             }
 
-            // Recurring edit choice dialog
-            if (showRecurringEditDialog) {
-                AlertDialog(
-                    onDismissRequest = { showRecurringEditDialog = false },
-                    title = {
-                        Text(
-                            text = stringResource(R.string.edit_recurring_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
-                    text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(
-                                onClick = {
-                                    showRecurringEditDialog = false
-                                    viewModel.saveTransaction(onNavigateBack)
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text(stringResource(R.string.edit_recurring_this_only))
-                            }
-                            Button(
-                                onClick = {
-                                    showRecurringEditDialog = false
-                                    viewModel.saveTransactionAndFuture(onNavigateBack)
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text(stringResource(R.string.edit_recurring_this_and_future))
-                            }
-                        }
-                    },
-                    confirmButton = {},
-                    dismissButton = {
-                        TextButton(onClick = { showRecurringEditDialog = false }) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                    }
-                )
-            }
-
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    // Recurring edit choice dialog
+    if (showRecurringEditDialog) {
+        AlertDialog(
+            onDismissRequest = { showRecurringEditDialog = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.edit_recurring_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = {
+                            showRecurringEditDialog = false
+                            viewModel.saveTransaction(onNavigateBack)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.edit_recurring_this_only))
+                    }
+                    Button(
+                        onClick = {
+                            showRecurringEditDialog = false
+                            viewModel.saveTransactionAndFuture(onNavigateBack)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.edit_recurring_this_and_future))
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showRecurringEditDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 
     // Date picker dialog

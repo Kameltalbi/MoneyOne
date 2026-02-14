@@ -83,6 +83,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     fun loadTransaction(transactionId: Long) {
         viewModelScope.launch {
             val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            android.util.Log.d("TxnVM", "loadTransaction id=$transactionId recurrence=${transaction.recurrence} groupId=${transaction.recurrenceGroupId}")
             _formState.value = TransactionFormState(
                 name = transaction.name,
                 type = transaction.type,
