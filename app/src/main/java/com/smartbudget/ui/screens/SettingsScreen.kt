@@ -252,16 +252,6 @@ fun SettingsScreen(
                 }
             }
 
-            // Category budgets
-            item {
-                SettingsNavItem(
-                    icon = Icons.Filled.PieChart,
-                    title = stringResource(R.string.category_budgets),
-                    subtitle = stringResource(R.string.category_budgets_desc),
-                    onClick = onNavigateCategoryBudgets
-                )
-            }
-
             // Categories
             item {
                 SettingsNavItem(
@@ -269,6 +259,16 @@ fun SettingsScreen(
                     title = stringResource(R.string.categories) + if (!isPro) " ⭐ Pro" else "",
                     subtitle = "${stringResource(R.string.expenses_count, expenseCount)} · ${stringResource(R.string.incomes_count, incomeCount)}",
                     onClick = if (isPro) onNavigateCategories else onNavigateProUpgrade
+                )
+            }
+
+            // Category budgets
+            item {
+                SettingsNavItem(
+                    icon = Icons.Filled.PieChart,
+                    title = stringResource(R.string.category_budgets),
+                    subtitle = stringResource(R.string.category_budgets_desc),
+                    onClick = onNavigateCategoryBudgets
                 )
             }
 

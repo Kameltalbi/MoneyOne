@@ -24,6 +24,12 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
     fun getTotalExpenses(accountId: Long, startDate: Long, endDate: Long): Flow<Double> =
         transactionDao.getTotalExpenses(accountId, startDate, endDate)
 
+    fun getTotalIncome(accountId: Long, startDate: Long?, endDate: Long): Flow<Double> =
+        transactionDao.getTotalIncome(accountId, startDate, endDate)
+
+    fun getTotalExpenses(accountId: Long, startDate: Long?, endDate: Long): Flow<Double> =
+        transactionDao.getTotalExpenses(accountId, startDate, endDate)
+
     fun getDailyBalance(accountId: Long, startDate: Long, endDate: Long): Flow<Double> =
         transactionDao.getDailyBalance(accountId, startDate, endDate)
 
@@ -43,6 +49,12 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
         transactionDao.getAllTotalIncome(startDate, endDate)
 
     fun getAllTotalExpenses(startDate: Long, endDate: Long): Flow<Double> =
+        transactionDao.getAllTotalExpenses(startDate, endDate)
+
+    fun getAllTotalIncome(startDate: Long?, endDate: Long): Flow<Double> =
+        transactionDao.getAllTotalIncome(startDate, endDate)
+
+    fun getAllTotalExpenses(startDate: Long?, endDate: Long): Flow<Double> =
         transactionDao.getAllTotalExpenses(startDate, endDate)
 
     suspend fun insert(transaction: Transaction): Long = transactionDao.insert(transaction)

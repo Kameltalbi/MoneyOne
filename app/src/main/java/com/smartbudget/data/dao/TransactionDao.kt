@@ -57,6 +57,18 @@ interface TransactionDao {
     fun getTotalExpenses(accountId: Long, startDate: Long, endDate: Long): Flow<Double>
 
     @Query("""
+        SELECT COALESCE(SUM(amount), 0) FROM transactions 
+        WHERE accountId = :accountId AND type = 'INCOME' AND (:startDate IS NULL OR date >= :startDate) AND date < :endDate AND isDeleted = 0
+    """)
+    fun getTotalIncome(accountId: Long, startDate: Long?, endDate: Long): Flow<Double>
+
+    @Query("""
+        SELECT COALESCE(SUM(amount), 0) FROM transactions 
+        WHERE accountId = :accountId AND type = 'EXPENSE' AND (:startDate IS NULL OR date >= :startDate) AND date < :endDate AND isDeleted = 0
+    """)
+    fun getTotalExpenses(accountId: Long, startDate: Long?, endDate: Long): Flow<Double>
+
+    @Query("""
         SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE -amount END), 0) 
         FROM transactions 
         WHERE accountId = :accountId AND date >= :startDate AND date < :endDate AND isDeleted = 0
@@ -102,6 +114,18 @@ interface TransactionDao {
         WHERE type = 'EXPENSE' AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     fun getAllTotalExpenses(startDate: Long, endDate: Long): Flow<Double>
+
+    @Query("""
+        SELECT COALESCE(SUM(amount), 0) FROM transactions 
+        WHERE type = 'INCOME' AND (:startDate IS NULL OR date >= :startDate) AND date < :endDate AND isDeleted = 0
+    """)
+    fun getAllTotalIncome(startDate: Long?, endDate: Long): Flow<Double>
+
+    @Query("""
+        SELECT COALESCE(SUM(amount), 0) FROM transactions 
+        WHERE type = 'EXPENSE' AND (:startDate IS NULL OR date >= :startDate) AND date < :endDate AND isDeleted = 0
+    """)
+    fun getAllTotalExpenses(startDate: Long?, endDate: Long): Flow<Double>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(transaction: Transaction): Long

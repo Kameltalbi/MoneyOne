@@ -198,24 +198,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MonthSummary())
 
-    // Balance up to selected date (not the whole month)
+    // Balance up to selected date (cumulative from all time)
     val balanceUpToDate: StateFlow<Double> =
         combine(_currentAccount, _selectedDate, _isConsolidated) { account, date, consolidated ->
             Triple(account, date, consolidated)
         }.flatMapLatest { (account, date, consolidated) ->
-            val start = DateUtils.monthStart(YearMonth.from(date))
             val end = DateUtils.dayEnd(date)
             if (consolidated) {
                 combine(
-                    transactionRepo.getAllTotalIncome(start, end),
-                    transactionRepo.getAllTotalExpenses(start, end)
+                    transactionRepo.getAllTotalIncome(null, end),
+                    transactionRepo.getAllTotalExpenses(null, end)
                 ) { income, expenses -> income - expenses }
             } else if (account == null) {
                 flowOf(0.0)
             } else {
                 combine(
-                    transactionRepo.getTotalIncome(account.id, start, end),
-                    transactionRepo.getTotalExpenses(account.id, start, end)
+                    transactionRepo.getTotalIncome(account.id, null, end),
+                    transactionRepo.getTotalExpenses(account.id, null, end)
                 ) { income, expenses -> income - expenses }
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
