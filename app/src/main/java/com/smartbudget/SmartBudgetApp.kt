@@ -9,9 +9,9 @@ import com.smartbudget.data.repository.AccountRepository
 import com.smartbudget.data.repository.BudgetRepository
 import com.smartbudget.data.repository.CategoryRepository
 import com.smartbudget.data.repository.SavingsGoalRepository
+import com.smartbudget.data.repository.RecurringRepository
 import com.smartbudget.data.repository.TransactionRepository
 import com.smartbudget.billing.BillingManager
-import com.smartbudget.data.RecurrenceManager
 import com.smartbudget.notification.BudgetAlertManager
 import com.smartbudget.ui.util.CurrencyFormatter
 import kotlinx.coroutines.CoroutineScope
@@ -38,6 +38,7 @@ class SmartBudgetApp : Application() {
     val transactionRepository by lazy { TransactionRepository(getDb().transactionDao()) }
     val budgetRepository by lazy { BudgetRepository(getDb().budgetDao()) }
     val savingsGoalRepository by lazy { SavingsGoalRepository(getDb().savingsGoalDao()) }
+    val recurringRepository by lazy { RecurringRepository(getDb().recurringDao()) }
     val billingManager by lazy { BillingManager(this) }
     val budgetAlertManager by lazy { BudgetAlertManager(this, budgetRepository, transactionRepository) }
 
@@ -47,16 +48,6 @@ class SmartBudgetApp : Application() {
         billingManager.initialize()
         budgetAlertManager.createNotificationChannel()
         seedDefaultData()
-        processRecurringTransactions()
-    }
-
-    private fun processRecurringTransactions() {
-        CoroutineScope(Dispatchers.IO).launch {
-            // Fix any recurring transactions that don't have a recurrenceGroupId yet
-            transactionRepository.fixNullRecurrenceGroupIds()
-            val recurrenceManager = RecurrenceManager(transactionRepository)
-            recurrenceManager.generateUpToMonth(java.time.YearMonth.now())
-        }
     }
 
     private fun seedDefaultData() {

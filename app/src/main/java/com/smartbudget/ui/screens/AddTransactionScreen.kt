@@ -35,7 +35,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smartbudget.R
-import com.smartbudget.data.entity.Recurrence
+import com.smartbudget.data.entity.Frequency
 import com.smartbudget.data.entity.TransactionType
 import com.smartbudget.ui.theme.*
 import com.smartbudget.ui.util.DateUtils
@@ -331,70 +331,68 @@ fun AddTransactionScreen(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            // Recurrence
-            Text(
-                text = stringResource(R.string.recurrence),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            var recurrenceExpanded by remember { mutableStateOf(false) }
-            val recurrenceLabel = when (formState.recurrence) {
-                Recurrence.NONE -> stringResource(R.string.recurrence_none)
-                Recurrence.WEEKLY -> stringResource(R.string.recurrence_weekly)
-                Recurrence.MONTHLY -> stringResource(R.string.recurrence_monthly)
-                Recurrence.QUARTERLY -> stringResource(R.string.recurrence_quarterly)
-                Recurrence.FOUR_MONTHLY -> stringResource(R.string.recurrence_four_monthly)
-                Recurrence.SEMI_ANNUAL -> stringResource(R.string.recurrence_semi_annual)
-                Recurrence.ANNUAL -> stringResource(R.string.recurrence_annual)
-            }
-
-            ExposedDropdownMenuBox(
-                expanded = recurrenceExpanded,
-                onExpandedChange = { recurrenceExpanded = it }
-            ) {
-                OutlinedTextField(
-                    value = recurrenceLabel,
-                    onValueChange = {},
-                    readOnly = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = recurrenceExpanded)
-                    },
-                    leadingIcon = {
-                        Icon(Icons.Filled.Refresh, contentDescription = null)
-                    },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors()
+            // Frequency (only for new transactions)
+            if (!formState.isEditing) {
+                Text(
+                    text = stringResource(R.string.recurrence),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
                 )
-                ExposedDropdownMenu(
-                    expanded = recurrenceExpanded,
-                    onDismissRequest = { recurrenceExpanded = false }
+
+                var frequencyExpanded by remember { mutableStateOf(false) }
+                val frequencyLabel = when (formState.frequency) {
+                    null -> stringResource(R.string.recurrence_none)
+                    Frequency.DAILY -> stringResource(R.string.recurrence_daily)
+                    Frequency.WEEKLY -> stringResource(R.string.recurrence_weekly)
+                    Frequency.MONTHLY -> stringResource(R.string.recurrence_monthly)
+                    Frequency.YEARLY -> stringResource(R.string.recurrence_annual)
+                }
+
+                ExposedDropdownMenuBox(
+                    expanded = frequencyExpanded,
+                    onExpandedChange = { frequencyExpanded = it }
                 ) {
-                    listOf(
-                        Recurrence.NONE to stringResource(R.string.recurrence_none),
-                        Recurrence.WEEKLY to stringResource(R.string.recurrence_weekly),
-                        Recurrence.MONTHLY to stringResource(R.string.recurrence_monthly),
-                        Recurrence.QUARTERLY to stringResource(R.string.recurrence_quarterly),
-                        Recurrence.FOUR_MONTHLY to stringResource(R.string.recurrence_four_monthly),
-                        Recurrence.SEMI_ANNUAL to stringResource(R.string.recurrence_semi_annual),
-                        Recurrence.ANNUAL to stringResource(R.string.recurrence_annual)
-                    ).forEach { (recurrence, label) ->
-                        DropdownMenuItem(
-                            text = { Text(label) },
-                            onClick = {
-                                viewModel.updateRecurrence(recurrence)
-                                recurrenceExpanded = false
-                            },
-                            leadingIcon = {
-                                if (formState.recurrence == recurrence) {
-                                    Icon(Icons.Filled.Check, contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary)
+                    OutlinedTextField(
+                        value = frequencyLabel,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = frequencyExpanded)
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Filled.Refresh, contentDescription = null)
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = frequencyExpanded,
+                        onDismissRequest = { frequencyExpanded = false }
+                    ) {
+                        listOf(
+                            null to stringResource(R.string.recurrence_none),
+                            Frequency.DAILY to stringResource(R.string.recurrence_daily),
+                            Frequency.WEEKLY to stringResource(R.string.recurrence_weekly),
+                            Frequency.MONTHLY to stringResource(R.string.recurrence_monthly),
+                            Frequency.YEARLY to stringResource(R.string.recurrence_annual)
+                        ).forEach { (freq, label) ->
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    viewModel.updateFrequency(freq)
+                                    frequencyExpanded = false
+                                },
+                                leadingIcon = {
+                                    if (formState.frequency == freq) {
+                                        Icon(Icons.Filled.Check, contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
@@ -452,6 +450,58 @@ fun AddTransactionScreen(
             }
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+
+    // Recurring edit choice dialog (3 options)
+    if (showRecurringEditDialog) {
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { viewModel.dismissRecurringDialog() }
+        ) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.edit_recurring_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedButton(
+                        onClick = { viewModel.modifySingleOccurrence(onNavigateBack) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.edit_recurring_this_only))
+                    }
+                    OutlinedButton(
+                        onClick = { viewModel.modifyFutureOccurrences(onNavigateBack) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.edit_recurring_this_and_future))
+                    }
+                    Button(
+                        onClick = { viewModel.modifyEntireSeries(onNavigateBack) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.edit_recurring_all))
+                    }
+                    TextButton(
+                        onClick = { viewModel.dismissRecurringDialog() },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            }
         }
     }
 }

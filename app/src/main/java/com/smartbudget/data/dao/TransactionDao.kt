@@ -1,7 +1,6 @@
 package com.smartbudget.data.dao
 
 import androidx.room.*
-import com.smartbudget.data.entity.Recurrence
 import com.smartbudget.data.entity.Transaction
 import com.smartbudget.data.entity.TransactionType
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +16,7 @@ data class TransactionWithCategory(
     val note: String,
     val isValidated: Boolean,
     val recurrence: String,
+    val recurringId: Long?,
     val categoryName: String?,
     val categoryIcon: String?,
     val categoryColor: Long?
@@ -26,80 +26,80 @@ data class TransactionWithCategory(
 interface TransactionDao {
     @Query("""
         SELECT t.id, t.name, t.amount, t.type, t.categoryId, t.accountId, t.date, t.note, 
-               t.isValidated, t.recurrence, c.name as categoryName, c.icon as categoryIcon, c.color as categoryColor
+               t.isValidated, t.recurrence, t.recurringId, c.name as categoryName, c.icon as categoryIcon, c.color as categoryColor
         FROM transactions t 
         LEFT JOIN categories c ON t.categoryId = c.id 
-        WHERE t.accountId = :accountId AND t.date >= :startDate AND t.date < :endDate
+        WHERE t.accountId = :accountId AND t.date >= :startDate AND t.date < :endDate AND t.isDeleted = 0
         ORDER BY t.date DESC
     """)
     fun getTransactionsForPeriod(accountId: Long, startDate: Long, endDate: Long): Flow<List<TransactionWithCategory>>
 
     @Query("""
         SELECT t.id, t.name, t.amount, t.type, t.categoryId, t.accountId, t.date, t.note, 
-               t.isValidated, t.recurrence, c.name as categoryName, c.icon as categoryIcon, c.color as categoryColor
+               t.isValidated, t.recurrence, t.recurringId, c.name as categoryName, c.icon as categoryIcon, c.color as categoryColor
         FROM transactions t 
         LEFT JOIN categories c ON t.categoryId = c.id 
-        WHERE t.accountId = :accountId AND t.date >= :startDate AND t.date < :endDate
+        WHERE t.accountId = :accountId AND t.date >= :startDate AND t.date < :endDate AND t.isDeleted = 0
         ORDER BY t.date DESC
     """)
     fun getTransactionsForDay(accountId: Long, startDate: Long, endDate: Long): Flow<List<TransactionWithCategory>>
 
     @Query("""
         SELECT COALESCE(SUM(amount), 0) FROM transactions 
-        WHERE accountId = :accountId AND type = 'INCOME' AND date >= :startDate AND date < :endDate
+        WHERE accountId = :accountId AND type = 'INCOME' AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     fun getTotalIncome(accountId: Long, startDate: Long, endDate: Long): Flow<Double>
 
     @Query("""
         SELECT COALESCE(SUM(amount), 0) FROM transactions 
-        WHERE accountId = :accountId AND type = 'EXPENSE' AND date >= :startDate AND date < :endDate
+        WHERE accountId = :accountId AND type = 'EXPENSE' AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     fun getTotalExpenses(accountId: Long, startDate: Long, endDate: Long): Flow<Double>
 
     @Query("""
         SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE -amount END), 0) 
         FROM transactions 
-        WHERE accountId = :accountId AND date >= :startDate AND date < :endDate
+        WHERE accountId = :accountId AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     fun getDailyBalance(accountId: Long, startDate: Long, endDate: Long): Flow<Double>
 
     @Query("""
         SELECT COALESCE(SUM(amount), 0) FROM transactions 
         WHERE accountId = :accountId AND type = 'EXPENSE' AND categoryId = :categoryId 
-        AND date >= :startDate AND date < :endDate
+        AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     fun getExpensesByCategory(accountId: Long, categoryId: Long, startDate: Long, endDate: Long): Flow<Double>
 
     // All-accounts queries (consolidated view)
     @Query("""
         SELECT t.id, t.name, t.amount, t.type, t.categoryId, t.accountId, t.date, t.note, 
-               t.isValidated, t.recurrence, c.name as categoryName, c.icon as categoryIcon, c.color as categoryColor
+               t.isValidated, t.recurrence, t.recurringId, c.name as categoryName, c.icon as categoryIcon, c.color as categoryColor
         FROM transactions t 
         LEFT JOIN categories c ON t.categoryId = c.id 
-        WHERE t.date >= :startDate AND t.date < :endDate
+        WHERE t.date >= :startDate AND t.date < :endDate AND t.isDeleted = 0
         ORDER BY t.date DESC
     """)
     fun getAllTransactionsForPeriod(startDate: Long, endDate: Long): Flow<List<TransactionWithCategory>>
 
     @Query("""
         SELECT t.id, t.name, t.amount, t.type, t.categoryId, t.accountId, t.date, t.note, 
-               t.isValidated, t.recurrence, c.name as categoryName, c.icon as categoryIcon, c.color as categoryColor
+               t.isValidated, t.recurrence, t.recurringId, c.name as categoryName, c.icon as categoryIcon, c.color as categoryColor
         FROM transactions t 
         LEFT JOIN categories c ON t.categoryId = c.id 
-        WHERE t.date >= :startDate AND t.date < :endDate
+        WHERE t.date >= :startDate AND t.date < :endDate AND t.isDeleted = 0
         ORDER BY t.date DESC
     """)
     fun getAllTransactionsForDay(startDate: Long, endDate: Long): Flow<List<TransactionWithCategory>>
 
     @Query("""
         SELECT COALESCE(SUM(amount), 0) FROM transactions 
-        WHERE type = 'INCOME' AND date >= :startDate AND date < :endDate
+        WHERE type = 'INCOME' AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     fun getAllTotalIncome(startDate: Long, endDate: Long): Flow<Double>
 
     @Query("""
         SELECT COALESCE(SUM(amount), 0) FROM transactions 
-        WHERE type = 'EXPENSE' AND date >= :startDate AND date < :endDate
+        WHERE type = 'EXPENSE' AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     fun getAllTotalExpenses(startDate: Long, endDate: Long): Flow<Double>
 
@@ -116,121 +116,82 @@ interface TransactionDao {
     suspend fun getTransactionById(id: Long): Transaction?
 
     @Query("""
-        SELECT COALESCE(SUM(amount), 0) FROM transactions 
-        WHERE accountId = :accountId AND type = :type AND date >= :startDate AND date < :endDate
-    """)
-    suspend fun getTotalByType(accountId: Long, type: TransactionType, startDate: Long, endDate: Long): Double
-
-    @Query("""
-        SELECT COALESCE(SUM(amount), 0) FROM transactions 
-        WHERE type = :type AND date >= :startDate AND date < :endDate
-    """)
-    suspend fun getAllTotalByType(type: TransactionType, startDate: Long, endDate: Long): Double
-
-    @Query("""
         SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE -amount END), 0) 
-        FROM transactions WHERE accountId = :accountId
+        FROM transactions WHERE accountId = :accountId AND isDeleted = 0
     """)
     suspend fun getTotalBalance(accountId: Long): Double
 
     @Query("""
         SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE -amount END), 0) 
-        FROM transactions
+        FROM transactions WHERE isDeleted = 0
     """)
     suspend fun getTotalBalanceAllAccounts(): Double
 
     @Query("""
         SELECT COALESCE(SUM(amount), 0) FROM transactions 
-        WHERE accountId = :accountId AND type = 'INCOME' AND date >= :startDate AND date < :endDate
+        WHERE accountId = :accountId AND type = 'INCOME' AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     suspend fun getTotalIncomeDirect(accountId: Long, startDate: Long, endDate: Long): Double
 
     @Query("""
         SELECT COALESCE(SUM(amount), 0) FROM transactions 
-        WHERE accountId = :accountId AND type = 'EXPENSE' AND date >= :startDate AND date < :endDate
+        WHERE accountId = :accountId AND type = 'EXPENSE' AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     suspend fun getTotalExpensesDirect(accountId: Long, startDate: Long, endDate: Long): Double
 
     @Query("""
         SELECT COALESCE(SUM(amount), 0) FROM transactions 
         WHERE accountId = :accountId AND type = 'EXPENSE' AND categoryId = :categoryId 
-        AND date >= :startDate AND date < :endDate
+        AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     suspend fun getExpensesByCategoryDirect(accountId: Long, categoryId: Long, startDate: Long, endDate: Long): Double
 
     @Query("""
         SELECT t.id, t.name, t.amount, t.type, t.categoryId, t.accountId, t.date, t.note, 
-               t.isValidated, t.recurrence, c.name as categoryName, c.icon as categoryIcon, c.color as categoryColor
+               t.isValidated, t.recurrence, t.recurringId, c.name as categoryName, c.icon as categoryIcon, c.color as categoryColor
         FROM transactions t 
         LEFT JOIN categories c ON t.categoryId = c.id 
-        WHERE t.name LIKE '%' || :query || '%' 
+        WHERE t.isDeleted = 0 AND (
+            t.name LIKE '%' || :query || '%' 
            OR t.note LIKE '%' || :query || '%' 
            OR c.name LIKE '%' || :query || '%'
            OR CAST(t.amount AS TEXT) LIKE '%' || :query || '%'
+        )
         ORDER BY t.date DESC
         LIMIT 100
     """)
     fun searchTransactions(query: String): Flow<List<TransactionWithCategory>>
 
-    @Query("SELECT * FROM transactions WHERE recurrence != 'NONE' AND recurrenceGroupId IS NOT NULL")
-    suspend fun getRecurringTransactions(): List<Transaction>
+    @Insert
+    suspend fun insertAll(transactions: List<Transaction>)
+
+    @Query("SELECT * FROM transactions WHERE recurringId = :recurringId AND date = :date AND isDeleted = 0")
+    suspend fun getOccurrenceByRecurringAndDate(recurringId: Long, date: Long): Transaction?
+
+    @Query("SELECT MAX(date) FROM transactions WHERE recurringId = :recurringId AND isDeleted = 0")
+    suspend fun getLastOccurrenceDateForRecurring(recurringId: Long): Long?
+
+    @Query("SELECT * FROM transactions WHERE recurringId = :recurringId AND date >= :fromDate AND isDeleted = 0")
+    suspend fun getFutureOccurrences(recurringId: Long, fromDate: Long): List<Transaction>
 
     @Query("""
-        UPDATE transactions SET recurrenceGroupId = (
-            SELECT MIN(t2.id) FROM transactions t2 
-            WHERE t2.name = transactions.name 
-            AND t2.accountId = transactions.accountId 
-            AND t2.type = transactions.type 
-            AND t2.categoryId IS transactions.categoryId 
-            AND t2.recurrence = transactions.recurrence
-            AND t2.recurrence != 'NONE'
-        )
-        WHERE recurrence != 'NONE' AND recurrenceGroupId IS NULL
+        UPDATE transactions SET amount = :amount, name = :name, categoryId = :categoryId, note = :note, type = :type
+        WHERE recurringId = :recurringId AND date >= :fromDate AND isDeleted = 0 AND isModified = 0
     """)
-    suspend fun fixNullRecurrenceGroupIds()
-
-    @Query("SELECT COUNT(*) FROM transactions WHERE recurrenceGroupId = :groupId AND date = :date")
-    suspend fun countTransactionsForGroupAtDate(groupId: Long, date: Long): Int
-
-    @Query("""
-        UPDATE transactions 
-        SET name = :name, amount = :amount, type = :type, categoryId = :categoryId, 
-            note = :note, date = :date
-        WHERE id = :id
-    """)
-    suspend fun updateSingleTransaction(
-        id: Long, name: String, amount: Double, type: TransactionType,
-        categoryId: Long?, note: String, date: Long
+    suspend fun updateFutureUnmodifiedOccurrences(
+        recurringId: Long, fromDate: Long, name: String, amount: Double,
+        type: TransactionType, categoryId: Long?, note: String
     )
 
     @Query("""
-        SELECT MAX(date) FROM transactions 
-        WHERE name = :name AND accountId = :accountId AND type = :type 
-        AND categoryId = :categoryId AND amount = :amount
+        SELECT COALESCE(SUM(amount), 0) FROM transactions 
+        WHERE accountId = :accountId AND type = :type AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
-    suspend fun getLastOccurrenceDate(
-        name: String, accountId: Long, type: TransactionType, 
-        categoryId: Long?, amount: Double
-    ): Long?
-
-    @Query("SELECT MAX(date) FROM transactions WHERE recurrenceGroupId = :groupId")
-    suspend fun getLastOccurrenceDateByGroupId(groupId: Long): Long?
+    suspend fun getTotalByType(accountId: Long, type: TransactionType, startDate: Long, endDate: Long): Double
 
     @Query("""
-        SELECT * FROM transactions 
-        WHERE recurrenceGroupId = :groupId AND date >= :fromDate
-        ORDER BY date ASC
+        SELECT COALESCE(SUM(amount), 0) FROM transactions 
+        WHERE type = :type AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
-    suspend fun getFutureRecurringTransactions(groupId: Long, fromDate: Long): List<Transaction>
-
-    @Query("""
-        UPDATE transactions 
-        SET name = :name, amount = :amount, type = :type, categoryId = :categoryId, 
-            note = :note, recurrence = :recurrence
-        WHERE recurrenceGroupId = :groupId AND date >= :fromDate
-    """)
-    suspend fun updateFutureRecurringTransactions(
-        groupId: Long, fromDate: Long, name: String, amount: Double,
-        type: TransactionType, categoryId: Long?, note: String, recurrence: Recurrence
-    )
+    suspend fun getAllTotalByType(type: TransactionType, startDate: Long, endDate: Long): Double
 }

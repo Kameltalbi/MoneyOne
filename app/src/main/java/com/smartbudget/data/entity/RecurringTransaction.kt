@@ -5,8 +5,15 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
+enum class Frequency {
+    DAILY,
+    WEEKLY,
+    MONTHLY,
+    YEARLY
+}
+
 @Entity(
-    tableName = "transactions",
+    tableName = "recurring_transactions",
     foreignKeys = [
         ForeignKey(
             entity = Category::class,
@@ -23,37 +30,21 @@ import androidx.room.PrimaryKey
     ],
     indices = [
         Index("categoryId"),
-        Index("accountId"),
-        Index("date"),
-        Index("recurringId")
+        Index("accountId")
     ]
 )
-data class Transaction(
+data class RecurringTransaction(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val name: String = "",
+    val name: String,
     val amount: Double,
     val type: TransactionType,
     val categoryId: Long? = null,
     val accountId: Long,
-    val date: Long,         // epoch millis
     val note: String = "",
-    val isValidated: Boolean = true,
-    val recurringId: Long? = null,      // FK to recurring_transactions
-    val isDeleted: Boolean = false,     // soft delete for recurring exceptions
-    val isModified: Boolean = false,    // tracks if occurrence was individually modified
-    // Legacy columns kept for DB compatibility
-    val recurrence: Recurrence = Recurrence.NONE,
-    val recurrenceEndDate: Long? = null,
-    val recurrenceGroupId: Long? = null
+    val startDate: Long,        // epoch millis
+    val frequency: Frequency,
+    val interval: Int = 1,
+    val endDate: Long? = null,  // epoch millis, null = indefinite
+    val isActive: Boolean = true
 )
-
-enum class Recurrence {
-    NONE,
-    WEEKLY,
-    MONTHLY,
-    QUARTERLY,
-    FOUR_MONTHLY,
-    SEMI_ANNUAL,
-    ANNUAL
-}

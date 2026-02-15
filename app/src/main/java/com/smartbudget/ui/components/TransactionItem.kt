@@ -78,7 +78,7 @@ fun TransactionItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    if (transaction.recurrence != "NONE") {
+                    if (transaction.recurringId != null) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             Icons.Filled.Repeat,

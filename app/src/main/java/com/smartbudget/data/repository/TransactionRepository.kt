@@ -2,7 +2,6 @@ package com.smartbudget.data.repository
 
 import com.smartbudget.data.dao.TransactionDao
 import com.smartbudget.data.dao.TransactionWithCategory
-import com.smartbudget.data.entity.Recurrence
 import com.smartbudget.data.entity.Transaction
 import com.smartbudget.data.entity.TransactionType
 import kotlinx.coroutines.flow.Flow
@@ -70,33 +69,20 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
     suspend fun getTotalBalanceAllAccounts(): Double =
         transactionDao.getTotalBalanceAllAccounts()
 
-    suspend fun getRecurringTransactions(): List<Transaction> =
-        transactionDao.getRecurringTransactions()
+    suspend fun insertAll(transactions: List<Transaction>) =
+        transactionDao.insertAll(transactions)
 
-    suspend fun fixNullRecurrenceGroupIds() =
-        transactionDao.fixNullRecurrenceGroupIds()
+    suspend fun getOccurrenceByRecurringAndDate(recurringId: Long, date: Long): Transaction? =
+        transactionDao.getOccurrenceByRecurringAndDate(recurringId, date)
 
-    suspend fun getLastOccurrenceDate(
-        name: String, accountId: Long, type: TransactionType, 
-        categoryId: Long?, amount: Double
-    ): Long? = transactionDao.getLastOccurrenceDate(name, accountId, type, categoryId, amount)
+    suspend fun getLastOccurrenceDateForRecurring(recurringId: Long): Long? =
+        transactionDao.getLastOccurrenceDateForRecurring(recurringId)
 
-    suspend fun getLastOccurrenceDateByGroupId(groupId: Long): Long? =
-        transactionDao.getLastOccurrenceDateByGroupId(groupId)
+    suspend fun getFutureOccurrences(recurringId: Long, fromDate: Long): List<Transaction> =
+        transactionDao.getFutureOccurrences(recurringId, fromDate)
 
-    suspend fun countTransactionsForGroupAtDate(groupId: Long, date: Long): Int =
-        transactionDao.countTransactionsForGroupAtDate(groupId, date)
-
-    suspend fun updateSingleTransaction(
-        id: Long, name: String, amount: Double, type: TransactionType,
-        categoryId: Long?, note: String, date: Long
-    ) = transactionDao.updateSingleTransaction(id, name, amount, type, categoryId, note, date)
-
-    suspend fun getFutureRecurringTransactions(groupId: Long, fromDate: Long): List<Transaction> =
-        transactionDao.getFutureRecurringTransactions(groupId, fromDate)
-
-    suspend fun updateFutureRecurringTransactions(
-        groupId: Long, fromDate: Long, name: String, amount: Double,
-        type: TransactionType, categoryId: Long?, note: String, recurrence: Recurrence
-    ) = transactionDao.updateFutureRecurringTransactions(groupId, fromDate, name, amount, type, categoryId, note, recurrence)
+    suspend fun updateFutureUnmodifiedOccurrences(
+        recurringId: Long, fromDate: Long, name: String, amount: Double,
+        type: TransactionType, categoryId: Long?, note: String
+    ) = transactionDao.updateFutureUnmodifiedOccurrences(recurringId, fromDate, name, amount, type, categoryId, note)
 }

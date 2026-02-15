@@ -1,6 +1,7 @@
 package com.smartbudget.data
 
 import androidx.room.TypeConverter
+import com.smartbudget.data.entity.Frequency
 import com.smartbudget.data.entity.Recurrence
 import com.smartbudget.data.entity.TransactionType
 
@@ -16,4 +17,10 @@ class Converters {
 
     @TypeConverter
     fun toRecurrence(value: String): Recurrence = Recurrence.valueOf(value)
+
+    @TypeConverter
+    fun fromFrequency(value: Frequency): String = value.name
+
+    @TypeConverter
+    fun toFrequency(value: String): Frequency = Frequency.valueOf(value)
 }

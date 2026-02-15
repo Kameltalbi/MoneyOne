@@ -47,6 +47,7 @@
     <string name="edit_recurring_title">Modifier la transaction récurrente</string>
     <string name="edit_recurring_this_only">Cette transaction uniquement</string>
     <string name="edit_recurring_this_and_future">Cette transaction et toutes les suivantes</string>
+    <string name="edit_recurring_all">Toute la série</string>
     <string name="no_category">Sans catégorie</string>
     <string name="transaction_actions">Actions</string>
     <string name="delete_transaction">Supprimer la transaction</string>
@@ -60,6 +61,7 @@
 
     <!-- Recurrence -->
     <string name="recurrence_none">Unique</string>
+    <string name="recurrence_daily">Quotidien</string>
     <string name="recurrence_weekly">Hebdomadaire</string>
     <string name="recurrence_monthly">Tous les mois</string>
     <string name="recurrence_quarterly">Tous les 3 mois</string>

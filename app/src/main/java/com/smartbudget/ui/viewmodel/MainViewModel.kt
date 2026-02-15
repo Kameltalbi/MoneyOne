@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.smartbudget.SmartBudgetApp
-import com.smartbudget.data.RecurrenceManager
+import com.smartbudget.data.RecurringGenerator
 import com.smartbudget.widget.BalanceWidgetProvider
 import com.smartbudget.data.dao.TransactionWithCategory
 import com.smartbudget.data.entity.Account
@@ -79,14 +79,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _isConsolidated.value = true
     }
 
-    private val recurrenceManager = RecurrenceManager(transactionRepo)
+    private val recurringGenerator = RecurringGenerator(transactionRepo)
+    private val recurringRepo = (application as SmartBudgetApp).recurringRepository
+
+    init {
+        // Generate recurring transactions for current month on startup
+        viewModelScope.launch {
+            generateRecurringForMonth(_currentYearMonth.value)
+        }
+    }
 
     fun navigateMonth(offset: Int) {
         val newMonth = _currentYearMonth.value.plusMonths(offset.toLong())
         _currentYearMonth.value = newMonth
-        // Generate recurring transactions for the target month
         viewModelScope.launch {
-            recurrenceManager.generateUpToMonth(newMonth)
+            generateRecurringForMonth(newMonth)
+        }
+    }
+
+    private suspend fun generateRecurringForMonth(month: YearMonth) {
+        val activeRules = recurringRepo.getActiveRecurring()
+        for (rule in activeRules) {
+            recurringGenerator.generateUpToMonth(rule, month)
         }
     }
 
