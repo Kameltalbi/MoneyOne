@@ -93,7 +93,12 @@ fun OnboardingScreen(
                     val languages = listOf(
                         Triple("fr", "Français", "🇫🇷"),
                         Triple("en", "English", "🇬🇧"),
-                        Triple("ar", "العربية", "🇸🇦")
+                        Triple("ar", "العربية", "🇸🇦"),
+                        Triple("es", "Español", "🇪🇸"),
+                        Triple("pt", "Português", "🇧🇷"),
+                        Triple("tr", "Türkçe", "🇹🇷"),
+                        Triple("hi", "हिन्दी", "🇮🇳"),
+                        Triple("de", "Deutsch", "🇩🇪")
                     )
 
                     languages.forEach { (code, name, flag) ->

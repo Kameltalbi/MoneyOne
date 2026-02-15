@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MoneyOne</string>
+
+    <!-- General -->
+    <string name="back">Geri</string>
+    <string name="save">Kaydet</string>
+    <string name="cancel">İptal</string>
+    <string name="delete">Sil</string>
+    <string name="edit">Düzenle</string>
+    <string name="add">Ekle</string>
+    <string name="close">Kapat</string>
+    <string name="ok">Tamam</string>
+    <string name="search">Ara</string>
+    <string name="clear">Temizle</string>
+    <string name="saved">Kaydedildi ✓</string>
+    <string name="no_data">Veri yok</string>
+
+    <!-- Main Screen -->
+    <string name="account">Hesap</string>
+    <string name="add_transaction">İşlem ekle</string>
+    <string name="dashboard">Panel</string>
+    <string name="settings">Ayarlar</string>
+    <string name="menu">Menü</string>
+    <string name="month_summary">Aylık özet</string>
+    <string name="transactions_for">%1$s işlemleri</string>
+    <string name="no_transaction">İşlem yok</string>
+    <string name="balance_at">%1$s bakiyesi:</string>
+    <string name="previous_month">Önceki ay</string>
+    <string name="next_month">Sonraki ay</string>
+
+    <!-- Transaction Types -->
+    <string name="expense">Gider</string>
+    <string name="income">Gelir</string>
+
+    <!-- Add Transaction Screen -->
+    <string name="new_transaction">Yeni işlem</string>
+    <string name="edit_transaction">İşlemi düzenle</string>
+    <string name="transaction_name">İşlem adı</string>
+    <string name="amount">Tutar</string>
+    <string name="category">Kategori</string>
+    <string name="date">Tarih</string>
+    <string name="note_optional">Not (isteğe bağlı)</string>
+    <string name="recurrence">Tekrar</string>
+    <string name="save_transaction">Kaydet</string>
+    <string name="edit_save">Güncelle</string>
+    <string name="edit_recurring_title">Tekrarlayan işlemi düzenle</string>
+    <string name="edit_recurring_this_only">Yalnızca bu işlem</string>
+    <string name="edit_recurring_this_and_future">Bu ve gelecekteki tüm işlemler</string>
+    <string name="edit_recurring_all">Tüm seri</string>
+    <string name="delete_recurring_title">Tekrarlayan işlemi sil</string>
+    <string name="delete_recurring_this_only">Yalnızca bu işlem</string>
+    <string name="delete_recurring_this_and_future">Bu ve gelecekteki tüm işlemler</string>
+    <string name="delete_recurring_all">Tüm seri</string>
+    <string name="no_category">Kategorisiz</string>
+    <string name="transaction_actions">İşlemler</string>
+    <string name="delete_transaction">İşlemi sil</string>
+    <string name="delete_transaction_confirm">Bu işlemi silmek istediğinizden emin misiniz?</string>
+    <string name="duplicate_transaction">İşlemi kopyala</string>
+    <string name="transaction_duplicated">İşlem kopyalandı ✓</string>
+    <string name="sort_by">Sırala</string>
+    <string name="sort_date">Tarih</string>
+    <string name="sort_amount">Tutar</string>
+    <string name="sort_category">Kategori</string>
+
+    <!-- Recurrence -->
+    <string name="recurrence_none">Tek seferlik</string>
+    <string name="recurrence_daily">Günlük</string>
+    <string name="recurrence_weekly">Haftalık</string>
+    <string name="recurrence_monthly">Aylık</string>
+    <string name="recurrence_bimonthly">2 ayda bir</string>
+    <string name="recurrence_quarterly">3 ayda bir</string>
+    <string name="recurrence_four_monthly">4 ayda bir</string>
+    <string name="recurrence_semi_annual">6 ayda bir</string>
+    <string name="recurrence_annual">Yıllık</string>
+
+    <!-- Month Summary -->
+    <string name="incomes">Gelirler</string>
+    <string name="expenses">Giderler</string>
+    <string name="balance">Bakiye</string>
+    <string name="budget">Bütçe</string>
+    <string name="remaining">Kalan</string>
+    <string name="over_budget">Bütçe aşıldı</string>
+    <string name="budget_used">bütçe kullanıldı</string>
+    <string name="no_budget_set">Bütçe belirlenmedi</string>
+
+    <!-- Settings -->
+    <string name="currency">Para birimi</string>
+    <string name="monthly_global_budget">Aylık genel bütçe</string>
+    <string name="global_budget_label">Genel bütçe (%1$s)</string>
+    <string name="save_budget">Bütçeyi kaydet</string>
+    <string name="category_budgets">Kategori bütçeleri</string>
+    <string name="category_budgets_desc">Her gider kategorisi için bütçe belirleyin</string>
+    <string name="categories">Kategoriler</string>
+    <string name="expenses_count">%1$d gider</string>
+    <string name="incomes_count">%1$d gelir</string>
+
+    <!-- Categories Screen -->
+    <string name="new_category">Yeni kategori</string>
+    <string name="edit_category">Kategoriyi düzenle</string>
+    <string name="delete_category">Kategoriyi sil</string>
+    <string name="delete_category_confirm">\"%1$s\" kategorisini silmek istediğinizden emin misiniz?</string>
+    <string name="category_name">Ad</string>
+    <string name="color">Renk</string>
+    <string name="icon">Simge</string>
+    <string name="create">Oluştur</string>
+
+    <!-- Category Budgets Screen -->
+    <string name="budget_per_category">Kategori bütçeleri</string>
+    <string name="budget_per_category_desc">Her gider kategorisi için aylık bütçe belirleyin</string>
+    <string name="budget_in">%1$s cinsinden bütçe</string>
+    <string name="no_expense_category">Gider kategorisi yok.\nKategoriler bölümünden ekleyin.</string>
+
+    <!-- Currency Screen -->
+    <string name="choose_currency">Para birimi seçin</string>
+    <string name="search_country_currency">Ülke veya para birimi ara…</string>
+
+    <!-- Dashboard -->
+    <string name="expenses_by_category">Kategoriye göre giderler</string>
+    <string name="no_expense_this_month">Bu ay gider yok</string>
+    <string name="budget_tracking">Bütçe takibi</string>
+    <string name="budget_vs_actual">Kategoriye göre bütçe ve gerçek harcama</string>
+    <string name="budget_exceeded_by">%1$s aşıldı</string>
+    <string name="budget_remaining">%1$s kalan</string>
+    <string name="budget_usage">Bütçe kullanımı</string>
+    <string name="income_vs_expenses">Gelirler vs Giderler</string>
+
+    <!-- Calendar -->
+    <string name="mon">PZT</string>
+    <string name="tue">SAL</string>
+    <string name="wed">ÇAR</string>
+    <string name="thu">PER</string>
+    <string name="fri">CUM</string>
+    <string name="sat">CMT</string>
+    <string name="sun">PAZ</string>
+
+    <!-- Accounts -->
+    <string name="accounts">Hesaplar</string>
+    <string name="main_account">Ana hesap</string>
+    <string name="new_account">Yeni hesap</string>
+    <string name="account_name">Hesap adı</string>
+    <string name="rename_account">Hesabı yeniden adlandır</string>
+    <string name="delete_account">Hesabı sil</string>
+    <string name="delete_account_confirm">\"%1$s\" hesabını silmek istediğinizden emin misiniz? İlişkili tüm işlemler silinecektir.</string>
+    <string name="max_accounts_reached">Maksimum 5 hesaba ulaşıldı</string>
+    <string name="cannot_delete_default">Varsayılan hesap silinemez</string>
+    <string name="last_account">Son hesap silinemez</string>
+    <string name="set_as_default">Varsayılan yap</string>
+    <string name="default_account">Varsayılan</string>
+    <string name="accounts_count">%1$d hesap</string>
+    <string name="all_accounts">Tüm hesaplar</string>
+
+    <!-- Language -->
+    <string name="language">Dil</string>
+    <string name="language_french">Français</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_portuguese">Português</string>
+    <string name="language_turkish">Türkçe</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_german">Deutsch</string>
+    <string name="choose_language">Dil seçin</string>
+    <string name="restart_required">Değişikliği uygulamak için uygulamayı yeniden başlatın</string>
+
+    <!-- Balance adjustment -->
+    <string name="adjust_balance">Bakiyeyi ayarla</string>
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Finanslarınızı yönetin</string>
+    <string name="onboarding_desc_1">Sezgisel bir takvimle gelir ve giderlerinizi kolayca takip edin</string>
+    <string name="onboarding_title_2">Akıllı bütçeler</string>
+    <string name="onboarding_desc_2">Kategoriye göre aylık bütçeler belirleyin ve ilerlemenizi takip edin</string>
+    <string name="onboarding_title_3">Alışkanlıklarınızı analiz edin</string>
+    <string name="onboarding_desc_3">Net grafiklerle harcamalarınızı görselleştirin ve kontrolü elinize alın</string>
+    <string name="next_page">İleri</string>
+    <string name="skip_balance">Bu adımı atla</string>
+    <string name="choose_your_language">Dilinizi seçin</string>
+    <string name="choose_your_currency">Para biriminizi seçin</string>
+
+    <string name="initial_balance_title">Hesabınızı oluşturun</string>
+    <string name="initial_balance_message">Hesabınızı adlandırın ve mevcut bakiyenizi girin</string>
+    <string name="account_name_hint">Hesap adı</string>
+    <string name="initial_balance_hint">Mevcut bakiye (isteğe bağlı)</string>
+    <string name="start">Başla</string>
+    <string name="current_balance">Mevcut bakiye</string>
+    <string name="new_balance">Yeni bakiye</string>
+    <string name="adjust">Ayarla</string>
+    <string name="balance_adjusted">Bakiye ayarlandı ✓</string>
+
+    <!-- Backup -->
+    <string name="backup_title">Google Drive Yedekleme</string>
+    <string name="backup_sign_in">Google ile giriş yap</string>
+    <string name="backup_sign_in_failed">Giriş başarısız</string>
+    <string name="backup_save">Yedekle</string>
+    <string name="backup_restore">Geri yükle</string>
+    <string name="backup_success">Yedekleme başarılı ✓</string>
+    <string name="backup_error">Yedekleme hatası</string>
+    <string name="backup_restored">Geri yükleme başarılı ✓ Uygulamayı yeniden başlatın</string>
+    <string name="backup_restore_error">Geri yükleme hatası</string>
+    <string name="backup_last">Son yedekleme: %1$s</string>
+    <string name="backup_sign_out">Çıkış yap</string>
+
+    <!-- Multi-currency -->
+    <string name="default_currency_label">Varsayılan para birimi</string>
+
+    <!-- Forecast -->
+    <string name="forecast_title">Ay sonu tahmini</string>
+    <string name="forecast_based_on">%2$d günden %1$d güne dayalı</string>
+    <string name="forecast_expenses">Tahmini giderler</string>
+    <string name="forecast_income">Tahmini gelirler</string>
+    <string name="forecast_balance">Tahmini bakiye</string>
+    <string name="forecast_day">gün</string>
+
+    <!-- Receipt Scan -->
+    <string name="scan_receipt">Fiş tara</string>
+    <string name="scan_no_amount">Fişte tutar algılanamadı</string>
+    <string name="scan_error">Tarama hatası</string>
+
+    <!-- Comparison -->
+    <string name="month_comparison">Önceki ayla karşılaştırma</string>
+
+    <!-- Theme -->
+    <string name="theme_color">Tema rengi</string>
+
+    <!-- Export -->
+    <string name="export_csv">CSV dışa aktar</string>
+
+    <!-- Search -->
+    <string name="search_hint">İşlem ara…</string>
+    <string name="search_empty">Ad, kategori, not veya tutara göre arayın</string>
+    <string name="search_no_results">Sonuç yok</string>
+    <string name="search_results_count">%1$d sonuç</string>
+
+    <!-- Budget Alerts -->
+    <string name="budget_alert_channel">Bütçe Uyarıları</string>
+    <string name="budget_alert_channel_desc">Bütçe %%80\'e ulaştığında bildirimler</string>
+    <string name="budget_alert_global_title">Genel bütçe %1$s</string>
+    <string name="budget_alert_category_title">Kategori bütçesi %1$s</string>
+    <string name="budget_alert_body">%2$s üzerinden %1$s harcandı</string>
+
+    <!-- Annual Summary -->
+    <string name="annual_summary">%1$d Yıllık Özet</string>
+
+    <!-- Savings Goals -->
+    <string name="savings_goals_title">Tasarruf Hedefleri</string>
+    <string name="no_savings_goals">Tasarruf hedefi yok</string>
+    <string name="add_savings_goal">Yeni hedef</string>
+    <string name="goal_name">Hedef adı</string>
+    <string name="goal_target_amount">Hedef tutar</string>
+    <string name="add_savings">Biriktir</string>
+    <string name="remaining_to_save">Biriktirmeniz gereken: %1$s</string>
+    <string name="delete_goal_confirm">\"%1$s\" hedefini sil?</string>
+
+    <!-- Pro -->
+    <string name="pro">Pro</string>
+    <string name="free_version">Ücretsiz sürüm</string>
+    <string name="pro_version">MoneyOne Pro</string>
+    <string name="upgrade_to_pro">Pro\'ya yükselt</string>
+    <string name="pro_active">Pro aktif</string>
+    <string name="pro_feature_accounts">5 hesaba kadar</string>
+    <string name="pro_feature_unlimited">Sınırsız işlem</string>
+    <string name="pro_feature_categories">Özel kategoriler</string>
+    <string name="pro_feature_dashboard">Tam panel</string>
+    <string name="pro_feature_consolidation">Çoklu hesap birleştirme</string>
+    <string name="pro_feature_balance">Bakiye ayarlama</string>
+    <string name="monthly_plan">Aylık</string>
+    <string name="annual_plan">Yıllık</string>
+    <string name="monthly_plan_desc">Maksimum esneklik</string>
+    <string name="annual_plan_desc">Ayda 13,90₺ — %%16 tasarruf</string>
+    <string name="per_month">ay</string>
+    <string name="per_year">yıl</string>
+    <string name="best_value">En iyi teklif</string>
+    <string name="subscribe">Abone ol</string>
+    <string name="restore_purchases">Satın alımları geri yükle</string>
+    <string name="pro_required">Pro özellik</string>
+    <string name="pro_required_desc">Bu özellik MoneyOne Pro gerektirir</string>
+    <string name="transaction_limit_reached">Aylık 100 işlem sınırına ulaşıldı</string>
+    <string name="free_account_limit">Ücretsiz sürümde yalnızca 1 hesap</string>
+</resources>

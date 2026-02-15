@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MoneyOne</string>
+
+    <!-- General -->
+    <string name="back">Atrás</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="delete">Eliminar</string>
+    <string name="edit">Editar</string>
+    <string name="add">Añadir</string>
+    <string name="close">Cerrar</string>
+    <string name="ok">OK</string>
+    <string name="search">Buscar</string>
+    <string name="clear">Borrar</string>
+    <string name="saved">Guardado ✓</string>
+    <string name="no_data">Sin datos</string>
+
+    <!-- Main Screen -->
+    <string name="account">Cuenta</string>
+    <string name="add_transaction">Añadir transacción</string>
+    <string name="dashboard">Panel</string>
+    <string name="settings">Ajustes</string>
+    <string name="menu">Menú</string>
+    <string name="month_summary">Resumen mensual</string>
+    <string name="transactions_for">Transacciones del %1$s</string>
+    <string name="no_transaction">Sin transacciones</string>
+    <string name="balance_at">Saldo al %1$s:</string>
+    <string name="previous_month">Mes anterior</string>
+    <string name="next_month">Mes siguiente</string>
+
+    <!-- Transaction Types -->
+    <string name="expense">Gasto</string>
+    <string name="income">Ingreso</string>
+
+    <!-- Add Transaction Screen -->
+    <string name="new_transaction">Nueva transacción</string>
+    <string name="edit_transaction">Editar transacción</string>
+    <string name="transaction_name">Nombre de la transacción</string>
+    <string name="amount">Monto</string>
+    <string name="category">Categoría</string>
+    <string name="date">Fecha</string>
+    <string name="note_optional">Nota (opcional)</string>
+    <string name="recurrence">Recurrencia</string>
+    <string name="save_transaction">Guardar</string>
+    <string name="edit_save">Modificar</string>
+    <string name="edit_recurring_title">Editar transacción recurrente</string>
+    <string name="edit_recurring_this_only">Solo esta transacción</string>
+    <string name="edit_recurring_this_and_future">Esta y todas las futuras</string>
+    <string name="edit_recurring_all">Toda la serie</string>
+    <string name="delete_recurring_title">Eliminar transacción recurrente</string>
+    <string name="delete_recurring_this_only">Solo esta transacción</string>
+    <string name="delete_recurring_this_and_future">Esta y todas las futuras</string>
+    <string name="delete_recurring_all">Toda la serie</string>
+    <string name="no_category">Sin categoría</string>
+    <string name="transaction_actions">Acciones</string>
+    <string name="delete_transaction">Eliminar transacción</string>
+    <string name="delete_transaction_confirm">¿Seguro que quieres eliminar esta transacción?</string>
+    <string name="duplicate_transaction">Duplicar transacción</string>
+    <string name="transaction_duplicated">Transacción duplicada ✓</string>
+    <string name="sort_by">Ordenar por</string>
+    <string name="sort_date">Fecha</string>
+    <string name="sort_amount">Monto</string>
+    <string name="sort_category">Categoría</string>
+
+    <!-- Recurrence -->
+    <string name="recurrence_none">Única</string>
+    <string name="recurrence_daily">Diario</string>
+    <string name="recurrence_weekly">Semanal</string>
+    <string name="recurrence_monthly">Mensual</string>
+    <string name="recurrence_bimonthly">Cada 2 meses</string>
+    <string name="recurrence_quarterly">Cada 3 meses</string>
+    <string name="recurrence_four_monthly">Cada 4 meses</string>
+    <string name="recurrence_semi_annual">Cada 6 meses</string>
+    <string name="recurrence_annual">Anual</string>
+
+    <!-- Month Summary -->
+    <string name="incomes">Ingresos</string>
+    <string name="expenses">Gastos</string>
+    <string name="balance">Saldo</string>
+    <string name="budget">Presupuesto</string>
+    <string name="remaining">Restante</string>
+    <string name="over_budget">Presupuesto excedido</string>
+    <string name="budget_used">del presupuesto usado</string>
+    <string name="no_budget_set">Sin presupuesto</string>
+
+    <!-- Settings -->
+    <string name="currency">Moneda</string>
+    <string name="monthly_global_budget">Presupuesto mensual global</string>
+    <string name="global_budget_label">Presupuesto global (%1$s)</string>
+    <string name="save_budget">Guardar presupuesto</string>
+    <string name="category_budgets">Presupuestos por categoría</string>
+    <string name="category_budgets_desc">Definir un presupuesto para cada categoría de gasto</string>
+    <string name="categories">Categorías</string>
+    <string name="expenses_count">%1$d gastos</string>
+    <string name="incomes_count">%1$d ingresos</string>
+
+    <!-- Categories Screen -->
+    <string name="new_category">Nueva categoría</string>
+    <string name="edit_category">Editar categoría</string>
+    <string name="delete_category">Eliminar categoría</string>
+    <string name="delete_category_confirm">¿Seguro que quieres eliminar \"%1$s\"?</string>
+    <string name="category_name">Nombre</string>
+    <string name="color">Color</string>
+    <string name="icon">Icono</string>
+    <string name="create">Crear</string>
+
+    <!-- Category Budgets Screen -->
+    <string name="budget_per_category">Presupuestos por categoría</string>
+    <string name="budget_per_category_desc">Definir un presupuesto mensual para cada categoría de gasto</string>
+    <string name="budget_in">Presupuesto en %1$s</string>
+    <string name="no_expense_category">Sin categorías de gasto.\nAñade algunas en Categorías.</string>
+
+    <!-- Currency Screen -->
+    <string name="choose_currency">Elegir moneda</string>
+    <string name="search_country_currency">Buscar país o moneda…</string>
+
+    <!-- Dashboard -->
+    <string name="expenses_by_category">Gastos por categoría</string>
+    <string name="no_expense_this_month">Sin gastos este mes</string>
+    <string name="budget_tracking">Seguimiento del presupuesto</string>
+    <string name="budget_vs_actual">Presupuesto vs gasto real por categoría</string>
+    <string name="budget_exceeded_by">Excedido en %1$s</string>
+    <string name="budget_remaining">%1$s restante</string>
+    <string name="budget_usage">Uso del presupuesto</string>
+    <string name="income_vs_expenses">Ingresos vs Gastos</string>
+
+    <!-- Calendar -->
+    <string name="mon">LUN</string>
+    <string name="tue">MAR</string>
+    <string name="wed">MIÉ</string>
+    <string name="thu">JUE</string>
+    <string name="fri">VIE</string>
+    <string name="sat">SÁB</string>
+    <string name="sun">DOM</string>
+
+    <!-- Accounts -->
+    <string name="accounts">Cuentas</string>
+    <string name="main_account">Cuenta principal</string>
+    <string name="new_account">Nueva cuenta</string>
+    <string name="account_name">Nombre de la cuenta</string>
+    <string name="rename_account">Renombrar cuenta</string>
+    <string name="delete_account">Eliminar cuenta</string>
+    <string name="delete_account_confirm">¿Seguro que quieres eliminar la cuenta \"%1$s\"? Todas las transacciones asociadas serán eliminadas.</string>
+    <string name="max_accounts_reached">Máximo 5 cuentas alcanzado</string>
+    <string name="cannot_delete_default">No se puede eliminar la cuenta predeterminada</string>
+    <string name="last_account">No se puede eliminar la última cuenta</string>
+    <string name="set_as_default">Establecer como predeterminada</string>
+    <string name="default_account">Predeterminada</string>
+    <string name="accounts_count">%1$d cuenta(s)</string>
+    <string name="all_accounts">Todas las cuentas</string>
+
+    <!-- Language -->
+    <string name="language">Idioma</string>
+    <string name="language_french">Français</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_portuguese">Português</string>
+    <string name="language_turkish">Türkçe</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_german">Deutsch</string>
+    <string name="choose_language">Elegir idioma</string>
+    <string name="restart_required">Reinicia la app para aplicar el cambio</string>
+
+    <!-- Balance adjustment -->
+    <string name="adjust_balance">Ajustar saldo</string>
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Gestiona tus finanzas</string>
+    <string name="onboarding_desc_1">Controla tus ingresos y gastos fácilmente con un calendario intuitivo</string>
+    <string name="onboarding_title_2">Presupuestos inteligentes</string>
+    <string name="onboarding_desc_2">Define presupuestos mensuales por categoría y sigue tu progreso</string>
+    <string name="onboarding_title_3">Analiza tus hábitos</string>
+    <string name="onboarding_desc_3">Visualiza tus gastos con gráficos claros y toma el control</string>
+    <string name="next_page">Siguiente</string>
+    <string name="skip_balance">Omitir este paso</string>
+    <string name="choose_your_language">Elige tu idioma</string>
+    <string name="choose_your_currency">Elige tu moneda</string>
+
+    <string name="initial_balance_title">Crea tu cuenta</string>
+    <string name="initial_balance_message">Nombra tu cuenta e introduce tu saldo actual</string>
+    <string name="account_name_hint">Nombre de la cuenta</string>
+    <string name="initial_balance_hint">Saldo actual (opcional)</string>
+    <string name="start">Comenzar</string>
+    <string name="current_balance">Saldo actual</string>
+    <string name="new_balance">Nuevo saldo</string>
+    <string name="adjust">Ajustar</string>
+    <string name="balance_adjusted">Saldo ajustado ✓</string>
+
+    <!-- Backup -->
+    <string name="backup_title">Copia de seguridad en Google Drive</string>
+    <string name="backup_sign_in">Iniciar sesión con Google</string>
+    <string name="backup_sign_in_failed">Error al iniciar sesión</string>
+    <string name="backup_save">Hacer copia</string>
+    <string name="backup_restore">Restaurar</string>
+    <string name="backup_success">Copia exitosa ✓</string>
+    <string name="backup_error">Error en la copia</string>
+    <string name="backup_restored">Restauración exitosa ✓ Reinicia la app</string>
+    <string name="backup_restore_error">Error al restaurar</string>
+    <string name="backup_last">Última copia: %1$s</string>
+    <string name="backup_sign_out">Cerrar sesión</string>
+
+    <!-- Multi-currency -->
+    <string name="default_currency_label">Moneda predeterminada</string>
+
+    <!-- Forecast -->
+    <string name="forecast_title">Previsión fin de mes</string>
+    <string name="forecast_based_on">Basado en %1$d días de %2$d</string>
+    <string name="forecast_expenses">Gastos proyectados</string>
+    <string name="forecast_income">Ingresos proyectados</string>
+    <string name="forecast_balance">Saldo proyectado</string>
+    <string name="forecast_day">día</string>
+
+    <!-- Receipt Scan -->
+    <string name="scan_receipt">Escanear recibo</string>
+    <string name="scan_no_amount">No se detectó monto en el recibo</string>
+    <string name="scan_error">Error de escaneo</string>
+
+    <!-- Comparison -->
+    <string name="month_comparison">Comparación con el mes anterior</string>
+
+    <!-- Theme -->
+    <string name="theme_color">Color del tema</string>
+
+    <!-- Export -->
+    <string name="export_csv">Exportar CSV</string>
+
+    <!-- Search -->
+    <string name="search_hint">Buscar transacción…</string>
+    <string name="search_empty">Escribe para buscar por nombre, categoría, nota o monto</string>
+    <string name="search_no_results">Sin resultados</string>
+    <string name="search_results_count">%1$d resultado(s)</string>
+
+    <!-- Budget Alerts -->
+    <string name="budget_alert_channel">Alertas de presupuesto</string>
+    <string name="budget_alert_channel_desc">Notificaciones cuando el presupuesto alcanza el 80%%</string>
+    <string name="budget_alert_global_title">Presupuesto global al %1$s</string>
+    <string name="budget_alert_category_title">Presupuesto de categoría al %1$s</string>
+    <string name="budget_alert_body">Gastado %1$s de %2$s</string>
+
+    <!-- Annual Summary -->
+    <string name="annual_summary">Resumen anual %1$d</string>
+
+    <!-- Savings Goals -->
+    <string name="savings_goals_title">Metas de ahorro</string>
+    <string name="no_savings_goals">Sin metas de ahorro</string>
+    <string name="add_savings_goal">Nueva meta</string>
+    <string name="goal_name">Nombre de la meta</string>
+    <string name="goal_target_amount">Monto objetivo</string>
+    <string name="add_savings">Ahorrar</string>
+    <string name="remaining_to_save">Falta por ahorrar: %1$s</string>
+    <string name="delete_goal_confirm">¿Eliminar meta \"%1$s\"?</string>
+
+    <!-- Pro -->
+    <string name="pro">Pro</string>
+    <string name="free_version">Versión gratuita</string>
+    <string name="pro_version">MoneyOne Pro</string>
+    <string name="upgrade_to_pro">Actualizar a Pro</string>
+    <string name="pro_active">Pro activo</string>
+    <string name="pro_feature_accounts">Hasta 5 cuentas</string>
+    <string name="pro_feature_unlimited">Transacciones ilimitadas</string>
+    <string name="pro_feature_categories">Categorías personalizadas</string>
+    <string name="pro_feature_dashboard">Panel completo</string>
+    <string name="pro_feature_consolidation">Consolidación multi-cuenta</string>
+    <string name="pro_feature_balance">Ajuste de saldo</string>
+    <string name="monthly_plan">Mensual</string>
+    <string name="annual_plan">Anual</string>
+    <string name="monthly_plan_desc">Máxima flexibilidad</string>
+    <string name="annual_plan_desc">1,67$/mes — ahorra 16%%</string>
+    <string name="per_month">mes</string>
+    <string name="per_year">año</string>
+    <string name="best_value">Mejor oferta</string>
+    <string name="subscribe">Suscribirse</string>
+    <string name="restore_purchases">Restaurar compras</string>
+    <string name="pro_required">Función Pro</string>
+    <string name="pro_required_desc">Esta función requiere MoneyOne Pro</string>
+    <string name="transaction_limit_reached">Límite de 100 transacciones/mes alcanzado</string>
+    <string name="free_account_limit">Solo 1 cuenta en versión gratuita</string>
+</resources>

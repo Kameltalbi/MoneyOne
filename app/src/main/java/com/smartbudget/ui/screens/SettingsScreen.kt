@@ -476,6 +476,11 @@ fun SettingsScreen(
                     "fr" -> stringResource(R.string.language_french)
                     "en" -> stringResource(R.string.language_english)
                     "ar" -> stringResource(R.string.language_arabic)
+                    "es" -> stringResource(R.string.language_spanish)
+                    "pt" -> stringResource(R.string.language_portuguese)
+                    "tr" -> stringResource(R.string.language_turkish)
+                    "hi" -> stringResource(R.string.language_hindi)
+                    "de" -> stringResource(R.string.language_german)
                     else -> stringResource(R.string.language_french)
                 }
                 SettingsNavItem(
@@ -589,7 +594,12 @@ fun SettingsScreen(
                     listOf(
                         "fr" to stringResource(R.string.language_french),
                         "en" to stringResource(R.string.language_english),
-                        "ar" to stringResource(R.string.language_arabic)
+                        "ar" to stringResource(R.string.language_arabic),
+                        "es" to stringResource(R.string.language_spanish),
+                        "pt" to stringResource(R.string.language_portuguese),
+                        "tr" to stringResource(R.string.language_turkish),
+                        "hi" to stringResource(R.string.language_hindi),
+                        "de" to stringResource(R.string.language_german)
                     ).forEach { (code, label) ->
                         val isSelected = selectedLanguage == code || (selectedLanguage.isEmpty() && code == "fr")
                         Surface(

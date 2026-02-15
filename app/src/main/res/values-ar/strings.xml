@@ -155,6 +155,11 @@
     <string name="language_french">Français</string>
     <string name="language_english">English</string>
     <string name="language_arabic">العربية</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_portuguese">Português</string>
+    <string name="language_turkish">Türkçe</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_german">Deutsch</string>
     <string name="choose_language">اختيار اللغة</string>
     <string name="restart_required">أعد تشغيل التطبيق لتطبيق التغيير</string>
 

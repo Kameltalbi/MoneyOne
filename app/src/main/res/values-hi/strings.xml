@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MoneyOne</string>
+
+    <!-- General -->
+    <string name="back">वापस</string>
+    <string name="save">सहेजें</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="delete">हटाएं</string>
+    <string name="edit">संपादित करें</string>
+    <string name="add">जोड़ें</string>
+    <string name="close">बंद करें</string>
+    <string name="ok">ठीक है</string>
+    <string name="search">खोजें</string>
+    <string name="clear">साफ़ करें</string>
+    <string name="saved">सहेजा गया ✓</string>
+    <string name="no_data">कोई डेटा नहीं</string>
+
+    <!-- Main Screen -->
+    <string name="account">खाता</string>
+    <string name="add_transaction">लेनदेन जोड़ें</string>
+    <string name="dashboard">डैशबोर्ड</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="menu">मेनू</string>
+    <string name="month_summary">मासिक सारांश</string>
+    <string name="transactions_for">%1$s के लेनदेन</string>
+    <string name="no_transaction">कोई लेनदेन नहीं</string>
+    <string name="balance_at">%1$s तक शेष:</string>
+    <string name="previous_month">पिछला महीना</string>
+    <string name="next_month">अगला महीना</string>
+
+    <!-- Transaction Types -->
+    <string name="expense">खर्च</string>
+    <string name="income">आय</string>
+
+    <!-- Add Transaction Screen -->
+    <string name="new_transaction">नया लेनदेन</string>
+    <string name="edit_transaction">लेनदेन संपादित करें</string>
+    <string name="transaction_name">लेनदेन का नाम</string>
+    <string name="amount">राशि</string>
+    <string name="category">श्रेणी</string>
+    <string name="date">तारीख</string>
+    <string name="note_optional">नोट (वैकल्पिक)</string>
+    <string name="recurrence">पुनरावृत्ति</string>
+    <string name="save_transaction">सहेजें</string>
+    <string name="edit_save">अपडेट करें</string>
+    <string name="edit_recurring_title">आवर्ती लेनदेन संपादित करें</string>
+    <string name="edit_recurring_this_only">केवल यह लेनदेन</string>
+    <string name="edit_recurring_this_and_future">यह और सभी भविष्य के लेनदेन</string>
+    <string name="edit_recurring_all">पूरी श्रृंखला</string>
+    <string name="delete_recurring_title">आवर्ती लेनदेन हटाएं</string>
+    <string name="delete_recurring_this_only">केवल यह लेनदेन</string>
+    <string name="delete_recurring_this_and_future">यह और सभी भविष्य के लेनदेन</string>
+    <string name="delete_recurring_all">पूरी श्रृंखला</string>
+    <string name="no_category">कोई श्रेणी नहीं</string>
+    <string name="transaction_actions">कार्रवाई</string>
+    <string name="delete_transaction">लेनदेन हटाएं</string>
+    <string name="delete_transaction_confirm">क्या आप वाकई इस लेनदेन को हटाना चाहते हैं?</string>
+    <string name="duplicate_transaction">लेनदेन की प्रतिलिपि</string>
+    <string name="transaction_duplicated">लेनदेन की प्रतिलिपि बनाई गई ✓</string>
+    <string name="sort_by">क्रमबद्ध करें</string>
+    <string name="sort_date">तारीख</string>
+    <string name="sort_amount">राशि</string>
+    <string name="sort_category">श्रेणी</string>
+
+    <!-- Recurrence -->
+    <string name="recurrence_none">एक बार</string>
+    <string name="recurrence_daily">दैनिक</string>
+    <string name="recurrence_weekly">साप्ताहिक</string>
+    <string name="recurrence_monthly">मासिक</string>
+    <string name="recurrence_bimonthly">हर 2 महीने</string>
+    <string name="recurrence_quarterly">हर 3 महीने</string>
+    <string name="recurrence_four_monthly">हर 4 महीने</string>
+    <string name="recurrence_semi_annual">हर 6 महीने</string>
+    <string name="recurrence_annual">वार्षिक</string>
+
+    <!-- Month Summary -->
+    <string name="incomes">आय</string>
+    <string name="expenses">खर्च</string>
+    <string name="balance">शेष</string>
+    <string name="budget">बजट</string>
+    <string name="remaining">शेष बचा</string>
+    <string name="over_budget">बजट से अधिक</string>
+    <string name="budget_used">बजट उपयोग किया गया</string>
+    <string name="no_budget_set">कोई बजट नहीं</string>
+
+    <!-- Settings -->
+    <string name="currency">मुद्रा</string>
+    <string name="monthly_global_budget">मासिक कुल बजट</string>
+    <string name="global_budget_label">कुल बजट (%1$s)</string>
+    <string name="save_budget">बजट सहेजें</string>
+    <string name="category_budgets">श्रेणी बजट</string>
+    <string name="category_budgets_desc">प्रत्येक खर्च श्रेणी के लिए बजट निर्धारित करें</string>
+    <string name="categories">श्रेणियां</string>
+    <string name="expenses_count">%1$d खर्च</string>
+    <string name="incomes_count">%1$d आय</string>
+
+    <!-- Categories Screen -->
+    <string name="new_category">नई श्रेणी</string>
+    <string name="edit_category">श्रेणी संपादित करें</string>
+    <string name="delete_category">श्रेणी हटाएं</string>
+    <string name="delete_category_confirm">क्या आप वाकई \"%1$s\" को हटाना चाहते हैं?</string>
+    <string name="category_name">नाम</string>
+    <string name="color">रंग</string>
+    <string name="icon">आइकन</string>
+    <string name="create">बनाएं</string>
+
+    <!-- Category Budgets Screen -->
+    <string name="budget_per_category">श्रेणी बजट</string>
+    <string name="budget_per_category_desc">प्रत्येक खर्च श्रेणी के लिए मासिक बजट निर्धारित करें</string>
+    <string name="budget_in">%1$s में बजट</string>
+    <string name="no_expense_category">कोई खर्च श्रेणी नहीं।\nश्रेणियों में कुछ जोड़ें।</string>
+
+    <!-- Currency Screen -->
+    <string name="choose_currency">मुद्रा चुनें</string>
+    <string name="search_country_currency">देश या मुद्रा खोजें…</string>
+
+    <!-- Dashboard -->
+    <string name="expenses_by_category">श्रेणी अनुसार खर्च</string>
+    <string name="no_expense_this_month">इस महीने कोई खर्च नहीं</string>
+    <string name="budget_tracking">बजट ट्रैकिंग</string>
+    <string name="budget_vs_actual">श्रेणी अनुसार बजट बनाम वास्तविक खर्च</string>
+    <string name="budget_exceeded_by">%1$s से अधिक</string>
+    <string name="budget_remaining">%1$s शेष</string>
+    <string name="budget_usage">बजट उपयोग</string>
+    <string name="income_vs_expenses">आय बनाम खर्च</string>
+
+    <!-- Calendar -->
+    <string name="mon">सोम</string>
+    <string name="tue">मंगल</string>
+    <string name="wed">बुध</string>
+    <string name="thu">गुरु</string>
+    <string name="fri">शुक्र</string>
+    <string name="sat">शनि</string>
+    <string name="sun">रवि</string>
+
+    <!-- Accounts -->
+    <string name="accounts">खाते</string>
+    <string name="main_account">मुख्य खाता</string>
+    <string name="new_account">नया खाता</string>
+    <string name="account_name">खाते का नाम</string>
+    <string name="rename_account">खाता नाम बदलें</string>
+    <string name="delete_account">खाता हटाएं</string>
+    <string name="delete_account_confirm">क्या आप वाकई \"%1$s\" खाता हटाना चाहते हैं? सभी संबंधित लेनदेन हटा दिए जाएंगे।</string>
+    <string name="max_accounts_reached">अधिकतम 5 खातों तक पहुंच गया</string>
+    <string name="cannot_delete_default">डिफ़ॉल्ट खाता हटाया नहीं जा सकता</string>
+    <string name="last_account">अंतिम खाता हटाया नहीं जा सकता</string>
+    <string name="set_as_default">डिफ़ॉल्ट बनाएं</string>
+    <string name="default_account">डिफ़ॉल्ट</string>
+    <string name="accounts_count">%1$d खाता(ते)</string>
+    <string name="all_accounts">सभी खाते</string>
+
+    <!-- Language -->
+    <string name="language">भाषा</string>
+    <string name="language_french">Français</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_portuguese">Português</string>
+    <string name="language_turkish">Türkçe</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_german">Deutsch</string>
+    <string name="choose_language">भाषा चुनें</string>
+    <string name="restart_required">परिवर्तन लागू करने के लिए ऐप पुनः आरंभ करें</string>
+
+    <!-- Balance adjustment -->
+    <string name="adjust_balance">शेष समायोजित करें</string>
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">अपने वित्त प्रबंधित करें</string>
+    <string name="onboarding_desc_1">सहज कैलेंडर के साथ अपनी आय और खर्चों को आसानी से ट्रैक करें</string>
+    <string name="onboarding_title_2">स्मार्ट बजट</string>
+    <string name="onboarding_desc_2">श्रेणी अनुसार मासिक बजट निर्धारित करें और अपनी प्रगति ट्रैक करें</string>
+    <string name="onboarding_title_3">अपनी आदतें विश्लेषित करें</string>
+    <string name="onboarding_desc_3">स्पष्ट चार्ट के साथ अपने खर्चों को देखें और नियंत्रण लें</string>
+    <string name="next_page">अगला</string>
+    <string name="skip_balance">यह चरण छोड़ें</string>
+    <string name="choose_your_language">अपनी भाषा चुनें</string>
+    <string name="choose_your_currency">अपनी मुद्रा चुनें</string>
+
+    <string name="initial_balance_title">अपना खाता बनाएं</string>
+    <string name="initial_balance_message">अपने खाते का नाम दें और अपना वर्तमान शेष दर्ज करें</string>
+    <string name="account_name_hint">खाते का नाम</string>
+    <string name="initial_balance_hint">वर्तमान शेष (वैकल्पिक)</string>
+    <string name="start">शुरू करें</string>
+    <string name="current_balance">वर्तमान शेष</string>
+    <string name="new_balance">नया शेष</string>
+    <string name="adjust">समायोजित करें</string>
+    <string name="balance_adjusted">शेष समायोजित किया गया ✓</string>
+
+    <!-- Backup -->
+    <string name="backup_title">Google Drive बैकअप</string>
+    <string name="backup_sign_in">Google से साइन इन करें</string>
+    <string name="backup_sign_in_failed">साइन इन विफल</string>
+    <string name="backup_save">बैकअप</string>
+    <string name="backup_restore">पुनर्स्थापित करें</string>
+    <string name="backup_success">बैकअप सफल ✓</string>
+    <string name="backup_error">बैकअप त्रुटि</string>
+    <string name="backup_restored">पुनर्स्थापना सफल ✓ ऐप पुनः आरंभ करें</string>
+    <string name="backup_restore_error">पुनर्स्थापना त्रुटि</string>
+    <string name="backup_last">अंतिम बैकअप: %1$s</string>
+    <string name="backup_sign_out">साइन आउट</string>
+
+    <!-- Multi-currency -->
+    <string name="default_currency_label">ऐप की डिफ़ॉल्ट मुद्रा</string>
+
+    <!-- Forecast -->
+    <string name="forecast_title">महीने के अंत का पूर्वानुमान</string>
+    <string name="forecast_based_on">%2$d में से %1$d दिनों पर आधारित</string>
+    <string name="forecast_expenses">अनुमानित खर्च</string>
+    <string name="forecast_income">अनुमानित आय</string>
+    <string name="forecast_balance">अनुमानित शेष</string>
+    <string name="forecast_day">दिन</string>
+
+    <!-- Receipt Scan -->
+    <string name="scan_receipt">रसीद स्कैन करें</string>
+    <string name="scan_no_amount">रसीद पर कोई राशि नहीं मिली</string>
+    <string name="scan_error">स्कैन त्रुटि</string>
+
+    <!-- Comparison -->
+    <string name="month_comparison">पिछले महीने से तुलना</string>
+
+    <!-- Theme -->
+    <string name="theme_color">थीम रंग</string>
+
+    <!-- Export -->
+    <string name="export_csv">CSV निर्यात करें</string>
+
+    <!-- Search -->
+    <string name="search_hint">लेनदेन खोजें…</string>
+    <string name="search_empty">नाम, श्रेणी, नोट या राशि से खोजें</string>
+    <string name="search_no_results">कोई परिणाम नहीं</string>
+    <string name="search_results_count">%1$d परिणाम</string>
+
+    <!-- Budget Alerts -->
+    <string name="budget_alert_channel">बजट अलर्ट</string>
+    <string name="budget_alert_channel_desc">बजट 80%% तक पहुंचने पर सूचनाएं</string>
+    <string name="budget_alert_global_title">कुल बजट %1$s पर</string>
+    <string name="budget_alert_category_title">श्रेणी बजट %1$s पर</string>
+    <string name="budget_alert_body">%2$s में से %1$s खर्च किया</string>
+
+    <!-- Annual Summary -->
+    <string name="annual_summary">वार्षिक सारांश %1$d</string>
+
+    <!-- Savings Goals -->
+    <string name="savings_goals_title">बचत लक्ष्य</string>
+    <string name="no_savings_goals">कोई बचत लक्ष्य नहीं</string>
+    <string name="add_savings_goal">नया लक्ष्य</string>
+    <string name="goal_name">लक्ष्य का नाम</string>
+    <string name="goal_target_amount">लक्ष्य राशि</string>
+    <string name="add_savings">बचत करें</string>
+    <string name="remaining_to_save">बचत शेष: %1$s</string>
+    <string name="delete_goal_confirm">\"%1$s\" लक्ष्य हटाएं?</string>
+
+    <!-- Pro -->
+    <string name="pro">Pro</string>
+    <string name="free_version">मुफ्त संस्करण</string>
+    <string name="pro_version">MoneyOne Pro</string>
+    <string name="upgrade_to_pro">Pro में अपग्रेड करें</string>
+    <string name="pro_active">Pro सक्रिय</string>
+    <string name="pro_feature_accounts">5 खातों तक</string>
+    <string name="pro_feature_unlimited">असीमित लेनदेन</string>
+    <string name="pro_feature_categories">कस्टम श्रेणियां</string>
+    <string name="pro_feature_dashboard">पूर्ण डैशबोर्ड</string>
+    <string name="pro_feature_consolidation">बहु-खाता समेकन</string>
+    <string name="pro_feature_balance">शेष समायोजन</string>
+    <string name="monthly_plan">मासिक</string>
+    <string name="annual_plan">वार्षिक</string>
+    <string name="monthly_plan_desc">अधिकतम लचीलापन</string>
+    <string name="annual_plan_desc">₹139/माह — 16%% बचाएं</string>
+    <string name="per_month">माह</string>
+    <string name="per_year">वर्ष</string>
+    <string name="best_value">सर्वोत्तम मूल्य</string>
+    <string name="subscribe">सदस्यता लें</string>
+    <string name="restore_purchases">खरीदारी पुनर्स्थापित करें</string>
+    <string name="pro_required">Pro सुविधा</string>
+    <string name="pro_required_desc">इस सुविधा के लिए MoneyOne Pro आवश्यक है</string>
+    <string name="transaction_limit_reached">100 लेनदेन/माह सीमा पूरी</string>
+    <string name="free_account_limit">मुफ्त संस्करण में केवल 1 खाता</string>
+</resources>
