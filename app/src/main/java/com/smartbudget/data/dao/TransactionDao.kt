@@ -194,4 +194,13 @@ interface TransactionDao {
         WHERE type = :type AND date >= :startDate AND date < :endDate AND isDeleted = 0
     """)
     suspend fun getAllTotalByType(type: TransactionType, startDate: Long, endDate: Long): Double
+
+    @Query("UPDATE transactions SET isDeleted = 1 WHERE id = :id")
+    suspend fun softDelete(id: Long)
+
+    @Query("UPDATE transactions SET isDeleted = 1 WHERE recurringId = :recurringId AND date >= :fromDate")
+    suspend fun softDeleteFutureOccurrences(recurringId: Long, fromDate: Long)
+
+    @Query("UPDATE transactions SET isDeleted = 1 WHERE recurringId = :recurringId")
+    suspend fun softDeleteAllOccurrences(recurringId: Long)
 }

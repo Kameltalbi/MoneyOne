@@ -48,6 +48,10 @@
     <string name="edit_recurring_this_only">هذه المعاملة فقط</string>
     <string name="edit_recurring_this_and_future">هذه المعاملة وجميع المعاملات التالية</string>
     <string name="edit_recurring_all">كل السلسلة</string>
+    <string name="delete_recurring_title">حذف المعاملة المتكررة</string>
+    <string name="delete_recurring_this_only">هذه المعاملة فقط</string>
+    <string name="delete_recurring_this_and_future">هذه المعاملة وجميع المعاملات التالية</string>
+    <string name="delete_recurring_all">كل السلسلة</string>
     <string name="no_category">بدون فئة</string>
     <string name="transaction_actions">إجراءات</string>
     <string name="delete_transaction">حذف المعاملة</string>
@@ -64,6 +68,7 @@
     <string name="recurrence_daily">يومي</string>
     <string name="recurrence_weekly">أسبوعي</string>
     <string name="recurrence_monthly">شهري</string>
+    <string name="recurrence_bimonthly">كل شهرين</string>
     <string name="recurrence_quarterly">كل 3 أشهر</string>
     <string name="recurrence_four_monthly">كل 4 أشهر</string>
     <string name="recurrence_semi_annual">كل 6 أشهر</string>

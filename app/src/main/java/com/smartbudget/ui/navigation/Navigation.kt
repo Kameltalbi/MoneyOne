@@ -84,6 +84,13 @@ fun SmartBudgetNavigation(
                     transactionViewModel.loadTransaction(transactionId)
                     navController.navigate(Routes.ADD_TRANSACTION)
                 },
+                onEditRecurringTransaction = { transactionId, mode ->
+                    transactionViewModel.loadTransaction(transactionId)
+                    transactionViewModel.setRecurringEditMode(
+                        com.smartbudget.ui.viewmodel.RecurringEditMode.valueOf(mode)
+                    )
+                    navController.navigate(Routes.ADD_TRANSACTION)
+                },
                 onSettings = {
                     navController.navigate(Routes.SETTINGS)
                 },

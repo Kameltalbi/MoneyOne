@@ -60,7 +60,7 @@ fun AddTransactionScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var isScanning by remember { mutableStateOf(false) }
     var scanError by remember { mutableStateOf<String?>(null) }
-    val showRecurringEditDialog by viewModel.showRecurringEditDialog.collectAsStateWithLifecycle()
+
 
     // Camera photo URI
     val photoFile = remember { File(context.cacheDir, "receipt_photo.jpg") }
@@ -128,8 +128,8 @@ fun AddTransactionScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Type selector
             Card(
@@ -244,9 +244,9 @@ fun AddTransactionScreen(
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(4),
-                modifier = Modifier.height(200.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.height(if (filteredCategories.size <= 4) 80.dp else 160.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 items(filteredCategories) { category ->
                     val isSelected = formState.categoryId == category.id
@@ -254,12 +254,12 @@ fun AddTransactionScreen(
 
                     Column(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(10.dp))
                             .then(
                                 if (isSelected) Modifier.border(
                                     2.dp,
                                     catColor,
-                                    RoundedCornerShape(12.dp)
+                                    RoundedCornerShape(10.dp)
                                 )
                                 else Modifier
                             )
@@ -268,12 +268,12 @@ fun AddTransactionScreen(
                                 else MaterialTheme.colorScheme.surface
                             )
                             .clickable { viewModel.updateCategory(category.id) }
-                            .padding(8.dp),
+                            .padding(6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(30.dp)
                                 .clip(CircleShape)
                                 .background(catColor.copy(alpha = 0.15f)),
                             contentAlignment = Alignment.Center
@@ -282,10 +282,10 @@ fun AddTransactionScreen(
                                 imageVector = IconMapper.getIcon(category.icon),
                                 contentDescription = null,
                                 tint = catColor,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                         }
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = category.name,
                             style = MaterialTheme.typography.labelSmall,
@@ -324,7 +324,8 @@ fun AddTransactionScreen(
                 onValueChange = { viewModel.updateNote(it) },
                 label = { Text(stringResource(R.string.note_optional)) },
                 modifier = Modifier.fillMaxWidth(),
-                maxLines = 3,
+                maxLines = 2,
+                singleLine = false,
                 leadingIcon = {
                     Icon(Icons.Filled.Edit, contentDescription = null)
                 },
@@ -340,13 +341,23 @@ fun AddTransactionScreen(
                 )
 
                 var frequencyExpanded by remember { mutableStateOf(false) }
-                val frequencyLabel = when (formState.frequency) {
-                    null -> stringResource(R.string.recurrence_none)
-                    Frequency.DAILY -> stringResource(R.string.recurrence_daily)
-                    Frequency.WEEKLY -> stringResource(R.string.recurrence_weekly)
-                    Frequency.MONTHLY -> stringResource(R.string.recurrence_monthly)
-                    Frequency.YEARLY -> stringResource(R.string.recurrence_annual)
-                }
+
+                data class FreqOption(val freq: Frequency?, val interval: Int, val labelRes: Int)
+                val options = listOf(
+                    FreqOption(null, 1, R.string.recurrence_none),
+                    FreqOption(Frequency.DAILY, 1, R.string.recurrence_daily),
+                    FreqOption(Frequency.WEEKLY, 1, R.string.recurrence_weekly),
+                    FreqOption(Frequency.MONTHLY, 1, R.string.recurrence_monthly),
+                    FreqOption(Frequency.MONTHLY, 2, R.string.recurrence_bimonthly),
+                    FreqOption(Frequency.MONTHLY, 3, R.string.recurrence_quarterly),
+                    FreqOption(Frequency.MONTHLY, 4, R.string.recurrence_four_monthly),
+                    FreqOption(Frequency.MONTHLY, 6, R.string.recurrence_semi_annual),
+                    FreqOption(Frequency.YEARLY, 1, R.string.recurrence_annual)
+                )
+                val currentOption = options.find {
+                    it.freq == formState.frequency && it.interval == formState.frequencyInterval
+                } ?: options[0]
+                val frequencyLabel = stringResource(currentOption.labelRes)
 
                 ExposedDropdownMenuBox(
                     expanded = frequencyExpanded,
@@ -372,21 +383,15 @@ fun AddTransactionScreen(
                         expanded = frequencyExpanded,
                         onDismissRequest = { frequencyExpanded = false }
                     ) {
-                        listOf(
-                            null to stringResource(R.string.recurrence_none),
-                            Frequency.DAILY to stringResource(R.string.recurrence_daily),
-                            Frequency.WEEKLY to stringResource(R.string.recurrence_weekly),
-                            Frequency.MONTHLY to stringResource(R.string.recurrence_monthly),
-                            Frequency.YEARLY to stringResource(R.string.recurrence_annual)
-                        ).forEach { (freq, label) ->
+                        options.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(label) },
+                                text = { Text(stringResource(option.labelRes)) },
                                 onClick = {
-                                    viewModel.updateFrequency(freq)
+                                    viewModel.updateFrequency(option.freq, option.interval)
                                     frequencyExpanded = false
                                 },
                                 leadingIcon = {
-                                    if (formState.frequency == freq) {
+                                    if (option == currentOption) {
                                         Icon(Icons.Filled.Check, contentDescription = null,
                                             tint = MaterialTheme.colorScheme.primary)
                                     }
@@ -397,14 +402,12 @@ fun AddTransactionScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
             // Save button
             Button(
                 onClick = { viewModel.requestSave(onNavigateBack) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(50.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
@@ -421,7 +424,7 @@ fun AddTransactionScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 
@@ -453,55 +456,4 @@ fun AddTransactionScreen(
         }
     }
 
-    // Recurring edit choice dialog (3 options)
-    if (showRecurringEditDialog) {
-        androidx.compose.ui.window.Dialog(
-            onDismissRequest = { viewModel.dismissRecurringDialog() }
-        ) {
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                modifier = Modifier.fillMaxWidth().padding(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.edit_recurring_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    OutlinedButton(
-                        onClick = { viewModel.modifySingleOccurrence(onNavigateBack) },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(stringResource(R.string.edit_recurring_this_only))
-                    }
-                    OutlinedButton(
-                        onClick = { viewModel.modifyFutureOccurrences(onNavigateBack) },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(stringResource(R.string.edit_recurring_this_and_future))
-                    }
-                    Button(
-                        onClick = { viewModel.modifyEntireSeries(onNavigateBack) },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(stringResource(R.string.edit_recurring_all))
-                    }
-                    TextButton(
-                        onClick = { viewModel.dismissRecurringDialog() },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                }
-            }
-        }
-    }
 }

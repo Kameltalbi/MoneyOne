@@ -85,4 +85,12 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
         recurringId: Long, fromDate: Long, name: String, amount: Double,
         type: TransactionType, categoryId: Long?, note: String
     ) = transactionDao.updateFutureUnmodifiedOccurrences(recurringId, fromDate, name, amount, type, categoryId, note)
+
+    suspend fun softDelete(id: Long) = transactionDao.softDelete(id)
+
+    suspend fun softDeleteFutureOccurrences(recurringId: Long, fromDate: Long) =
+        transactionDao.softDeleteFutureOccurrences(recurringId, fromDate)
+
+    suspend fun softDeleteAllOccurrences(recurringId: Long) =
+        transactionDao.softDeleteAllOccurrences(recurringId)
 }

@@ -92,6 +92,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun navigateMonth(offset: Int) {
         val newMonth = _currentYearMonth.value.plusMonths(offset.toLong())
         _currentYearMonth.value = newMonth
+        // Reset selected date to same day in new month (or first day)
+        val currentDay = _selectedDate.value.dayOfMonth
+        val maxDay = newMonth.lengthOfMonth()
+        _selectedDate.value = newMonth.atDay(minOf(currentDay, maxDay))
         viewModelScope.launch {
             generateRecurringForMonth(newMonth)
         }
@@ -246,7 +250,47 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteTransaction(transactionId: Long) {
         viewModelScope.launch {
             val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
-            transactionRepo.delete(transaction)
+            if (transaction.recurringId != null) {
+                // Soft delete for recurring
+                transactionRepo.softDelete(transactionId)
+            } else {
+                transactionRepo.delete(transaction)
+            }
+            BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
+        }
+    }
+
+    fun deleteSingleOccurrence(transactionId: Long) {
+        viewModelScope.launch {
+            transactionRepo.softDelete(transactionId)
+            BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
+        }
+    }
+
+    fun deleteFutureOccurrences(transactionId: Long) {
+        viewModelScope.launch {
+            val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            val recurringId = transaction.recurringId ?: return@launch
+            transactionRepo.softDeleteFutureOccurrences(recurringId, transaction.date)
+            // End the recurring rule
+            val recurring = recurringRepo.getById(recurringId)
+            if (recurring != null) {
+                recurringRepo.update(recurring.copy(endDate = transaction.date - 1))
+            }
+            BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
+        }
+    }
+
+    fun deleteEntireSeries(transactionId: Long) {
+        viewModelScope.launch {
+            val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            val recurringId = transaction.recurringId ?: return@launch
+            transactionRepo.softDeleteAllOccurrences(recurringId)
+            // Deactivate the recurring rule
+            val recurring = recurringRepo.getById(recurringId)
+            if (recurring != null) {
+                recurringRepo.update(recurring.copy(isActive = false))
+            }
             BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
         }
     }

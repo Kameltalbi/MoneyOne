@@ -41,6 +41,7 @@ fun MainScreen(
     viewModel: MainViewModel,
     onAddTransaction: () -> Unit,
     onEditTransaction: (Long) -> Unit,
+    onEditRecurringTransaction: (Long, String) -> Unit = { id, _ -> onEditTransaction(id) },
     onSettings: () -> Unit,
     onDashboard: () -> Unit,
     onProUpgrade: () -> Unit,
@@ -66,6 +67,7 @@ fun MainScreen(
     var showMonthSummary by remember { mutableStateOf(false) }
     var selectedTransaction by remember { mutableStateOf<TransactionWithCategory?>(null) }
     var showDeleteConfirm by remember { mutableStateOf<TransactionWithCategory?>(null) }
+    var showRecurringEditChoice by remember { mutableStateOf<TransactionWithCategory?>(null) }
     var sortMode by remember { mutableStateOf("date") } // date, amount, category
     var showDuplicatedSnackbar by remember { mutableStateOf(false) }
     var duplicatingTransaction by remember { mutableStateOf<TransactionWithCategory?>(null) }
@@ -422,9 +424,14 @@ fun MainScreen(
                     // Edit button
                     Surface(
                         onClick = {
-                            val id = txn.id
-                            selectedTransaction = null
-                            onEditTransaction(id)
+                            if (txn.recurringId != null) {
+                                showRecurringEditChoice = txn
+                                selectedTransaction = null
+                            } else {
+                                val id = txn.id
+                                selectedTransaction = null
+                                onEditTransaction(id)
+                            }
                         },
                         shape = RoundedCornerShape(12.dp),
                         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
@@ -525,27 +532,154 @@ fun MainScreen(
 
     // Delete confirmation
     showDeleteConfirm?.let { txn ->
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirm = null },
-            title = { Text(stringResource(R.string.delete_transaction)) },
-            text = { Text(stringResource(R.string.delete_transaction_confirm)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteTransaction(txn.id)
-                        showDeleteConfirm = null
-                    },
-                    colors = ButtonDefaults.textButtonColors(contentColor = ExpenseRed)
+        if (txn.recurringId != null) {
+            // Recurring transaction: show 3-choice dialog
+            androidx.compose.ui.window.Dialog(
+                onDismissRequest = { showDeleteConfirm = null }
+            ) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    modifier = Modifier.fillMaxWidth().padding(16.dp)
                 ) {
-                    Text(stringResource(R.string.delete))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = null }) {
-                    Text(stringResource(R.string.cancel))
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.delete_recurring_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.deleteSingleOccurrence(txn.id)
+                                showDeleteConfirm = null
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(stringResource(R.string.delete_recurring_this_only))
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.deleteFutureOccurrences(txn.id)
+                                showDeleteConfirm = null
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(stringResource(R.string.delete_recurring_this_and_future))
+                        }
+                        Button(
+                            onClick = {
+                                viewModel.deleteEntireSeries(txn.id)
+                                showDeleteConfirm = null
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = ExpenseRed)
+                        ) {
+                            Text(stringResource(R.string.delete_recurring_all))
+                        }
+                        TextButton(
+                            onClick = { showDeleteConfirm = null },
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    }
                 }
             }
-        )
+        } else {
+            // Non-recurring: simple confirm dialog
+            AlertDialog(
+                onDismissRequest = { showDeleteConfirm = null },
+                title = { Text(stringResource(R.string.delete_transaction)) },
+                text = { Text(stringResource(R.string.delete_transaction_confirm)) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.deleteTransaction(txn.id)
+                            showDeleteConfirm = null
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = ExpenseRed)
+                    ) {
+                        Text(stringResource(R.string.delete))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteConfirm = null }) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            )
+        }
+    }
+
+    // Recurring edit choice dialog
+    showRecurringEditChoice?.let { txn ->
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { showRecurringEditChoice = null }
+        ) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.edit_recurring_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedButton(
+                        onClick = {
+                            val id = txn.id
+                            showRecurringEditChoice = null
+                            onEditRecurringTransaction(id, "SINGLE")
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.edit_recurring_this_only))
+                    }
+                    OutlinedButton(
+                        onClick = {
+                            val id = txn.id
+                            showRecurringEditChoice = null
+                            onEditRecurringTransaction(id, "FUTURE")
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.edit_recurring_this_and_future))
+                    }
+                    Button(
+                        onClick = {
+                            val id = txn.id
+                            showRecurringEditChoice = null
+                            onEditRecurringTransaction(id, "ALL")
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(stringResource(R.string.edit_recurring_all))
+                    }
+                    TextButton(
+                        onClick = { showRecurringEditChoice = null },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            }
+        }
     }
 
     // Duplicated snackbar

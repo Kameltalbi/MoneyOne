@@ -15,6 +15,12 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+enum class RecurringEditMode {
+    SINGLE,      // This transaction only
+    FUTURE,      // This and all future
+    ALL          // Entire series
+}
+
 data class TransactionFormState(
     val name: String = "",
     val type: TransactionType = TransactionType.EXPENSE,
@@ -23,9 +29,11 @@ data class TransactionFormState(
     val date: LocalDate = LocalDate.now(),
     val note: String = "",
     val frequency: Frequency? = null,
+    val frequencyInterval: Int = 1,
     val isEditing: Boolean = false,
     val editingId: Long? = null,
-    val recurringId: Long? = null
+    val recurringId: Long? = null,
+    val recurringEditMode: RecurringEditMode? = null
 )
 
 class TransactionViewModel(application: Application) : AndroidViewModel(application) {
@@ -38,24 +46,22 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private val _formState = MutableStateFlow(TransactionFormState())
     val formState: StateFlow<TransactionFormState> = _formState.asStateFlow()
 
-    private val _showRecurringEditDialog = MutableStateFlow(false)
-    val showRecurringEditDialog: StateFlow<Boolean> = _showRecurringEditDialog.asStateFlow()
-
     fun requestSave(onNavigateBack: () -> Unit) {
         val form = _formState.value
-        if (form.isEditing && form.recurringId != null) {
-            _pendingOnNavigateBack = onNavigateBack
-            _showRecurringEditDialog.value = true
+        if (form.isEditing && form.recurringId != null && form.recurringEditMode != null) {
+            // Mode already chosen from MainScreen dialog
+            when (form.recurringEditMode) {
+                RecurringEditMode.SINGLE -> modifySingleOccurrence(onNavigateBack)
+                RecurringEditMode.FUTURE -> modifyFutureOccurrences(onNavigateBack)
+                RecurringEditMode.ALL -> modifyEntireSeries(onNavigateBack)
+            }
         } else {
             saveTransaction(onNavigateBack)
         }
     }
 
-    private var _pendingOnNavigateBack: (() -> Unit)? = null
-
-    fun dismissRecurringDialog() {
-        _showRecurringEditDialog.value = false
-        _pendingOnNavigateBack = null
+    fun setRecurringEditMode(mode: RecurringEditMode) {
+        _formState.update { it.copy(recurringEditMode = mode) }
     }
 
     val allCategories: StateFlow<List<Category>> = categoryRepo.allCategories
@@ -92,8 +98,8 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         _formState.update { it.copy(note = note) }
     }
 
-    fun updateFrequency(frequency: Frequency?) {
-        _formState.update { it.copy(frequency = frequency) }
+    fun updateFrequency(frequency: Frequency?, interval: Int = 1) {
+        _formState.update { it.copy(frequency = frequency, frequencyInterval = interval) }
     }
 
     fun resetForm(date: LocalDate = LocalDate.now()) {
@@ -158,7 +164,8 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                             accountId = account.id,
                             note = form.note,
                             startDate = dateMillis,
-                            frequency = form.frequency
+                            frequency = form.frequency,
+                            interval = form.frequencyInterval
                         )
                     )
                     transactionRepo.insert(transaction.copy(recurringId = recurringId))
@@ -178,14 +185,15 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     // Edit only this single occurrence (mark as modified)
     fun modifySingleOccurrence(onSuccess: () -> Unit) {
-        _showRecurringEditDialog.value = false
         viewModelScope.launch {
             val form = _formState.value
             val amount = form.amount.toDoubleOrNull() ?: return@launch
             if (amount <= 0) return@launch
             val id = form.editingId ?: return@launch
 
+            android.util.Log.d("TxnVM", "modifySingleOccurrence: id=$id amount=$amount recurringId=${form.recurringId}")
             val existing = transactionRepo.getTransactionById(id) ?: return@launch
+            android.util.Log.d("TxnVM", "modifySingleOccurrence: existing.id=${existing.id} existing.amount=${existing.amount} existing.recurringId=${existing.recurringId}")
             transactionRepo.update(existing.copy(
                 name = form.name,
                 amount = amount,
@@ -208,7 +216,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     // Edit this and all future unmodified occurrences
     fun modifyFutureOccurrences(onSuccess: () -> Unit) {
-        _showRecurringEditDialog.value = false
         viewModelScope.launch {
             val form = _formState.value
             val amount = form.amount.toDoubleOrNull() ?: return@launch
@@ -265,7 +272,6 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     // Edit the entire series (update the recurring rule + all unmodified occurrences)
     fun modifyEntireSeries(onSuccess: () -> Unit) {
-        _showRecurringEditDialog.value = false
         viewModelScope.launch {
             val form = _formState.value
             val amount = form.amount.toDoubleOrNull() ?: return@launch
