@@ -39,6 +39,9 @@ object DateUtils {
     fun formatDate(date: LocalDate): String =
         date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault()))
 
+    fun formatDateDayOnly(date: LocalDate): String =
+        date.format(DateTimeFormatter.ofPattern("dd MMMM", Locale.getDefault()))
+
     // UTC conversions for Material 3 DatePicker
     fun toUtcMillis(date: LocalDate): Long =
         date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()

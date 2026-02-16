@@ -354,16 +354,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             val dayOfMonth = today.dayOfMonth
-            if (dayOfMonth <= 1) {
+            if (dayOfMonth >= daysInMonth) {
                 _monthForecast.value = MonthForecast()
                 return@launch
             }
 
             val start = DateUtils.monthStart(ym)
             val nowEnd = DateUtils.dayEnd(today)
+            val monthEnd = DateUtils.monthEnd(ym)
             val account = _currentAccount.value
             val consolidated = _isConsolidated.value
 
+            // Current month actuals
             val currentIncome: Double
             val currentExpenses: Double
             if (consolidated || account == null) {
@@ -374,10 +376,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 currentExpenses = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.EXPENSE, start, nowEnd)
             }
 
-            val dailyExpenseRate = currentExpenses / dayOfMonth
-            val dailyIncomeRate = currentIncome / dayOfMonth
-            val projectedExpenses = dailyExpenseRate * daysInMonth
-            val projectedIncome = dailyIncomeRate * daysInMonth
+            // Get remaining recurring transactions for this month
+            val tomorrow = today.plusDays(1)
+            val tomorrowStart = DateUtils.dayStart(tomorrow)
+            val remainingRecurringIncome: Double
+            val remainingRecurringExpenses: Double
+            if (consolidated || account == null) {
+                remainingRecurringIncome = app.getDb().transactionDao().getAllTotalByType(TransactionType.INCOME, tomorrowStart, monthEnd)
+                remainingRecurringExpenses = app.getDb().transactionDao().getAllTotalByType(TransactionType.EXPENSE, tomorrowStart, monthEnd)
+            } else {
+                remainingRecurringIncome = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.INCOME, tomorrowStart, monthEnd)
+                remainingRecurringExpenses = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.EXPENSE, tomorrowStart, monthEnd)
+            }
+
+            // Calculate daily averages for non-recurring transactions only
+            val daysRemaining = daysInMonth - dayOfMonth
+            val avgDailyNonRecurringExpense = if (dayOfMonth > 0) (currentExpenses - remainingRecurringExpenses) / dayOfMonth else 0.0
+            val avgDailyNonRecurringIncome = if (dayOfMonth > 0) (currentIncome - remainingRecurringIncome) / dayOfMonth else 0.0
+
+            // Project remaining non-recurring transactions
+            val projectedRemainingExpenses = avgDailyNonRecurringExpense * daysRemaining
+            val projectedRemainingIncome = avgDailyNonRecurringIncome * daysRemaining
+
+            // Total projections
+            val projectedExpenses = currentExpenses + projectedRemainingExpenses
+            val projectedIncome = currentIncome + projectedRemainingIncome
 
             _monthForecast.value = MonthForecast(
                 projectedExpenses = projectedExpenses,
@@ -385,8 +408,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 projectedBalance = projectedIncome - projectedExpenses,
                 daysElapsed = dayOfMonth,
                 daysInMonth = daysInMonth,
-                dailyExpenseRate = dailyExpenseRate,
-                dailyIncomeRate = dailyIncomeRate
+                dailyExpenseRate = avgDailyNonRecurringExpense,
+                dailyIncomeRate = avgDailyNonRecurringIncome
             )
         }
     }

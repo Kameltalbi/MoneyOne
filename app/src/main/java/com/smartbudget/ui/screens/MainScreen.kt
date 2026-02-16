@@ -265,7 +265,7 @@ fun MainScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.balance_at, DateUtils.formatDate(selectedDate)),
+                        text = stringResource(R.string.balance_at_day, DateUtils.formatDateDayOnly(selectedDate)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -295,11 +295,11 @@ fun MainScreen(
             if (!showMonthSummary) {
             item {
                 Text(
-                    text = stringResource(R.string.transactions_for, DateUtils.formatDate(selectedDate)),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    text = stringResource(R.string.transactions_for_day, DateUtils.formatDateDayOnly(selectedDate)),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Normal,
                     color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.padding(top = 16.dp)
                 )
             }
 

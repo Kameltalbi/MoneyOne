@@ -71,8 +71,8 @@ fun TransactionItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = transaction.name.ifBlank { transaction.categoryName ?: stringResource(R.string.no_category) },
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Normal,
                         color = if (transaction.isValidated) MaterialTheme.colorScheme.onSurface
                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         maxLines = 1,
@@ -113,8 +113,8 @@ fun TransactionItem(
             // Amount
             Text(
                 text = "\u200E$amountPrefix${CurrencyFormatter.format(transaction.amount)}",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Normal,
                 color = amountColor
             )
         }

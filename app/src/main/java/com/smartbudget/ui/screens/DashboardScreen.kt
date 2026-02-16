@@ -130,11 +130,9 @@ fun DashboardScreen(
                 IncomeVsExpensesCard(summary = monthSummary)
             }
 
-            // End of month forecast (only for current month)
-            if (monthForecast.daysElapsed > 1) {
-                item {
-                    ForecastCard(forecast = monthForecast)
-                }
+            // Monthly savings
+            item {
+                SavingsCard(summary = monthSummary)
             }
 
             // Month comparison
@@ -839,10 +837,10 @@ private fun ComparisonRow(
 }
 
 @Composable
-private fun ForecastCard(
-    forecast: MainViewModel.MonthForecast
-) {
-    val balanceColor = if (forecast.projectedBalance >= 0) IncomeGreen else ExpenseRed
+private fun SavingsCard(summary: MonthSummary) {
+    val savings = summary.balance
+    val savingsColor = if (savings >= 0) IncomeGreen else ExpenseRed
+    val savingsRate = if (summary.totalIncome > 0) (savings / summary.totalIncome * 100) else 0.0
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -852,79 +850,88 @@ private fun ForecastCard(
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Filled.TrendingUp,
+                    Icons.Filled.AccountBalanceWallet,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = stringResource(R.string.forecast_title),
+                    text = "Économies du mois",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(R.string.forecast_based_on, forecast.daysElapsed, forecast.daysInMonth),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Main savings amount
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Économies totales",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = CurrencyFormatter.format(savings),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = savingsColor
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.forecast_expenses),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "~${CurrencyFormatter.format(forecast.projectedExpenses)}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = ExpenseRed
-                    )
-                    Text(
-                        text = "${CurrencyFormatter.format(forecast.dailyExpenseRate)}/${stringResource(R.string.forecast_day)}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.forecast_income),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "~${CurrencyFormatter.format(forecast.projectedIncome)}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = IncomeGreen
-                    )
-                    Text(
-                        text = "${CurrencyFormatter.format(forecast.dailyIncomeRate)}/${stringResource(R.string.forecast_day)}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = stringResource(R.string.forecast_balance),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "~${CurrencyFormatter.format(forecast.projectedBalance)}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = balanceColor
-                    )
-                }
+            // Savings rate
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Taux d'épargne",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "${String.format("%.1f", savingsRate)}%",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (savingsRate >= 20) IncomeGreen else if (savingsRate >= 10) WarningOrange else ExpenseRed
+                )
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Progress bar
+            LinearProgressIndicator(
+                progress = (savingsRate / 100).toFloat().coerceIn(0f, 1f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+                color = if (savingsRate >= 20) IncomeGreen else if (savingsRate >= 10) WarningOrange else ExpenseRed,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
+
+            // Motivational message
+            Spacer(modifier = Modifier.height(8.dp))
+            val message = when {
+                savingsRate >= 20 -> "🎉 Excellent ! Vous épargnez beaucoup !"
+                savingsRate >= 10 -> "👍 Bien ! Continuez comme ça !"
+                savingsRate >= 0 -> "💡 Essayez d'épargner un peu plus"
+                else -> "⚠️ Attention : dépenses supérieures aux revenus"
+            }
+            Text(
+                text = message,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

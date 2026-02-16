@@ -24,8 +24,10 @@
     <string name="menu">Menu</string>
     <string name="month_summary">Résumé du mois</string>
     <string name="transactions_for">Transactions du %1$s</string>
+    <string name="transactions_for_day">Transactions du %1$s</string>
     <string name="no_transaction">Aucune transaction</string>
     <string name="balance_at">Solde au %1$s :</string>
+    <string name="balance_at_day">Solde au %1$s :</string>
     <string name="previous_month">Mois précédent</string>
     <string name="next_month">Mois suivant</string>
 
