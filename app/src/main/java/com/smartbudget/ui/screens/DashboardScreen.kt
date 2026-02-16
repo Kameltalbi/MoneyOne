@@ -857,7 +857,7 @@ private fun SavingsCard(summary: MonthSummary) {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Économies du mois",
+                    text = stringResource(R.string.monthly_savings),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -872,7 +872,7 @@ private fun SavingsCard(summary: MonthSummary) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Économies totales",
+                    text = stringResource(R.string.total_savings),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -893,7 +893,7 @@ private fun SavingsCard(summary: MonthSummary) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Taux d'épargne",
+                    text = stringResource(R.string.savings_rate),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -920,10 +920,10 @@ private fun SavingsCard(summary: MonthSummary) {
             // Motivational message
             Spacer(modifier = Modifier.height(8.dp))
             val message = when {
-                savingsRate >= 20 -> "🎉 Excellent ! Vous épargnez beaucoup !"
-                savingsRate >= 10 -> "👍 Bien ! Continuez comme ça !"
-                savingsRate >= 0 -> "💡 Essayez d'épargner un peu plus"
-                else -> "⚠️ Attention : dépenses supérieures aux revenus"
+                savingsRate >= 20 -> stringResource(R.string.savings_excellent)
+                savingsRate >= 10 -> stringResource(R.string.savings_good)
+                savingsRate >= 0 -> stringResource(R.string.savings_improve)
+                else -> stringResource(R.string.savings_warning)
             }
             Text(
                 text = message,

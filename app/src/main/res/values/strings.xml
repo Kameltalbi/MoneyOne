@@ -28,6 +28,13 @@
     <string name="no_transaction">Aucune transaction</string>
     <string name="balance_at">Solde au %1$s :</string>
     <string name="balance_at_day">Solde au %1$s :</string>
+    <string name="monthly_savings">Économies du mois</string>
+    <string name="total_savings">Économies totales</string>
+    <string name="savings_rate">Taux d\'épargne</string>
+    <string name="savings_excellent">🎉 Excellent ! Vous épargnez beaucoup !</string>
+    <string name="savings_good">👍 Bien ! Continuez comme ça !</string>
+    <string name="savings_improve">💡 Essayez d\'épargner un peu plus</string>
+    <string name="savings_warning">⚠️ Attention : dépenses supérieures aux revenus</string>
     <string name="previous_month">Mois précédent</string>
     <string name="next_month">Mois suivant</string>
 
