@@ -41,6 +41,7 @@ fun SettingsScreen(
     onNavigateCategoryBudgets: () -> Unit,
     onNavigateCurrency: () -> Unit,
     onNavigateAccounts: () -> Unit,
+    onNavigateSavingsGoals: () -> Unit,
     onNavigateProUpgrade: () -> Unit
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -269,6 +270,16 @@ fun SettingsScreen(
                     title = stringResource(R.string.category_budgets),
                     subtitle = stringResource(R.string.category_budgets_desc),
                     onClick = onNavigateCategoryBudgets
+                )
+            }
+
+            // Savings goals
+            item {
+                SettingsNavItem(
+                    icon = Icons.Filled.AccountBalanceWallet,
+                    title = stringResource(R.string.savings_goals),
+                    subtitle = stringResource(R.string.savings_goals_desc),
+                    onClick = onNavigateSavingsGoals
                 )
             }
 

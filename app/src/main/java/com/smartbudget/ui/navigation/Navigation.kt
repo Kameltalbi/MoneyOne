@@ -126,6 +126,7 @@ fun SmartBudgetNavigation(
                 onNavigateCategoryBudgets = { navController.navigate(Routes.SETTINGS_CATEGORY_BUDGETS) },
                 onNavigateCurrency = { navController.navigate(Routes.SETTINGS_CURRENCY) },
                 onNavigateAccounts = { navController.navigate(Routes.SETTINGS_ACCOUNTS) },
+                onNavigateSavingsGoals = { navController.navigate(Routes.SAVINGS_GOALS) },
                 onNavigateProUpgrade = { navController.navigate(Routes.PRO_UPGRADE) }
             )
         }
