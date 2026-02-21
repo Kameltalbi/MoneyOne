@@ -12,15 +12,15 @@ class RecurringRepository(private val recurringDao: RecurringDao) {
     suspend fun update(recurring: RecurringTransaction) =
         recurringDao.update(recurring)
 
-    suspend fun getActiveRecurring(): List<RecurringTransaction> =
-        recurringDao.getActiveRecurring()
+    suspend fun getActiveRecurring(userId: String): List<RecurringTransaction> =
+        recurringDao.getActiveRecurring(userId)
 
-    fun getActiveRecurringFlow(): Flow<List<RecurringTransaction>> =
-        recurringDao.getActiveRecurringFlow()
+    fun getActiveRecurringFlow(userId: String): Flow<List<RecurringTransaction>> =
+        recurringDao.getActiveRecurringFlow(userId)
 
-    suspend fun getById(id: Long): RecurringTransaction? =
-        recurringDao.getById(id)
+    suspend fun getById(id: Long, userId: String): RecurringTransaction? =
+        recurringDao.getById(id, userId)
 
-    suspend fun getActiveByAccount(accountId: Long): List<RecurringTransaction> =
-        recurringDao.getActiveByAccount(accountId)
+    suspend fun getActiveByAccount(userId: String, accountId: Long): List<RecurringTransaction> =
+        recurringDao.getActiveByAccount(userId, accountId)
 }

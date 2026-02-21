@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.smartbudget.SmartBudgetApp
 import com.smartbudget.data.RecurringGenerator
+import com.smartbudget.data.UserManager
 import com.smartbudget.widget.BalanceWidgetProvider
 import com.smartbudget.data.dao.TransactionWithCategory
 import com.smartbudget.data.entity.Account
@@ -42,11 +43,17 @@ data class MonthlyTotal(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+class MainViewModel(
+    application: Application,
+    private val userManager: UserManager
+) : AndroidViewModel(application) {
     private val app = application as SmartBudgetApp
     private val accountRepo = app.accountRepository
     private val transactionRepo = app.transactionRepository
     private val budgetRepo = app.budgetRepository
+    
+    private val userId: String
+        get() = userManager.getCurrentUserId()
 
     private val _currentYearMonth = MutableStateFlow(YearMonth.now())
     val currentYearMonth: StateFlow<YearMonth> = _currentYearMonth.asStateFlow()
@@ -60,12 +67,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _isConsolidated = MutableStateFlow(false)
     val isConsolidated: StateFlow<Boolean> = _isConsolidated.asStateFlow()
 
-    val accounts: StateFlow<List<Account>> = accountRepo.allAccounts
+    val accounts: StateFlow<List<Account>> = flow { emit(userId) }
+        .flatMapLatest { accountRepo.getAllAccounts(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         viewModelScope.launch {
-            val defaultAccount = accountRepo.getDefaultAccount()
+            val defaultAccount = accountRepo.getDefaultAccount(userId)
             _currentAccount.value = defaultAccount
         }
     }
@@ -102,7 +110,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun generateRecurringForMonth(month: YearMonth) {
-        val activeRules = recurringRepo.getActiveRecurring()
+        val activeRules = recurringRepo.getActiveRecurring(userId)
         for (rule in activeRules) {
             recurringGenerator.generateUpToMonth(rule, month)
         }
@@ -120,11 +128,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val start = DateUtils.monthStart(yearMonth)
             val end = DateUtils.monthEnd(yearMonth)
             if (consolidated) {
-                transactionRepo.getAllTransactionsForPeriod(start, end)
+                transactionRepo.getAllTransactionsForPeriod(userId, start, end)
             } else if (account == null) {
                 flowOf(emptyList())
             } else {
-                transactionRepo.getTransactionsForPeriod(account.id, start, end)
+                transactionRepo.getTransactionsForPeriod(userId, account.id, start, end)
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -136,11 +144,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val start = DateUtils.dayStart(date)
             val end = DateUtils.dayEnd(date)
             if (consolidated) {
-                transactionRepo.getAllTransactionsForDay(start, end)
+                transactionRepo.getAllTransactionsForDay(userId, start, end)
             } else if (account == null) {
                 flowOf(emptyList())
             } else {
-                transactionRepo.getTransactionsForDay(account.id, start, end)
+                transactionRepo.getTransactionsForDay(userId, account.id, start, end)
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -155,9 +163,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             if (consolidated) {
                 combine(
-                    transactionRepo.getAllTotalIncome(start, end),
-                    transactionRepo.getAllTotalExpenses(start, end),
-                    budgetRepo.getGlobalBudget(ymStr)
+                    transactionRepo.getAllTotalIncome(userId, start, end),
+                    transactionRepo.getAllTotalExpenses(userId, start, end),
+                    budgetRepo.getGlobalBudget(userId, ymStr)
                 ) { income, expenses, budget ->
                     val balance = income - expenses
                     val budgetAmt = budget?.amount ?: 0.0
@@ -177,9 +185,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 flowOf(MonthSummary())
             } else {
                 combine(
-                    transactionRepo.getTotalIncome(account.id, start, end),
-                    transactionRepo.getTotalExpenses(account.id, start, end),
-                    budgetRepo.getGlobalBudget(ymStr)
+                    transactionRepo.getTotalIncome(userId, account.id, start, end),
+                    transactionRepo.getTotalExpenses(userId, account.id, start, end),
+                    budgetRepo.getGlobalBudget(userId, ymStr)
                 ) { income, expenses, budget ->
                     val balance = income - expenses
                     val budgetAmt = budget?.amount ?: 0.0
@@ -206,22 +214,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val end = DateUtils.dayEnd(date)
             if (consolidated) {
                 combine(
-                    transactionRepo.getAllTotalIncome(null, end),
-                    transactionRepo.getAllTotalExpenses(null, end)
+                    transactionRepo.getAllTotalIncome(userId, null, end),
+                    transactionRepo.getAllTotalExpenses(userId, null, end)
                 ) { income, expenses -> income - expenses }
             } else if (account == null) {
                 flowOf(0.0)
             } else {
                 combine(
-                    transactionRepo.getTotalIncome(account.id, null, end),
-                    transactionRepo.getTotalExpenses(account.id, null, end)
+                    transactionRepo.getTotalIncome(userId, account.id, null, end),
+                    transactionRepo.getTotalExpenses(userId, account.id, null, end)
                 ) { income, expenses -> income - expenses }
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
     // Category budgets for the month
     val categoryBudgets: StateFlow<List<Budget>> = _currentYearMonth.flatMapLatest { ym ->
-        budgetRepo.getAllBudgetsForMonth(DateUtils.yearMonthString(ym))
+        budgetRepo.getAllBudgetsForMonth(userId, DateUtils.yearMonthString(ym))
     }.map { budgets ->
         budgets.filter { !it.isGlobal }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -241,17 +249,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleTransactionValidation(transactionId: Long) {
         viewModelScope.launch {
-            val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            val transaction = transactionRepo.getTransactionById(transactionId, userId) ?: return@launch
             transactionRepo.update(transaction.copy(isValidated = !transaction.isValidated))
         }
     }
 
     fun deleteTransaction(transactionId: Long) {
         viewModelScope.launch {
-            val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            val transaction = transactionRepo.getTransactionById(transactionId, userId) ?: return@launch
             if (transaction.recurringId != null) {
                 // Soft delete for recurring
-                transactionRepo.softDelete(transactionId)
+                transactionRepo.softDelete(userId, transactionId)
             } else {
                 transactionRepo.delete(transaction)
             }
@@ -261,18 +269,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deleteSingleOccurrence(transactionId: Long) {
         viewModelScope.launch {
-            transactionRepo.softDelete(transactionId)
+            transactionRepo.softDelete(userId, transactionId)
             BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
         }
     }
 
     fun deleteFutureOccurrences(transactionId: Long) {
         viewModelScope.launch {
-            val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            val transaction = transactionRepo.getTransactionById(transactionId, userId) ?: return@launch
             val recurringId = transaction.recurringId ?: return@launch
-            transactionRepo.softDeleteFutureOccurrences(recurringId, transaction.date)
+            transactionRepo.softDeleteFutureOccurrences(userId, recurringId, transaction.date)
             // End the recurring rule
-            val recurring = recurringRepo.getById(recurringId)
+            val recurring = recurringRepo.getById(recurringId, userId)
             if (recurring != null) {
                 recurringRepo.update(recurring.copy(endDate = transaction.date - 1))
             }
@@ -282,11 +290,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deleteEntireSeries(transactionId: Long) {
         viewModelScope.launch {
-            val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            val transaction = transactionRepo.getTransactionById(transactionId, userId) ?: return@launch
             val recurringId = transaction.recurringId ?: return@launch
-            transactionRepo.softDeleteAllOccurrences(recurringId)
+            transactionRepo.softDeleteAllOccurrences(userId, recurringId)
             // Deactivate the recurring rule
-            val recurring = recurringRepo.getById(recurringId)
+            val recurring = recurringRepo.getById(recurringId, userId)
             if (recurring != null) {
                 recurringRepo.update(recurring.copy(isActive = false))
             }
@@ -296,22 +304,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun duplicateTransaction(transactionId: Long) {
         viewModelScope.launch {
-            val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            val transaction = transactionRepo.getTransactionById(transactionId, userId) ?: return@launch
             transactionRepo.insert(transaction.copy(id = 0))
         }
     }
 
     fun duplicateTransactionToDate(transactionId: Long, dateMillis: Long) {
         viewModelScope.launch {
-            val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            val transaction = transactionRepo.getTransactionById(transactionId, userId) ?: return@launch
             transactionRepo.insert(transaction.copy(id = 0, date = dateMillis))
         }
     }
 
     fun createFirstAccount(name: String, initialBalance: Double) {
         viewModelScope.launch {
-            val accountId = accountRepo.insert(Account(name = name, isDefault = true))
-            _currentAccount.value = accountRepo.getDefaultAccount()
+            val accountId = accountRepo.insert(Account(name = name, isDefault = true, userId = userId))
+            _currentAccount.value = accountRepo.getDefaultAccount(userId)
             if (initialBalance > 0) {
                 val transaction = Transaction(
                     name = "Solde initial",
@@ -320,7 +328,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     accountId = accountId,
                     date = System.currentTimeMillis(),
                     note = "Solde initial du compte",
-                    isValidated = true
+                    isValidated = true,
+                    userId = userId
                 )
                 transactionRepo.insert(transaction)
             }
@@ -369,11 +378,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val currentIncome: Double
             val currentExpenses: Double
             if (consolidated || account == null) {
-                currentIncome = app.getDb().transactionDao().getAllTotalByType(TransactionType.INCOME, start, nowEnd)
-                currentExpenses = app.getDb().transactionDao().getAllTotalByType(TransactionType.EXPENSE, start, nowEnd)
+                currentIncome = app.getDb().transactionDao().getAllTotalByType(userId, TransactionType.INCOME, start, nowEnd)
+                currentExpenses = app.getDb().transactionDao().getAllTotalByType(userId, TransactionType.EXPENSE, start, nowEnd)
             } else {
-                currentIncome = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.INCOME, start, nowEnd)
-                currentExpenses = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.EXPENSE, start, nowEnd)
+                currentIncome = app.getDb().transactionDao().getTotalByType(userId, account.id, TransactionType.INCOME, start, nowEnd)
+                currentExpenses = app.getDb().transactionDao().getTotalByType(userId, account.id, TransactionType.EXPENSE, start, nowEnd)
             }
 
             // Get remaining recurring transactions for this month
@@ -382,11 +391,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val remainingRecurringIncome: Double
             val remainingRecurringExpenses: Double
             if (consolidated || account == null) {
-                remainingRecurringIncome = app.getDb().transactionDao().getAllTotalByType(TransactionType.INCOME, tomorrowStart, monthEnd)
-                remainingRecurringExpenses = app.getDb().transactionDao().getAllTotalByType(TransactionType.EXPENSE, tomorrowStart, monthEnd)
+                remainingRecurringIncome = app.getDb().transactionDao().getAllTotalByType(userId, TransactionType.INCOME, tomorrowStart, monthEnd)
+                remainingRecurringExpenses = app.getDb().transactionDao().getAllTotalByType(userId, TransactionType.EXPENSE, tomorrowStart, monthEnd)
             } else {
-                remainingRecurringIncome = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.INCOME, tomorrowStart, monthEnd)
-                remainingRecurringExpenses = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.EXPENSE, tomorrowStart, monthEnd)
+                remainingRecurringIncome = app.getDb().transactionDao().getTotalByType(userId, account.id, TransactionType.INCOME, tomorrowStart, monthEnd)
+                remainingRecurringExpenses = app.getDb().transactionDao().getTotalByType(userId, account.id, TransactionType.EXPENSE, tomorrowStart, monthEnd)
             }
 
             // Calculate daily averages for non-recurring transactions only
@@ -429,11 +438,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val income: Double
             val expenses: Double
             if (consolidated || account == null) {
-                income = app.getDb().transactionDao().getAllTotalByType(TransactionType.INCOME, start, end)
-                expenses = app.getDb().transactionDao().getAllTotalByType(TransactionType.EXPENSE, start, end)
+                income = app.getDb().transactionDao().getAllTotalByType(userId, TransactionType.INCOME, start, end)
+                expenses = app.getDb().transactionDao().getAllTotalByType(userId, TransactionType.EXPENSE, start, end)
             } else {
-                income = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.INCOME, start, end)
-                expenses = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.EXPENSE, start, end)
+                income = app.getDb().transactionDao().getTotalByType(userId, account.id, TransactionType.INCOME, start, end)
+                expenses = app.getDb().transactionDao().getTotalByType(userId, account.id, TransactionType.EXPENSE, start, end)
             }
             _previousMonthSummary.value = MonthSummary(
                 totalIncome = income,
@@ -461,7 +470,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val searchResults: StateFlow<List<com.smartbudget.data.dao.TransactionWithCategory>> =
         _searchQuery.flatMapLatest { query ->
             if (query.isBlank()) flowOf(emptyList())
-            else transactionRepo.searchTransactions(query)
+            else transactionRepo.searchTransactions(userId, query)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun updateSearchQuery(query: String) {
@@ -484,11 +493,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val income: Double
                 val expenses: Double
                 if (isConsolidatedMode || account == null) {
-                    income = app.getDb().transactionDao().getAllTotalByType(TransactionType.INCOME, start, end)
-                    expenses = app.getDb().transactionDao().getAllTotalByType(TransactionType.EXPENSE, start, end)
+                    income = app.getDb().transactionDao().getAllTotalByType(userId, TransactionType.INCOME, start, end)
+                    expenses = app.getDb().transactionDao().getAllTotalByType(userId, TransactionType.EXPENSE, start, end)
                 } else {
-                    income = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.INCOME, start, end)
-                    expenses = app.getDb().transactionDao().getTotalByType(account.id, TransactionType.EXPENSE, start, end)
+                    income = app.getDb().transactionDao().getTotalByType(userId, account.id, TransactionType.INCOME, start, end)
+                    expenses = app.getDb().transactionDao().getTotalByType(userId, account.id, TransactionType.EXPENSE, start, end)
                 }
                 results.add(MonthlyTotal(ym, income, expenses))
             }
@@ -499,32 +508,40 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // Savings Goals
     private val savingsGoalRepo = app.savingsGoalRepository
 
-    val savingsGoals: StateFlow<List<SavingsGoal>> = savingsGoalRepo.getAllGoals()
+    val savingsGoals: StateFlow<List<SavingsGoal>> = flow { emit(userId) }
+        .flatMapLatest { savingsGoalRepo.getAllGoals(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addSavingsGoal(name: String, targetAmount: Double) {
+    fun addSavingsGoal(name: String, targetAmount: Double, isPro: Boolean, onError: ((String) -> Unit)? = null) {
         viewModelScope.launch {
-            savingsGoalRepo.insert(SavingsGoal(name = name, targetAmount = targetAmount))
+            if (!isPro) {
+                val currentGoals = savingsGoalRepo.getAllGoals(userId).first()
+                if (currentGoals.size >= 1) {
+                    onError?.invoke("free_max_savings_goals")
+                    return@launch
+                }
+            }
+            savingsGoalRepo.insert(SavingsGoal(name = name, targetAmount = targetAmount, userId = userId))
         }
     }
 
     fun addAmountToGoal(goalId: Long, amount: Double) {
         viewModelScope.launch {
-            val goal = savingsGoalRepo.getGoalById(goalId) ?: return@launch
+            val goal = savingsGoalRepo.getGoalById(goalId, userId) ?: return@launch
             savingsGoalRepo.update(goal.copy(currentAmount = goal.currentAmount + amount))
         }
     }
 
     fun deleteSavingsGoal(goal: SavingsGoal) {
         viewModelScope.launch {
-            savingsGoalRepo.delete(goal)
+            savingsGoalRepo.deleteGoal(goal)
         }
     }
 
     fun setInitialBalance(amount: Double) {
         if (amount == 0.0) return
         viewModelScope.launch {
-            val account = accountRepo.getDefaultAccount() ?: return@launch
+            val account = accountRepo.getDefaultAccount(userId) ?: return@launch
             val transaction = Transaction(
                 name = "Solde initial",
                 amount = amount,
@@ -532,7 +549,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 accountId = account.id,
                 date = System.currentTimeMillis(),
                 note = "Solde initial du compte",
-                isValidated = true
+                isValidated = true,
+                userId = userId
             )
             transactionRepo.insert(transaction)
         }

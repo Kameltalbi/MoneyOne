@@ -46,5 +46,6 @@ data class RecurringTransaction(
     val frequency: Frequency,
     val interval: Int = 1,
     val endDate: Long? = null,  // epoch millis, null = indefinite
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    val userId: String = ""
 )

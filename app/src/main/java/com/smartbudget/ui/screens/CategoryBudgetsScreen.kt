@@ -157,9 +157,13 @@ fun CategoryBudgetsScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         FilledIconButton(
                             onClick = {
-                                viewModel.saveCategoryBudget(category.id) {
-                                    savedCatBudgets[category.id] = true
-                                }
+                                viewModel.saveCategoryBudget(
+                                    categoryId = category.id,
+                                    isPro = true,
+                                    onSuccess = {
+                                        savedCatBudgets[category.id] = true
+                                    }
+                                )
                             },
                             enabled = budgetAmount.isNotBlank() &&
                                     (budgetAmount.toDoubleOrNull() ?: 0.0) > 0,

@@ -55,7 +55,9 @@ class SmartBudgetApp : Application() {
             // Default account is now created during onboarding
 
             // Seed default categories
-            if (categoryRepository.count() == 0) {
+            val userManager = com.smartbudget.data.UserManager(this@SmartBudgetApp)
+            val userId = userManager.getCurrentUserId()
+            if (categoryRepository.count(userId) == 0) {
                 val defaults = listOf(
                     Category(name = "Salaire", icon = "payments", color = 0xFF4CAF50, type = TransactionType.INCOME, isDefault = true),
                     Category(name = "Freelance", icon = "work", color = 0xFF66BB6A, type = TransactionType.INCOME, isDefault = true),

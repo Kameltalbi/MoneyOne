@@ -27,6 +27,9 @@ fun AccountsScreen(
     viewModel: SettingsViewModel,
     onNavigateBack: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val app = context.applicationContext as com.smartbudget.SmartBudgetApp
+    val isPro by app.billingManager.isPro.collectAsState()
     val accounts by viewModel.allAccounts.collectAsStateWithLifecycle()
 
     var showAddDialog by remember { mutableStateOf(false) }
@@ -212,6 +215,7 @@ fun AccountsScreen(
                         viewModel.addAccount(
                             name = newName,
                             currency = selectedCurrency,
+                            isPro = isPro,
                             onSuccess = { showAddDialog = false },
                             onError = { errorMessage = it }
                         )

@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.smartbudget.SmartBudgetApp
+import com.smartbudget.data.UserManager
 import com.smartbudget.widget.BalanceWidgetProvider
 import com.smartbudget.data.entity.Category
 import com.smartbudget.data.entity.Frequency
@@ -36,12 +37,18 @@ data class TransactionFormState(
     val recurringEditMode: RecurringEditMode? = null
 )
 
-class TransactionViewModel(application: Application) : AndroidViewModel(application) {
+class TransactionViewModel(
+    application: Application,
+    private val userManager: UserManager
+) : AndroidViewModel(application) {
     private val app = application as SmartBudgetApp
     private val transactionRepo = app.transactionRepository
     private val categoryRepo = app.categoryRepository
     private val accountRepo = app.accountRepository
     private val recurringRepo = app.recurringRepository
+    
+    private val userId: String
+        get() = userManager.getCurrentUserId()
 
     private val _formState = MutableStateFlow(TransactionFormState())
     val formState: StateFlow<TransactionFormState> = _formState.asStateFlow()
@@ -64,11 +71,12 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         _formState.update { it.copy(recurringEditMode = mode) }
     }
 
-    val allCategories: StateFlow<List<Category>> = categoryRepo.allCategories
+    val allCategories: StateFlow<List<Category>> = flow { emit(userId) }
+        .flatMapLatest { categoryRepo.getAllCategories(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val filteredCategories: StateFlow<List<Category>> =
-        combine(_formState, categoryRepo.allCategories) { form, categories ->
+        combine(_formState, allCategories) { form, categories ->
             categories.filter { it.type == form.type }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -108,7 +116,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     fun loadTransaction(transactionId: Long) {
         viewModelScope.launch {
-            val transaction = transactionRepo.getTransactionById(transactionId) ?: return@launch
+            val transaction = transactionRepo.getTransactionById(transactionId, userId) ?: return@launch
             _formState.value = TransactionFormState(
                 name = transaction.name,
                 type = transaction.type,
@@ -129,11 +137,11 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             val amount = form.amount.toDoubleOrNull() ?: return@launch
             if (amount <= 0) return@launch
 
-            val account = accountRepo.getDefaultAccount() ?: return@launch
+            val account = accountRepo.getDefaultAccount(userId) ?: return@launch
             val dateMillis = DateUtils.toEpochMillis(form.date)
 
             if (form.isEditing) {
-                val existing = transactionRepo.getTransactionById(form.editingId!!) ?: return@launch
+                val existing = transactionRepo.getTransactionById(form.editingId!!, userId) ?: return@launch
                 transactionRepo.update(existing.copy(
                     name = form.name,
                     amount = amount,
@@ -150,7 +158,8 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                     categoryId = form.categoryId,
                     accountId = account.id,
                     date = dateMillis,
-                    note = form.note
+                    note = form.note,
+                    userId = userId
                 )
 
                 if (form.frequency != null) {
@@ -165,7 +174,8 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
                             note = form.note,
                             startDate = dateMillis,
                             frequency = form.frequency,
-                            interval = form.frequencyInterval
+                            interval = form.frequencyInterval,
+                            userId = userId
                         )
                     )
                     transactionRepo.insert(transaction.copy(recurringId = recurringId))
@@ -192,7 +202,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             val id = form.editingId ?: return@launch
 
             android.util.Log.d("TxnVM", "modifySingleOccurrence: id=$id amount=$amount recurringId=${form.recurringId}")
-            val existing = transactionRepo.getTransactionById(id) ?: return@launch
+            val existing = transactionRepo.getTransactionById(id, userId) ?: return@launch
             android.util.Log.d("TxnVM", "modifySingleOccurrence: existing.id=${existing.id} existing.amount=${existing.amount} existing.recurringId=${existing.recurringId}")
             transactionRepo.update(existing.copy(
                 name = form.name,
@@ -205,7 +215,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             ))
 
             BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
-            val account = accountRepo.getDefaultAccount()
+            val account = accountRepo.getDefaultAccount(userId)
             if (form.type == TransactionType.EXPENSE && account != null) {
                 val app = getApplication<SmartBudgetApp>()
                 app.budgetAlertManager.checkBudgetAlerts(account.id)
@@ -225,7 +235,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             val dateMillis = DateUtils.toEpochMillis(form.date)
 
             // Update this transaction
-            val existing = transactionRepo.getTransactionById(id) ?: return@launch
+            val existing = transactionRepo.getTransactionById(id, userId) ?: return@launch
             transactionRepo.update(existing.copy(
                 name = form.name,
                 amount = amount,
@@ -237,6 +247,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
             // Update all future unmodified occurrences
             transactionRepo.updateFutureUnmodifiedOccurrences(
+                userId = userId,
                 recurringId = recurringId,
                 fromDate = dateMillis,
                 name = form.name,
@@ -247,7 +258,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             )
 
             // Split the recurring rule: end old rule, create new one
-            val oldRecurring = recurringRepo.getById(recurringId)
+            val oldRecurring = recurringRepo.getById(recurringId, userId)
             if (oldRecurring != null) {
                 recurringRepo.update(oldRecurring.copy(endDate = dateMillis - 1))
                 recurringRepo.insert(oldRecurring.copy(
@@ -261,7 +272,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             }
 
             BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
-            val account = accountRepo.getDefaultAccount()
+            val account = accountRepo.getDefaultAccount(userId)
             if (form.type == TransactionType.EXPENSE && account != null) {
                 val app = getApplication<SmartBudgetApp>()
                 app.budgetAlertManager.checkBudgetAlerts(account.id)
@@ -280,7 +291,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             val id = form.editingId ?: return@launch
 
             // Update this transaction
-            val existing = transactionRepo.getTransactionById(id) ?: return@launch
+            val existing = transactionRepo.getTransactionById(id, userId) ?: return@launch
             transactionRepo.update(existing.copy(
                 name = form.name,
                 amount = amount,
@@ -291,7 +302,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             ))
 
             // Update recurring rule
-            val recurring = recurringRepo.getById(recurringId)
+            val recurring = recurringRepo.getById(recurringId, userId)
             if (recurring != null) {
                 recurringRepo.update(recurring.copy(
                     name = form.name,
@@ -304,6 +315,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
             // Update all future unmodified occurrences from the start
             transactionRepo.updateFutureUnmodifiedOccurrences(
+                userId = userId,
                 recurringId = recurringId,
                 fromDate = 0,
                 name = form.name,
@@ -314,7 +326,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             )
 
             BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
-            val account = accountRepo.getDefaultAccount()
+            val account = accountRepo.getDefaultAccount(userId)
             if (form.type == TransactionType.EXPENSE && account != null) {
                 val app = getApplication<SmartBudgetApp>()
                 app.budgetAlertManager.checkBudgetAlerts(account.id)

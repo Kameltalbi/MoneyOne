@@ -9,5 +9,6 @@ data class Account(
     val id: Long = 0,
     val name: String,
     val isDefault: Boolean = false,
-    val currency: String = ""
+    val currency: String = "",
+    val userId: String = ""
 )

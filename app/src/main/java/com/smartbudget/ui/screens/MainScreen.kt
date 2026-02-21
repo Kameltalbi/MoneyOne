@@ -46,7 +46,8 @@ fun MainScreen(
     onDashboard: () -> Unit,
     onProUpgrade: () -> Unit,
     onSavingsGoals: () -> Unit = {},
-    onSearch: () -> Unit = {}
+    onSearch: () -> Unit = {},
+    onNavigateToSmartInsights: () -> Unit = {}
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as SmartBudgetApp
@@ -112,6 +113,13 @@ fun MainScreen(
                     IconButton(onClick = { if (isPro) onDashboard() else onProUpgrade() }, modifier = Modifier.size(36.dp)) {
                         Icon(Icons.Filled.PieChart, contentDescription = stringResource(R.string.dashboard),
                             tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
+                    }
+                    // Smart Insights (Pro only)
+                    if (isPro) {
+                        IconButton(onClick = onNavigateToSmartInsights, modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Filled.Insights, contentDescription = "Smart Insights",
+                                tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
+                        }
                     }
                     // Savings goals
                     IconButton(onClick = { if (isPro) onSavingsGoals() else onProUpgrade() }, modifier = Modifier.size(36.dp)) {

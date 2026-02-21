@@ -25,7 +25,7 @@ class RecurringGenerator(private val transactionRepo: TransactionRepository) {
         }
 
         // Find last generated occurrence
-        val lastOccurrenceMillis = transactionRepo.getLastOccurrenceDateForRecurring(recurring.id)
+        val lastOccurrenceMillis = transactionRepo.getLastOccurrenceDateForRecurring(recurring.userId, recurring.id)
         val lastDate = if (lastOccurrenceMillis != null) {
             Instant.ofEpochMilli(lastOccurrenceMillis)
                 .atZone(ZoneId.systemDefault()).toLocalDate()
@@ -45,24 +45,24 @@ class RecurringGenerator(private val transactionRepo: TransactionRepository) {
         while (!nextDate.isAfter(generateUntil)) {
             if (endDate != null && nextDate.isAfter(endDate)) break
 
-            val millis = nextDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val occurrenceDate = nextDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
             // Check if occurrence already exists at this date (avoid duplicates)
-            val existing = transactionRepo.getOccurrenceByRecurringAndDate(recurring.id, millis)
+            val existing = transactionRepo.getOccurrenceByRecurringAndDate(recurring.userId, recurring.id, occurrenceDate)
             if (existing == null) {
-                toInsert.add(
-                    Transaction(
-                        name = recurring.name,
-                        amount = recurring.amount,
-                        type = recurring.type,
-                        categoryId = recurring.categoryId,
-                        accountId = recurring.accountId,
-                        date = millis,
-                        note = recurring.note,
-                        isValidated = false,
-                        recurringId = recurring.id
-                    )
+                val transaction = Transaction(
+                    name = recurring.name,
+                    amount = recurring.amount,
+                    type = recurring.type,
+                    categoryId = recurring.categoryId,
+                    accountId = recurring.accountId,
+                    date = occurrenceDate,
+                    note = recurring.note,
+                    isValidated = false,
+                    recurringId = recurring.id,
+                    userId = recurring.userId
                 )
+                toInsert.add(transaction)
             }
             nextDate = getNextDate(nextDate, recurring.frequency, recurring.interval)
         }

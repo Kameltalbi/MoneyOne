@@ -43,23 +43,26 @@ class BudgetAlertManager(
     }
 
     suspend fun checkBudgetAlerts(accountId: Long) {
+        val userManager = com.smartbudget.data.UserManager(context)
+        val userId = userManager.getCurrentUserId()
         val ym = YearMonth.now()
         val ymString = DateUtils.yearMonthString(ym)
         val startDate = ym.atDay(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
         val endDate = ym.plusMonths(1).atDay(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
 
-        val budgets = budgetRepo.getAllBudgetsForMonthDirect(ymString)
+        val budgets = budgetRepo.getAllBudgetsForMonthDirect(userId, ymString)
 
         for (budget in budgets) {
             if (budget.amount <= 0) continue
 
             val spent: Double = if (budget.isGlobal) {
                 // Global budget: total expenses
-                transactionRepo.getTotalExpensesDirect(accountId, startDate, endDate)
+                transactionRepo.getTotalExpensesDirect(userId, accountId, startDate, endDate)
             } else {
                 // Category budget
                 val catId = budget.categoryId ?: continue
-                transactionRepo.getExpensesByCategoryDirect(accountId, catId, startDate, endDate)
+                val spent = transactionRepo.getExpensesByCategoryDirect(userId, accountId, budget.categoryId!!, startDate, endDate)
+                spent
             }
 
             val percent = spent / budget.amount

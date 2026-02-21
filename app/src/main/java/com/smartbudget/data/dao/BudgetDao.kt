@@ -6,14 +6,14 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BudgetDao {
-    @Query("SELECT * FROM budgets WHERE yearMonth = :yearMonth AND isGlobal = 1 LIMIT 1")
-    fun getGlobalBudget(yearMonth: String): Flow<Budget?>
+    @Query("SELECT * FROM budgets WHERE userId = :userId AND yearMonth = :yearMonth AND isGlobal = 1 LIMIT 1")
+    fun getGlobalBudget(userId: String, yearMonth: String): Flow<Budget?>
 
-    @Query("SELECT * FROM budgets WHERE yearMonth = :yearMonth AND categoryId = :categoryId LIMIT 1")
-    fun getCategoryBudget(yearMonth: String, categoryId: Long): Flow<Budget?>
+    @Query("SELECT * FROM budgets WHERE userId = :userId AND yearMonth = :yearMonth AND categoryId = :categoryId LIMIT 1")
+    fun getCategoryBudget(userId: String, yearMonth: String, categoryId: Long): Flow<Budget?>
 
-    @Query("SELECT * FROM budgets WHERE yearMonth = :yearMonth")
-    fun getAllBudgetsForMonth(yearMonth: String): Flow<List<Budget>>
+    @Query("SELECT * FROM budgets WHERE userId = :userId AND yearMonth = :yearMonth")
+    fun getAllBudgetsForMonth(userId: String, yearMonth: String): Flow<List<Budget>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(budget: Budget): Long
@@ -24,9 +24,15 @@ interface BudgetDao {
     @Delete
     suspend fun delete(budget: Budget)
 
-    @Query("DELETE FROM budgets WHERE yearMonth = :yearMonth AND isGlobal = 1")
-    suspend fun deleteGlobalBudget(yearMonth: String)
+    @Query("DELETE FROM budgets WHERE userId = :userId AND yearMonth = :yearMonth AND isGlobal = 1")
+    suspend fun deleteGlobalBudget(userId: String, yearMonth: String)
 
-    @Query("SELECT * FROM budgets WHERE yearMonth = :yearMonth")
-    suspend fun getAllBudgetsForMonthDirect(yearMonth: String): List<Budget>
+    @Query("DELETE FROM budgets WHERE userId = :userId AND categoryId = :categoryId")
+    suspend fun deleteCategoryBudget(userId: String, categoryId: Long)
+    
+    @Query("DELETE FROM budgets WHERE id = :budgetId")
+    suspend fun deleteBudget(budgetId: Long)
+
+    @Query("SELECT * FROM budgets WHERE userId = :userId AND yearMonth = :yearMonth")
+    suspend fun getAllBudgetsForMonthDirect(userId: String, yearMonth: String): List<Budget>
 }

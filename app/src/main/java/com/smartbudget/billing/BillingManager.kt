@@ -18,22 +18,38 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    // TODO: Remettre à false avant publication sur le Play Store
-    private val _isPro = MutableStateFlow(true)
+    // PRODUCTION MODE: isPro = false by default
+    // Users must purchase subscription to unlock Pro features
+    private val _isPro = MutableStateFlow(prefs.getBoolean(KEY_IS_PRO, false))
     val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
 
     private var billingClient: BillingClient? = null
     private var productDetails: List<ProductDetails> = emptyList()
 
-    private val _monthlyPrice = MutableStateFlow("$1.99")
+    private val _monthlyPrice = MutableStateFlow("1,99 €")
     val monthlyPrice: StateFlow<String> = _monthlyPrice.asStateFlow()
 
-    private val _annualPrice = MutableStateFlow("$19.99")
+    private val _annualPrice = MutableStateFlow("19,99 €")
     val annualPrice: StateFlow<String> = _annualPrice.asStateFlow()
 
     fun initialize() {
-        // TODO: Réactiver avant publication sur le Play Store
-        // Skip billing initialization for testing
+        billingClient = BillingClient.newBuilder(context)
+            .setListener(this)
+            .enablePendingPurchases()
+            .build()
+
+        billingClient?.startConnection(object : BillingClientStateListener {
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    queryProducts()
+                    queryPurchases()
+                }
+            }
+
+            override fun onBillingServiceDisconnected() {
+                // Retry connection
+            }
+        })
     }
 
     private fun queryProducts() {

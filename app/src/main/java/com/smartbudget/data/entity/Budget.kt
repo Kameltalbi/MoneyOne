@@ -23,5 +23,6 @@ data class Budget(
     val amount: Double,
     val yearMonth: String,      // format "2024-01"
     val categoryId: Long? = null, // null = global budget
-    val isGlobal: Boolean = true
+    val isGlobal: Boolean = true,
+    val userId: String = ""
 )

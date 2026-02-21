@@ -13,5 +13,6 @@ data class SavingsGoal(
     val icon: String = "savings",
     val color: Long = 0xFF4CAF50,
     val createdDate: Long = System.currentTimeMillis(),
-    val targetDate: Long? = null  // optional deadline
+    val targetDate: Long? = null,  // optional deadline
+    val userId: String = ""
 )

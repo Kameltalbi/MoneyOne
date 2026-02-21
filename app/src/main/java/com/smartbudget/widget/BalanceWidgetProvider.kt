@@ -49,15 +49,17 @@ class BalanceWidgetProvider : AppWidgetProvider() {
                 val app = context.applicationContext as SmartBudgetApp
                 val accountRepo = app.accountRepository
                 val transactionRepo = app.transactionRepository
+                val userManager = com.smartbudget.data.UserManager(context)
+                val userId = userManager.getCurrentUserId()
 
-                val account = accountRepo.getDefaultAccount()
+                val account = accountRepo.getDefaultAccount(userId)
                 val accountName = account?.name ?: "—"
 
                 // Total balance
                 val balance = if (account != null) {
-                    transactionRepo.getTotalBalance(account.id)
+                    transactionRepo.getTotalBalance(userId, account.id)
                 } else {
-                    transactionRepo.getTotalBalanceAllAccounts()
+                    transactionRepo.getTotalBalanceAllAccounts(userId)
                 }
 
                 // Monthly income/expenses
@@ -66,11 +68,11 @@ class BalanceWidgetProvider : AppWidgetProvider() {
                 val endOfMonth = now.plusMonths(1).atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
                 val monthIncome = if (account != null) {
-                    app.getDb().transactionDao().getTotalIncomeDirect(account.id, startOfMonth, endOfMonth)
+                    app.getDb().transactionDao().getTotalIncomeDirect(userId, account.id, startOfMonth, endOfMonth)
                 } else { 0.0 }
 
                 val monthExpense = if (account != null) {
-                    app.getDb().transactionDao().getTotalExpensesDirect(account.id, startOfMonth, endOfMonth)
+                    app.getDb().transactionDao().getTotalExpensesDirect(userId, account.id, startOfMonth, endOfMonth)
                 } else { 0.0 }
 
                 CurrencyFormatter.init(context)

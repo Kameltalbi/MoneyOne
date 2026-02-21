@@ -13,15 +13,15 @@ interface RecurringDao {
     @Update
     suspend fun update(recurring: RecurringTransaction)
 
-    @Query("SELECT * FROM recurring_transactions WHERE isActive = 1")
-    suspend fun getActiveRecurring(): List<RecurringTransaction>
+    @Query("SELECT * FROM recurring_transactions WHERE userId = :userId AND isActive = 1")
+    suspend fun getActiveRecurring(userId: String): List<RecurringTransaction>
 
-    @Query("SELECT * FROM recurring_transactions WHERE isActive = 1")
-    fun getActiveRecurringFlow(): Flow<List<RecurringTransaction>>
+    @Query("SELECT * FROM recurring_transactions WHERE userId = :userId AND isActive = 1")
+    fun getActiveRecurringFlow(userId: String): Flow<List<RecurringTransaction>>
 
-    @Query("SELECT * FROM recurring_transactions WHERE id = :id")
-    suspend fun getById(id: Long): RecurringTransaction?
+    @Query("SELECT * FROM recurring_transactions WHERE id = :id AND userId = :userId")
+    suspend fun getById(id: Long, userId: String): RecurringTransaction?
 
-    @Query("SELECT * FROM recurring_transactions WHERE isActive = 1 AND accountId = :accountId")
-    suspend fun getActiveByAccount(accountId: Long): List<RecurringTransaction>
+    @Query("SELECT * FROM recurring_transactions WHERE userId = :userId AND isActive = 1 AND accountId = :accountId")
+    suspend fun getActiveByAccount(userId: String, accountId: Long): List<RecurringTransaction>
 }

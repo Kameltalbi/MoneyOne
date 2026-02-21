@@ -6,14 +6,14 @@ import kotlinx.coroutines.flow.Flow
 
 class BudgetRepository(private val budgetDao: BudgetDao) {
 
-    fun getGlobalBudget(yearMonth: String): Flow<Budget?> =
-        budgetDao.getGlobalBudget(yearMonth)
+    fun getGlobalBudget(userId: String, yearMonth: String): Flow<Budget?> =
+        budgetDao.getGlobalBudget(userId, yearMonth)
 
-    fun getCategoryBudget(yearMonth: String, categoryId: Long): Flow<Budget?> =
-        budgetDao.getCategoryBudget(yearMonth, categoryId)
+    fun getCategoryBudget(userId: String, yearMonth: String, categoryId: Long): Flow<Budget?> =
+        budgetDao.getCategoryBudget(userId, yearMonth, categoryId)
 
-    fun getAllBudgetsForMonth(yearMonth: String): Flow<List<Budget>> =
-        budgetDao.getAllBudgetsForMonth(yearMonth)
+    fun getAllBudgetsForMonth(userId: String, yearMonth: String): Flow<List<Budget>> =
+        budgetDao.getAllBudgetsForMonth(userId, yearMonth)
 
     suspend fun insert(budget: Budget): Long = budgetDao.insert(budget)
 
@@ -21,9 +21,17 @@ class BudgetRepository(private val budgetDao: BudgetDao) {
 
     suspend fun delete(budget: Budget) = budgetDao.delete(budget)
 
-    suspend fun deleteGlobalBudget(yearMonth: String) =
-        budgetDao.deleteGlobalBudget(yearMonth)
+    suspend fun deleteGlobalBudget(userId: String, yearMonth: String) =
+        budgetDao.deleteGlobalBudget(userId, yearMonth)
 
-    suspend fun getAllBudgetsForMonthDirect(yearMonth: String): List<Budget> =
-        budgetDao.getAllBudgetsForMonthDirect(yearMonth)
+    suspend fun deleteCategoryBudget(userId: String, categoryId: Long) {
+        budgetDao.deleteCategoryBudget(userId, categoryId)
+    }
+    
+    suspend fun deleteBudget(budgetId: Long) {
+        budgetDao.deleteBudget(budgetId)
+    }
+
+    suspend fun getAllBudgetsForMonthDirect(userId: String, yearMonth: String): List<Budget> =
+        budgetDao.getAllBudgetsForMonthDirect(userId, yearMonth)
 }

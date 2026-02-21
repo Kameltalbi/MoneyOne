@@ -11,7 +11,8 @@ data class Category(
     val icon: String,       // Material icon name
     val color: Long,        // Color as ARGB long
     val type: TransactionType,
-    val isDefault: Boolean = false
+    val isDefault: Boolean = false,
+    val userId: String = ""
 )
 
 enum class TransactionType {

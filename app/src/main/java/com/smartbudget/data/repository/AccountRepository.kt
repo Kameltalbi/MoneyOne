@@ -5,13 +5,13 @@ import com.smartbudget.data.entity.Account
 import kotlinx.coroutines.flow.Flow
 
 class AccountRepository(private val accountDao: AccountDao) {
-    val allAccounts: Flow<List<Account>> = accountDao.getAllAccounts()
+    fun getAllAccounts(userId: String): Flow<List<Account>> = accountDao.getAllAccounts(userId)
 
-    suspend fun getDefaultAccount(): Account? = accountDao.getDefaultAccount()
+    suspend fun getDefaultAccount(userId: String): Account? = accountDao.getDefaultAccount(userId)
 
-    suspend fun getAccountById(id: Long): Account? = accountDao.getAccountById(id)
+    suspend fun getAccountById(id: Long, userId: String): Account? = accountDao.getAccountById(id, userId)
 
-    suspend fun getAccountCount(): Int = accountDao.getAccountCount()
+    suspend fun getAccountCount(userId: String): Int = accountDao.getAccountCount(userId)
 
     suspend fun insert(account: Account): Long = accountDao.insert(account)
 

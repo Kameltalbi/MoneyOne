@@ -30,14 +30,15 @@ import com.smartbudget.R
 import com.smartbudget.data.CurrencyData
 import com.smartbudget.ui.util.CurrencyFormatter
 
-// Steps: 0=Language, 1=Currency, 2-4=Intro pages, 5=Initial balance
+// Steps: 0=Language, 1=Currency, 2-4=Intro pages, 5=Initial balance, 6=Welcome
 private const val STEP_LANGUAGE = 0
 private const val STEP_CURRENCY = 1
 private const val STEP_INTRO_1 = 2
 private const val STEP_INTRO_2 = 3
 private const val STEP_INTRO_3 = 4
 private const val STEP_BALANCE = 5
-private const val TOTAL_STEPS = 6
+private const val STEP_WELCOME = 6
+private const val TOTAL_STEPS = 7
 
 @Composable
 fun OnboardingScreen(
@@ -299,6 +300,19 @@ fun OnboardingScreen(
                         else -> Triple(Icons.Filled.TrendingUp, R.string.onboarding_title_3, R.string.onboarding_desc_3)
                     }
 
+                    // Skip button
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { currentStep = STEP_BALANCE }) {
+                            Text(
+                                stringResource(R.string.skip),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
                     Spacer(modifier = Modifier.weight(0.15f))
 
                     Box(
@@ -428,6 +442,99 @@ fun OnboardingScreen(
 
                     Button(
                         onClick = {
+                            currentStep = STEP_WELCOME
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        enabled = accountNameInput.trim().isNotEmpty()
+                    ) {
+                        Text(
+                            stringResource(R.string.next_page),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                STEP_WELCOME -> {
+                    Spacer(modifier = Modifier.weight(0.2f))
+
+                    // Success icon
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Text(
+                        text = stringResource(R.string.onboarding_welcome_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = stringResource(R.string.onboarding_welcome_subtitle),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Text(
+                        text = stringResource(R.string.onboarding_next_steps),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Next steps list
+                    Column(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        NextStepItem(
+                            icon = Icons.Filled.Add,
+                            text = stringResource(R.string.onboarding_step_1)
+                        )
+                        NextStepItem(
+                            icon = Icons.Filled.Category,
+                            text = stringResource(R.string.onboarding_step_2)
+                        )
+                        NextStepItem(
+                            icon = Icons.Filled.TrendingUp,
+                            text = stringResource(R.string.onboarding_step_3)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(0.3f))
+
+                    PageIndicators(currentStep = currentStep)
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = {
                             val name = accountNameInput.trim().ifEmpty { "Compte principal" }
                             val amount = balanceInput.toDoubleOrNull() ?: 0.0
                             onFinish(name, amount, selectedLang)
@@ -435,8 +542,7 @@ fun OnboardingScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        enabled = accountNameInput.trim().isNotEmpty()
+                        shape = RoundedCornerShape(16.dp)
                     ) {
                         Icon(Icons.Filled.Check, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -451,6 +557,27 @@ fun OnboardingScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun NextStepItem(icon: ImageVector, text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 

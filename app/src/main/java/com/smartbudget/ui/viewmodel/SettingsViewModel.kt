@@ -7,6 +7,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.smartbudget.SmartBudgetApp
+import com.smartbudget.data.UserManager
 import com.smartbudget.data.CurrencyData
 import com.smartbudget.data.CurrencyInfo
 import com.smartbudget.data.entity.Account
@@ -31,13 +32,19 @@ data class CategoryFormState(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+class SettingsViewModel(
+    application: Application,
+    private val userManager: UserManager
+) : AndroidViewModel(application) {
     private val app = application as SmartBudgetApp
     private val categoryRepo = app.categoryRepository
     private val budgetRepo = app.budgetRepository
     private val accountRepo = app.accountRepository
     private val transactionRepo = app.transactionRepository
     private val prefs = application.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    
+    private val userId: String
+        get() = userManager.getCurrentUserId()
 
     // Theme color
     private val _themeColor = MutableStateFlow(prefs.getString("theme_color", "emerald") ?: "emerald")
@@ -66,10 +73,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun loadCurrentBalance() {
         viewModelScope.launch {
-            val account = accountRepo.getDefaultAccount() ?: return@launch
+            val account = accountRepo.getDefaultAccount(userId) ?: return@launch
             val now = System.currentTimeMillis() + 86400000L
-            transactionRepo.getTotalIncome(account.id, 0L, now).combine(
-                transactionRepo.getTotalExpenses(account.id, 0L, now)
+            transactionRepo.getTotalIncome(userId, account.id, 0L, now).combine(
+                transactionRepo.getTotalExpenses(userId, account.id, 0L, now)
             ) { income, expenses -> income - expenses }
                 .collect { _currentBalance.value = it }
         }
@@ -77,7 +84,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun adjustBalance(newBalance: Double, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            val account = accountRepo.getDefaultAccount() ?: return@launch
+            val account = accountRepo.getDefaultAccount(userId) ?: return@launch
             val current = _currentBalance.value
             val diff = newBalance - current
             if (diff == 0.0) return@launch
@@ -90,7 +97,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 accountId = account.id,
                 date = System.currentTimeMillis(),
                 note = "Ajustement automatique",
-                isValidated = true
+                isValidated = true,
+                userId = userId
             )
             transactionRepo.insert(transaction)
             _currentBalance.value = newBalance
@@ -99,18 +107,20 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     // Accounts
-    val allAccounts: StateFlow<List<Account>> = accountRepo.allAccounts
+    val allAccounts: StateFlow<List<Account>> = flow { emit(userId) }
+        .flatMapLatest { accountRepo.getAllAccounts(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addAccount(name: String, currency: String = "", onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun addAccount(name: String, currency: String = "", isPro: Boolean, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
-            val count = accountRepo.getAccountCount()
-            if (count >= 5) {
-                onError("max_accounts")
+            val count = accountRepo.getAccountCount(userId)
+            val maxAccounts = if (isPro) Int.MAX_VALUE else 2
+            if (count >= maxAccounts) {
+                onError(if (isPro) "max_accounts" else "free_max_accounts")
                 return@launch
             }
             if (name.isBlank()) return@launch
-            accountRepo.insert(Account(name = name, currency = currency))
+            accountRepo.insert(Account(name = name, currency = currency, userId = userId))
             onSuccess()
         }
     }
@@ -129,7 +139,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 onError("cannot_delete_default")
                 return@launch
             }
-            val count = accountRepo.getAccountCount()
+            val count = accountRepo.getAccountCount(userId)
             if (count <= 1) {
                 onError("last_account")
                 return@launch
@@ -140,7 +150,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun setDefaultAccount(account: Account) {
         viewModelScope.launch {
-            val current = accountRepo.getDefaultAccount()
+            val current = accountRepo.getDefaultAccount(userId)
             if (current != null) {
                 accountRepo.update(current.copy(isDefault = false))
             }
@@ -148,7 +158,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    val allCategories: StateFlow<List<Category>> = categoryRepo.allCategories
+    val allCategories: StateFlow<List<Category>> = flow { emit(userId) }
+        .flatMapLatest { categoryRepo.getAllCategories(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _categoryForm = MutableStateFlow(CategoryFormState())
@@ -156,17 +167,24 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     private val _selectedYearMonth = MutableStateFlow(YearMonth.now())
     val selectedYearMonth: StateFlow<YearMonth> = _selectedYearMonth.asStateFlow()
+    
+    private val _currentLanguage = MutableStateFlow("fr")
+    val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
 
     private val _globalBudgetAmount = MutableStateFlow("")
     val globalBudgetAmount: StateFlow<String> = _globalBudgetAmount.asStateFlow()
 
     val currentBudget: StateFlow<Budget?> = _selectedYearMonth.flatMapLatest { ym ->
-        budgetRepo.getGlobalBudget(DateUtils.yearMonthString(ym))
+        budgetRepo.getGlobalBudget(userId, DateUtils.yearMonthString(ym))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     // Currency
     private val _currencyCode = MutableStateFlow(CurrencyFormatter.getCurrencyCode())
     val currencyCode: StateFlow<String> = _currencyCode.asStateFlow()
+    
+    fun refreshCurrency() {
+        _currencyCode.value = CurrencyFormatter.getCurrencyCode()
+    }
 
     private val _currencySearch = MutableStateFlow("")
     val currencySearch: StateFlow<String> = _currencySearch.asStateFlow()
@@ -234,7 +252,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 name = form.name,
                 icon = form.icon,
                 color = form.color,
-                type = form.type
+                type = form.type,
+                userId = userId
             )
 
             if (form.isEditing) {
@@ -254,7 +273,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     // Category budgets
     val categoryBudgets: StateFlow<List<Budget>> = _selectedYearMonth.flatMapLatest { ym ->
-        budgetRepo.getAllBudgetsForMonth(DateUtils.yearMonthString(ym))
+        budgetRepo.getAllBudgetsForMonth(userId, DateUtils.yearMonthString(ym))
     }.map { budgets ->
         budgets.filter { !it.isGlobal }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -276,7 +295,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         _categoryBudgetAmounts.update { it + (categoryId to filtered) }
     }
 
-    fun saveCategoryBudget(categoryId: Long, onSuccess: () -> Unit) {
+    fun saveCategoryBudget(categoryId: Long, isPro: Boolean, onSuccess: () -> Unit, onError: ((String) -> Unit)? = null) {
         viewModelScope.launch {
             val amountStr = _categoryBudgetAmounts.value[categoryId] ?: return@launch
             val amount = amountStr.toDoubleOrNull() ?: return@launch
@@ -284,6 +303,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
             val ymStr = DateUtils.yearMonthString(_selectedYearMonth.value)
             val existing = categoryBudgets.value.firstOrNull { it.categoryId == categoryId }
+
+            // FREE: only 1 budget total (global OR category)
+            if (!isPro && existing == null) {
+                val allBudgets = budgetRepo.getAllBudgetsForMonthDirect(userId, ymStr)
+                if (allBudgets.isNotEmpty()) {
+                    onError?.invoke("free_max_budgets")
+                    return@launch
+                }
+            }
 
             if (existing != null) {
                 budgetRepo.update(existing.copy(amount = amount))
@@ -293,7 +321,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                         amount = amount,
                         yearMonth = ymStr,
                         categoryId = categoryId,
-                        isGlobal = false
+                        isGlobal = false,
+                        userId = userId
                     )
                 )
             }
@@ -317,13 +346,22 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             .replace(',', '.')
     }
 
-    fun saveGlobalBudget(onSuccess: () -> Unit) {
+    fun saveGlobalBudget(isPro: Boolean, onSuccess: () -> Unit, onError: ((String) -> Unit)? = null) {
         viewModelScope.launch {
             val amount = _globalBudgetAmount.value.toDoubleOrNull() ?: return@launch
             if (amount <= 0) return@launch
 
             val ymStr = DateUtils.yearMonthString(_selectedYearMonth.value)
             val existing = currentBudget.value
+
+            // FREE: only 1 global budget allowed
+            if (!isPro && existing == null) {
+                val allBudgets = budgetRepo.getAllBudgetsForMonthDirect(userId, ymStr)
+                if (allBudgets.isNotEmpty()) {
+                    onError?.invoke("free_max_budgets")
+                    return@launch
+                }
+            }
 
             if (existing != null) {
                 budgetRepo.update(existing.copy(amount = amount))
@@ -332,11 +370,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                     Budget(
                         amount = amount,
                         yearMonth = ymStr,
-                        isGlobal = true
+                        isGlobal = true,
+                        userId = userId
                     )
                 )
             }
             onSuccess()
+        }
+    }
+
+    fun deleteBudget(budgetId: Long) {
+        viewModelScope.launch {
+            budgetRepo.deleteBudget(budgetId)
         }
     }
 

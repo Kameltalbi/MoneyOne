@@ -101,7 +101,7 @@ object CurrencyData {
         CurrencyInfo("NGN", "₦", "Naira", "Nigeria", "🇳🇬"),
         CurrencyInfo("EGP", "E£", "Livre égyptienne", "Égypte", "🇪🇬"),
         CurrencyInfo("MAD", "د.م.", "Dirham marocain", "Maroc", "🇲🇦"),
-        CurrencyInfo("TND", "د.ت", "Dinar tunisien", "Tunisie", "🇹🇳"),
+        CurrencyInfo("TND", "DT", "Dinar tunisien", "Tunisie", "🇹🇳"),
         CurrencyInfo("DZD", "د.ج", "Dinar algérien", "Algérie", "🇩🇿"),
         CurrencyInfo("KES", "KSh", "Shilling kényan", "Kenya", "🇰🇪"),
         CurrencyInfo("GHS", "₵", "Cedi", "Ghana", "🇬🇭"),

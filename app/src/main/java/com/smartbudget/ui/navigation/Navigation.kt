@@ -2,9 +2,7 @@ package com.smartbudget.ui.navigation
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -25,7 +23,9 @@ object Routes {
     const val SETTINGS_CATEGORY_BUDGETS = "settings/category_budgets"
     const val SETTINGS_CURRENCY = "settings/currency"
     const val SETTINGS_ACCOUNTS = "settings/accounts"
+    const val BUDGETS = "budgets"
     const val DASHBOARD = "dashboard"
+    const val SMART_INSIGHTS = "smart_insights"
     const val PRO_UPGRADE = "pro_upgrade"
     const val ONBOARDING = "onboarding"
     const val SAVINGS_GOALS = "savings_goals"
@@ -34,12 +34,16 @@ object Routes {
 
 @Composable
 fun SmartBudgetNavigation(
-    navController: NavHostController = rememberNavController(),
-    mainViewModel: MainViewModel = viewModel(),
-    transactionViewModel: TransactionViewModel = viewModel(),
-    settingsViewModel: SettingsViewModel = viewModel()
+    navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
+    val app = context.applicationContext as com.smartbudget.SmartBudgetApp
+    val userManager = remember { com.smartbudget.data.UserManager(context) }
+    val factory = remember { com.smartbudget.ui.viewmodel.ViewModelFactory(app, userManager) }
+    
+    val mainViewModel: MainViewModel = viewModel(factory = factory)
+    val transactionViewModel: TransactionViewModel = viewModel(factory = factory)
+    val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
     val prefs = context.getSharedPreferences("moneyone_setup", Context.MODE_PRIVATE)
     val isFirstLaunch = !prefs.getBoolean("onboarding_done", false)
     val startRoute = if (isFirstLaunch) Routes.ONBOARDING else Routes.MAIN
@@ -105,6 +109,9 @@ fun SmartBudgetNavigation(
                 },
                 onSearch = {
                     navController.navigate(Routes.SEARCH)
+                },
+                onNavigateToSmartInsights = {
+                    navController.navigate(Routes.SMART_INSIGHTS)
                 }
             )
         }
@@ -185,11 +192,48 @@ fun SmartBudgetNavigation(
             )
         }
 
+        composable(Routes.BUDGETS) {
+            val app = context.applicationContext as com.smartbudget.SmartBudgetApp
+            val isPro by app.billingManager.isPro.collectAsState()
+            BudgetsScreen(
+                viewModel = settingsViewModel,
+                isPro = isPro,
+                onNavigateProUpgrade = { navController.navigate(Routes.PRO_UPGRADE) }
+            )
+        }
+
+        composable(Routes.SMART_INSIGHTS) {
+            val app = context.applicationContext as com.smartbudget.SmartBudgetApp
+            val isPro by app.billingManager.isPro.collectAsState()
+            
+            if (isPro) {
+                val userManager = remember { com.smartbudget.data.UserManager(context) }
+                val insightsViewModel: com.smartbudget.ui.viewmodel.SmartInsightsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                    factory = com.smartbudget.ui.viewmodel.ViewModelFactory(
+                        context.applicationContext as android.app.Application,
+                        userManager
+                    )
+                )
+                SmartInsightsScreen(
+                    viewModel = insightsViewModel,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Routes.PRO_UPGRADE) {
+                        popUpTo(Routes.MAIN)
+                    }
+                }
+            }
+        }
+
         composable(Routes.SAVINGS_GOALS) {
+            val app = context.applicationContext as com.smartbudget.SmartBudgetApp
+            val isPro by app.billingManager.isPro.collectAsState()
             val goals by mainViewModel.savingsGoals.collectAsState()
             SavingsGoalsScreen(
                 goals = goals,
-                onAddGoal = { name, target -> mainViewModel.addSavingsGoal(name, target) },
+                onAddGoal = { name, target -> mainViewModel.addSavingsGoal(name, target, isPro) },
                 onAddAmount = { goalId, amount -> mainViewModel.addAmountToGoal(goalId, amount) },
                 onDeleteGoal = { goal -> mainViewModel.deleteSavingsGoal(goal) },
                 onNavigateBack = { navController.popBackStack() }

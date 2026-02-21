@@ -62,6 +62,10 @@ fun SettingsScreen(
 
     LaunchedEffect(Unit) { viewModel.loadCurrentBalance() }
 
+    LaunchedEffect(Unit) {
+        viewModel.refreshCurrency()
+    }
+    
     val currentCurrency = com.smartbudget.data.CurrencyData.getByCode(selectedCurrencyCode)
     val expenseCount = categories.count { it.type == com.smartbudget.data.entity.TransactionType.EXPENSE }
     val incomeCount = categories.count { it.type == com.smartbudget.data.entity.TransactionType.INCOME }
@@ -240,7 +244,12 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Button(
-                        onClick = { viewModel.saveGlobalBudget { budgetSaved = true } },
+                        onClick = { 
+                            viewModel.saveGlobalBudget(
+                                isPro = isPro,
+                                onSuccess = { budgetSaved = true }
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         enabled = globalBudgetAmount.isNotBlank() &&
@@ -585,6 +594,7 @@ fun SettingsScreen(
 
     // Language dialog
     if (showLanguageDialog) {
+        val currentLanguage by viewModel.currentLanguage.collectAsState()
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
             title = { Text(stringResource(R.string.choose_language)) },
@@ -597,43 +607,34 @@ fun SettingsScreen(
                         "es" to stringResource(R.string.language_spanish),
                         "pt" to stringResource(R.string.language_portuguese),
                         "tr" to stringResource(R.string.language_turkish),
-                        "hi" to stringResource(R.string.language_hindi),
-                        "de" to stringResource(R.string.language_german)
+                        "hi" to stringResource(R.string.language_hindi)
                     ).forEach { (code, label) ->
-                        val isSelected = selectedLanguage == code || (selectedLanguage.isEmpty() && code == "fr")
-                        Surface(
-                            onClick = {
-                                viewModel.setLanguage(code)
-                                showLanguageDialog = false
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (isSelected)
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                            else
-                                MaterialTheme.colorScheme.surface
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(14.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                if (isSelected) {
-                                    Icon(
-                                        Icons.Filled.Check,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                        val isSelected = currentLanguage == code
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.setLanguage(code)
+                                    showLanguageDialog = false
                                 }
+                                .padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (isSelected) {
+                                Icon(
+                                    Icons.Filled.Check,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
                         }
                     }

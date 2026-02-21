@@ -42,6 +42,7 @@ data class Transaction(
     val recurringId: Long? = null,      // FK to recurring_transactions
     val isDeleted: Boolean = false,     // soft delete for recurring exceptions
     val isModified: Boolean = false,    // tracks if occurrence was individually modified
+    val userId: String = "",
     // Legacy columns kept for DB compatibility
     val recurrence: Recurrence = Recurrence.NONE,
     val recurrenceEndDate: Long? = null,

@@ -22,7 +22,7 @@ import com.smartbudget.data.entity.Transaction
 
 @Database(
     entities = [Account::class, Transaction::class, Category::class, Budget::class, SavingsGoal::class, RecurringTransaction::class],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -127,13 +127,33 @@ abstract class SmartBudgetDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Add userId column to all tables for multi-user support
+                database.execSQL("ALTER TABLE accounts ADD COLUMN userId TEXT NOT NULL DEFAULT 'default_user'")
+                database.execSQL("ALTER TABLE transactions ADD COLUMN userId TEXT NOT NULL DEFAULT 'default_user'")
+                database.execSQL("ALTER TABLE categories ADD COLUMN userId TEXT NOT NULL DEFAULT 'default_user'")
+                database.execSQL("ALTER TABLE budgets ADD COLUMN userId TEXT NOT NULL DEFAULT 'default_user'")
+                database.execSQL("ALTER TABLE savings_goals ADD COLUMN userId TEXT NOT NULL DEFAULT 'default_user'")
+                database.execSQL("ALTER TABLE recurring_transactions ADD COLUMN userId TEXT NOT NULL DEFAULT 'default_user'")
+                
+                // Create indices for userId for better query performance
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_accounts_userId ON accounts(userId)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_transactions_userId ON transactions(userId)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_categories_userId ON categories(userId)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_budgets_userId ON budgets(userId)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_savings_goals_userId ON savings_goals(userId)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_recurring_transactions_userId ON recurring_transactions(userId)")
+            }
+        }
+
         fun getDatabase(context: Context): SmartBudgetDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     SmartBudgetDatabase::class.java,
                     "smartbudget_database"
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                 .build()
                 INSTANCE = instance
                 instance
