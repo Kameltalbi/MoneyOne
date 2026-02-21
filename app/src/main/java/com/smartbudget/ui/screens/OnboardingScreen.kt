@@ -56,114 +56,133 @@ fun OnboardingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp),
+                .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
             when (currentStep) {
                 STEP_LANGUAGE -> {
-                    // Language selection
-                    Box(
+                    LazyColumn(
                         modifier = Modifier
-                            .size(100.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
-                        contentAlignment = Alignment.Center
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(
-                            Icons.Filled.Language,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                        item {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            
+                            // Language icon
+                            Box(
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Filled.Language,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(48.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Text(
+                                text = stringResource(R.string.choose_your_language),
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(32.dp))
+                        }
+
+                        val languages = listOf(
+                            Triple("fr", "Français", "🇫🇷"),
+                            Triple("en", "English", "🇬🇧"),
+                            Triple("ar", "العربية", "🇸🇦"),
+                            Triple("es", "Español", "🇪🇸"),
+                            Triple("pt", "Português", "🇧🇷"),
+                            Triple("tr", "Türkçe", "🇹🇷"),
+                            Triple("hi", "हिन्दी", "🇮🇳"),
+                            Triple("de", "Deutsch", "🇩🇪")
                         )
-                    }
 
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        text = stringResource(R.string.choose_your_language),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    val languages = listOf(
-                        Triple("fr", "Français", "🇫🇷"),
-                        Triple("en", "English", "🇬🇧"),
-                        Triple("ar", "العربية", "🇸🇦"),
-                        Triple("es", "Español", "🇪🇸"),
-                        Triple("pt", "Português", "🇧🇷"),
-                        Triple("tr", "Türkçe", "🇹🇷"),
-                        Triple("hi", "हिन्दी", "🇮🇳"),
-                        Triple("de", "Deutsch", "🇩🇪")
-                    )
-
-                    languages.forEach { (code, name, flag) ->
-                        val isSelected = selectedLang == code
-                        Surface(
-                            onClick = { selectedLang = code },
-                            shape = RoundedCornerShape(16.dp),
-                            color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                                    else MaterialTheme.colorScheme.surface,
-                            border = if (isSelected) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                                     else null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                        ) {
-                            Row(
+                        items(languages) { (code, name, flag) ->
+                            val isSelected = selectedLang == code
+                            Surface(
+                                onClick = { selectedLang = code },
+                                shape = RoundedCornerShape(16.dp),
+                                color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                        else MaterialTheme.colorScheme.surface,
+                                border = if (isSelected) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                                         else null,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .padding(vertical = 4.dp)
                             ) {
-                                Text(flag, style = MaterialTheme.typography.headlineMedium)
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Text(
-                                    text = name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                if (isSelected) {
-                                    Icon(
-                                        Icons.Filled.Check,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(flag, style = MaterialTheme.typography.headlineMedium)
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(
+                                        text = name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     )
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    if (isSelected) {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
                                 }
                             }
                         }
+
+                        item {
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
                     }
 
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    PageIndicators(currentStep = currentStep)
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Button(
-                        onClick = {
-                            currentStep = STEP_CURRENCY
-                        },
+                    // Bottom section with indicators and button - always visible
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        enabled = selectedLang.isNotEmpty()
+                            .padding(horizontal = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            stringResource(R.string.next_page),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
+                        PageIndicators(currentStep = currentStep)
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Button(
+                            onClick = {
+                                currentStep = STEP_CURRENCY
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            enabled = selectedLang.isNotEmpty()
+                        ) {
+                            Text(
+                                stringResource(R.string.next_page),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
 
                 STEP_CURRENCY -> {
