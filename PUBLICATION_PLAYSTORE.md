@@ -165,7 +165,7 @@ Téléchargez MoneyOne maintenant et commencez à économiser ! 💰
 - ✅ Suppression possible (désinstallation)
 - ❌ Partage avec tiers
 
-**URL Privacy Policy** : `https://votre-url-github-pages.io/moneyone-privacy`
+**URL Privacy Policy** : `https://sites.google.com/view/moneyone-app/accueil`
 
 ### Étape 6 : Content Rating (IARC)
 
