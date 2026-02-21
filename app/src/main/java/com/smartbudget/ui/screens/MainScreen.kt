@@ -109,23 +109,32 @@ fun MainScreen(
                         Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search),
                             tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
                     }
-                    // Dashboard
-                    IconButton(onClick = { if (isPro) onDashboard() else onProUpgrade() }, modifier = Modifier.size(36.dp)) {
-                        Icon(Icons.Filled.PieChart, contentDescription = stringResource(R.string.dashboard),
-                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
-                    }
-                    // Smart Insights (Pro only)
+                    
+                    // Pro features - only show if user has Pro
                     if (isPro) {
+                        // Dashboard
+                        IconButton(onClick = onDashboard, modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Filled.PieChart, contentDescription = stringResource(R.string.dashboard),
+                                tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
+                        }
+                        // Smart Insights
                         IconButton(onClick = onNavigateToSmartInsights, modifier = Modifier.size(36.dp)) {
                             Icon(Icons.Filled.Insights, contentDescription = "Smart Insights",
                                 tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
                         }
+                        // Savings goals
+                        IconButton(onClick = onSavingsGoals, modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Filled.Star, contentDescription = stringResource(R.string.savings_goals_title),
+                                tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
+                        }
+                    } else {
+                        // FREE mode: Single "Go Pro" button
+                        IconButton(onClick = onProUpgrade, modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Filled.Star, contentDescription = "Go Pro",
+                                tint = Color(0xFFFFD700), modifier = Modifier.size(22.dp))
+                        }
                     }
-                    // Savings goals
-                    IconButton(onClick = { if (isPro) onSavingsGoals() else onProUpgrade() }, modifier = Modifier.size(36.dp)) {
-                        Icon(Icons.Filled.Star, contentDescription = stringResource(R.string.savings_goals_title),
-                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), modifier = Modifier.size(22.dp))
-                    }
+                    
                     // Settings
                     IconButton(onClick = onSettings, modifier = Modifier.size(36.dp)) {
                         Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings),

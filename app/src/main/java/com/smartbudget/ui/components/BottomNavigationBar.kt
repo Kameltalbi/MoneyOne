@@ -22,6 +22,7 @@ enum class BottomNavTab {
 fun BottomNavigationBar(
     selectedTab: BottomNavTab,
     onTabSelected: (BottomNavTab) -> Unit,
+    isPro: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     NavigationBar(
@@ -29,6 +30,7 @@ fun BottomNavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 3.dp
     ) {
+        // Home - always visible
         NavigationBarItem(
             selected = selectedTab == BottomNavTab.HOME,
             onClick = { onTabSelected(BottomNavTab.HOME) },
@@ -37,30 +39,40 @@ fun BottomNavigationBar(
             alwaysShowLabel = false
         )
         
-        NavigationBarItem(
-            selected = selectedTab == BottomNavTab.BUDGETS,
-            onClick = { onTabSelected(BottomNavTab.BUDGETS) },
-            icon = { Icon(Icons.Filled.PieChart, contentDescription = null) },
-            label = { Text(stringResource(R.string.budgets)) },
-            alwaysShowLabel = false
-        )
+        // Budgets - Pro only
+        if (isPro) {
+            NavigationBarItem(
+                selected = selectedTab == BottomNavTab.BUDGETS,
+                onClick = { onTabSelected(BottomNavTab.BUDGETS) },
+                icon = { Icon(Icons.Filled.PieChart, contentDescription = null) },
+                label = { Text(stringResource(R.string.budgets)) },
+                alwaysShowLabel = false
+            )
+        }
         
-        NavigationBarItem(
-            selected = selectedTab == BottomNavTab.ACCOUNTS,
-            onClick = { onTabSelected(BottomNavTab.ACCOUNTS) },
-            icon = { Icon(Icons.Filled.AccountBalance, contentDescription = null) },
-            label = { Text(stringResource(R.string.accounts)) },
-            alwaysShowLabel = false
-        )
+        // Accounts - Pro only
+        if (isPro) {
+            NavigationBarItem(
+                selected = selectedTab == BottomNavTab.ACCOUNTS,
+                onClick = { onTabSelected(BottomNavTab.ACCOUNTS) },
+                icon = { Icon(Icons.Filled.AccountBalance, contentDescription = null) },
+                label = { Text(stringResource(R.string.accounts)) },
+                alwaysShowLabel = false
+            )
+        }
         
-        NavigationBarItem(
-            selected = selectedTab == BottomNavTab.SAVINGS,
-            onClick = { onTabSelected(BottomNavTab.SAVINGS) },
-            icon = { Icon(Icons.Filled.Star, contentDescription = null) },
-            label = { Text(stringResource(R.string.savings_goals_title)) },
-            alwaysShowLabel = false
-        )
+        // Savings - Pro only
+        if (isPro) {
+            NavigationBarItem(
+                selected = selectedTab == BottomNavTab.SAVINGS,
+                onClick = { onTabSelected(BottomNavTab.SAVINGS) },
+                icon = { Icon(Icons.Filled.Star, contentDescription = null) },
+                label = { Text(stringResource(R.string.savings_goals_title)) },
+                alwaysShowLabel = false
+            )
+        }
         
+        // More - always visible
         NavigationBarItem(
             selected = selectedTab == BottomNavTab.MORE,
             onClick = { onTabSelected(BottomNavTab.MORE) },

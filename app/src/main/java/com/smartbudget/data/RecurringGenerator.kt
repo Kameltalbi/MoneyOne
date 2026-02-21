@@ -17,7 +17,17 @@ class RecurringGenerator(private val transactionRepo: TransactionRepository) {
     ) {
         if (!recurring.isActive) return
 
-        val generateUntil = targetMonth.atEndOfMonth()
+        // Extend generation window based on frequency
+        // Daily/Weekly: generate 3 months ahead to ensure continuity
+        // Monthly/Yearly: generate only target month
+        val monthsAhead = when (recurring.frequency) {
+            Frequency.DAILY -> 3
+            Frequency.WEEKLY -> 3
+            Frequency.MONTHLY -> 1
+            Frequency.YEARLY -> 1
+        }
+        val generateUntil = targetMonth.plusMonths(monthsAhead.toLong()).atEndOfMonth()
+        
         val startDate = Instant.ofEpochMilli(recurring.startDate)
             .atZone(ZoneId.systemDefault()).toLocalDate()
         val endDate = recurring.endDate?.let {
