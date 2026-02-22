@@ -36,6 +36,7 @@ data class Transaction(
     val type: TransactionType,
     val categoryId: Long? = null,
     val accountId: Long,
+    val destinationAccountId: Long? = null,  // For TRANSFER type: destination account
     val date: Long,         // epoch millis
     val note: String = "",
     val isValidated: Boolean = true,

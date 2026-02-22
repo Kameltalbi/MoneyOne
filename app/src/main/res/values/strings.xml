@@ -41,6 +41,7 @@
     <!-- Transaction Types -->
     <string name="expense">Dépense</string>
     <string name="income">Revenu</string>
+    <string name="transfer">Transfert</string>
 
     <!-- Add Transaction Screen -->
     <string name="new_transaction">Nouvelle transaction</string>
@@ -48,6 +49,7 @@
     <string name="transaction_name">Nom de la transaction</string>
     <string name="amount">Montant</string>
     <string name="category">Catégorie</string>
+    <string name="destination_account">Compte de destination</string>
     <string name="date">Date</string>
     <string name="note_optional">Note (optionnel)</string>
     <string name="recurrence">Récurrence</string>
@@ -179,29 +181,29 @@
     <!-- Balance adjustment -->
     <string name="adjust_balance">Ajuster le solde</string>
     <!-- Onboarding -->
-    <string name="onboarding_title_1">Gérez vos finances</string>
-    <string name="onboarding_desc_1">Suivez vos revenus et dépenses facilement avec un calendrier intuitif</string>
-    <string name="onboarding_title_2">Budgets intelligents</string>
-    <string name="onboarding_desc_2">Définissez des budgets mensuels par catégorie et suivez votre progression</string>
-    <string name="onboarding_title_3">Analysez vos habitudes</string>
-    <string name="onboarding_desc_3">Visualisez vos dépenses avec des graphiques clairs et prenez le contrôle</string>
-    <string name="next_page">Suivant</string>
-    <string name="skip">Passer</string>
-    <string name="skip_balance">Passer cette étape</string>
-    <string name="choose_your_language">Choisissez votre langue</string>
-    <string name="choose_your_currency">Choisissez votre devise</string>
-    <string name="onboarding_welcome_title">C\'est tout bon !</string>
-    <string name="onboarding_welcome_subtitle">(C\'était facile non ?)</string>
-    <string name="onboarding_next_steps">Quelles sont les prochaines étapes ?</string>
-    <string name="onboarding_step_1">Ajoutez vos dépenses et revenus au quotidien</string>
-    <string name="onboarding_step_2">Créez des catégories personnalisées</string>
-    <string name="onboarding_step_3">Suivez vos budgets et objectifs d\'épargne</string>
+    <string name="onboarding_title_1">Manage your finances</string>
+    <string name="onboarding_desc_1">Track your income and expenses easily with an intuitive calendar</string>
+    <string name="onboarding_title_2">Smart budgets</string>
+    <string name="onboarding_desc_2">Set monthly budgets by category and track your progress</string>
+    <string name="onboarding_title_3">Analyze your habits</string>
+    <string name="onboarding_desc_3">Visualize your expenses with clear charts and take control</string>
+    <string name="next_page">Next</string>
+    <string name="skip">Skip</string>
+    <string name="skip_balance">Skip this step</string>
+    <string name="choose_your_language">Choose your language</string>
+    <string name="choose_your_currency">Choose your currency</string>
+    <string name="onboarding_welcome_title">All set!</string>
+    <string name="onboarding_welcome_subtitle">(That was easy, right?)</string>
+    <string name="onboarding_next_steps">What\'s next?</string>
+    <string name="onboarding_step_1">Add your daily expenses and income</string>
+    <string name="onboarding_step_2">Create custom categories</string>
+    <string name="onboarding_step_3">Track your budgets and savings goals</string>
 
-    <string name="initial_balance_title">Créez votre compte</string>
-    <string name="initial_balance_message">Donnez un nom à votre compte et indiquez votre solde actuel</string>
-    <string name="account_name_hint">Nom du compte</string>
-    <string name="initial_balance_hint">Solde actuel (optionnel)</string>
-    <string name="start">Commencer</string>
+    <string name="initial_balance_title">Create your account</string>
+    <string name="initial_balance_message">Give your account a name and enter your current balance</string>
+    <string name="account_name_hint">Account name</string>
+    <string name="initial_balance_hint">Current balance (optional)</string>
+    <string name="start">Start</string>
     <string name="current_balance">Solde actuel</string>
     <string name="new_balance">Nouveau solde</string>
     <string name="adjust">Ajuster</string>

@@ -32,6 +32,7 @@
     <!-- Transaction Types -->
     <string name="expense">Expense</string>
     <string name="income">Income</string>
+    <string name="transfer">Transfer</string>
 
     <!-- Add Transaction Screen -->
     <string name="new_transaction">New transaction</string>
@@ -39,6 +40,7 @@
     <string name="transaction_name">Transaction name</string>
     <string name="amount">Amount</string>
     <string name="category">Category</string>
+    <string name="destination_account">Destination account</string>
     <string name="date">Date</string>
     <string name="note_optional">Note (optional)</string>
     <string name="recurrence">Recurrence</string>

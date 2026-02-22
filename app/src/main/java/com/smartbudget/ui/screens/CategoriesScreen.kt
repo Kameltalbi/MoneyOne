@@ -322,6 +322,7 @@ private fun CategoryDialog(
                         val label = when (type) {
                             TransactionType.EXPENSE -> stringResource(R.string.expense)
                             TransactionType.INCOME -> stringResource(R.string.income)
+                            TransactionType.TRANSFER -> stringResource(R.string.transfer)
                         }
                         FilterChip(
                             selected = isSelected,

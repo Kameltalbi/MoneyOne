@@ -147,10 +147,12 @@ fun AddTransactionScreen(
                         val label = when (type) {
                             TransactionType.EXPENSE -> stringResource(R.string.expense)
                             TransactionType.INCOME -> stringResource(R.string.income)
+                            TransactionType.TRANSFER -> stringResource(R.string.transfer)
                         }
                         val color = when (type) {
                             TransactionType.EXPENSE -> ExpenseRed
                             TransactionType.INCOME -> IncomeGreen
+                            TransactionType.TRANSFER -> MaterialTheme.colorScheme.primary
                         }
 
                         FilterChip(
@@ -235,20 +237,68 @@ fun AddTransactionScreen(
                 )
             }
 
-            // Category selection
-            Text(
-                text = stringResource(R.string.category),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+            // Destination account for TRANSFER
+            if (formState.type == TransactionType.TRANSFER) {
+                val allAccounts by viewModel.allAccounts.collectAsStateWithLifecycle()
+                val availableAccounts = allAccounts.filter { it.id != formState.selectedAccountId }
+                
+                Text(
+                    text = stringResource(R.string.destination_account),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                
+                availableAccounts.forEach { account ->
+                    val isSelected = formState.destinationAccountId == account.id
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { viewModel.updateDestinationAccount(account.id) },
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.surface
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Filled.AccountBalance,
+                                contentDescription = null,
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = account.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+            
+            // Category selection (hidden for TRANSFER)
+            if (formState.type != TransactionType.TRANSFER) {
+                Text(
+                    text = stringResource(R.string.category),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
-                modifier = Modifier.height(if (filteredCategories.size <= 4) 80.dp else 160.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                items(filteredCategories) { category ->
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(4),
+                    modifier = Modifier.height(if (filteredCategories.size <= 4) 80.dp else 160.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(filteredCategories) { category ->
                     val isSelected = formState.categoryId == category.id
                     val catColor = category.color.toComposeColor()
 
@@ -294,6 +344,7 @@ fun AddTransactionScreen(
                         )
                     }
                 }
+            }
             }
 
             // Date

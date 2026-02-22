@@ -2,6 +2,7 @@ package com.smartbudget
 
 import android.app.Application
 import com.smartbudget.data.SmartBudgetDatabase
+import com.smartbudget.data.RecurringGenerator
 import com.smartbudget.data.entity.Account
 import com.smartbudget.data.entity.Category
 import com.smartbudget.data.entity.TransactionType
@@ -41,6 +42,7 @@ class SmartBudgetApp : Application() {
     val budgetRepository by lazy { BudgetRepository(getDb().budgetDao()) }
     val savingsGoalRepository by lazy { SavingsGoalRepository(getDb().savingsGoalDao()) }
     val recurringRepository by lazy { RecurringRepository(getDb().recurringDao()) }
+    val recurringGenerator by lazy { RecurringGenerator(transactionRepository) }
     val billingManager by lazy { BillingManager(this) }
     val budgetAlertManager by lazy { BudgetAlertManager(this, budgetRepository, transactionRepository) }
     val firebaseAuthManager by lazy { FirebaseAuthManager(this) }

@@ -17,5 +17,6 @@ data class Category(
 
 enum class TransactionType {
     INCOME,
-    EXPENSE
+    EXPENSE,
+    TRANSFER
 }

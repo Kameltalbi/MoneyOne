@@ -46,8 +46,11 @@ fun OnboardingScreen(
     onFinish: (accountName: String, initialBalance: Double, langCode: String) -> Unit
 ) {
     val context = LocalContext.current
-    var currentStep by remember { mutableStateOf(STEP_LANGUAGE) }
-    var selectedLang by remember { mutableStateOf("") }
+    
+    // Restore selected language and step from SharedPreferences (survives activity restart)
+    val prefs = context.getSharedPreferences("onboarding_prefs", Context.MODE_PRIVATE)
+    var currentStep by remember { mutableStateOf(prefs.getInt("current_step", STEP_LANGUAGE)) }
+    var selectedLang by remember { mutableStateOf(prefs.getString("selected_lang", "") ?: "") }
     var selectedCurrencyCode by remember { mutableStateOf("") }
     var accountNameInput by remember { mutableStateOf("") }
     var balanceInput by remember { mutableStateOf("") }
@@ -132,9 +135,8 @@ fun OnboardingScreen(
                             Surface(
                                 onClick = { 
                                     selectedLang = code
-                                    // Apply language immediately
-                                    val localeList = LocaleListCompat.forLanguageTags(code)
-                                    AppCompatDelegate.setApplicationLocales(localeList)
+                                    // Just save selection, don't apply yet (no flickering)
+                                    prefs.edit().putString("selected_lang", code).apply()
                                 },
                                 shape = RoundedCornerShape(16.dp),
                                 color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
@@ -188,6 +190,7 @@ fun OnboardingScreen(
 
                         Button(
                             onClick = {
+                                // Just move to next step - apply language at the end
                                 currentStep = STEP_CURRENCY
                             },
                             modifier = Modifier
@@ -578,6 +581,15 @@ fun OnboardingScreen(
                         onClick = {
                             val name = accountNameInput.trim().ifEmpty { "Compte principal" }
                             val amount = balanceInput.toDoubleOrNull() ?: 0.0
+                            
+                            // Apply language now (at the end, smooth UX)
+                            if (selectedLang.isNotEmpty()) {
+                                val localeList = LocaleListCompat.forLanguageTags(selectedLang)
+                                AppCompatDelegate.setApplicationLocales(localeList)
+                            }
+                            
+                            // Clear onboarding preferences
+                            prefs.edit().clear().apply()
                             onFinish(name, amount, selectedLang)
                         },
                         modifier = Modifier

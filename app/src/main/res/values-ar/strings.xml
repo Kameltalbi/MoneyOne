@@ -32,6 +32,7 @@
     <!-- Transaction Types -->
     <string name="expense">مصروف</string>
     <string name="income">دخل</string>
+    <string name="transfer">تحويل</string>
 
     <!-- Add Transaction Screen -->
     <string name="new_transaction">معاملة جديدة</string>
@@ -39,6 +40,7 @@
     <string name="transaction_name">اسم المعاملة</string>
     <string name="amount">المبلغ</string>
     <string name="category">الفئة</string>
+    <string name="destination_account">الحساب الوجهة</string>
     <string name="date">التاريخ</string>
     <string name="note_optional">ملاحظة (اختياري)</string>
     <string name="recurrence">التكرار</string>

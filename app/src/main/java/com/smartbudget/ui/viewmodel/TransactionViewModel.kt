@@ -35,7 +35,8 @@ data class TransactionFormState(
     val editingId: Long? = null,
     val recurringId: Long? = null,
     val recurringEditMode: RecurringEditMode? = null,
-    val selectedAccountId: Long? = null
+    val selectedAccountId: Long? = null,
+    val destinationAccountId: Long? = null  // For transfers
 )
 
 class TransactionViewModel(
@@ -76,6 +77,10 @@ class TransactionViewModel(
         .flatMapLatest { categoryRepo.getAllCategories(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val allAccounts = flow { emit(userId) }
+        .flatMapLatest { accountRepo.getAllAccounts(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val filteredCategories: StateFlow<List<Category>> =
         combine(_formState, allCategories) { form, categories ->
             categories.filter { it.type == form.type }
@@ -109,6 +114,10 @@ class TransactionViewModel(
 
     fun updateFrequency(frequency: Frequency?, interval: Int = 1) {
         _formState.update { it.copy(frequency = frequency, frequencyInterval = interval) }
+    }
+
+    fun updateDestinationAccount(accountId: Long?) {
+        _formState.update { it.copy(destinationAccountId = accountId) }
     }
 
     fun resetForm(date: LocalDate = LocalDate.now(), accountId: Long? = null) {
@@ -154,39 +163,68 @@ class TransactionViewModel(
                     type = form.type,
                     categoryId = form.categoryId,
                     date = dateMillis,
-                    note = form.note
+                    note = form.note,
+                    destinationAccountId = form.destinationAccountId
                 ))
             } else {
-                val transaction = Transaction(
-                    name = form.name,
-                    amount = amount,
-                    type = form.type,
-                    categoryId = form.categoryId,
-                    accountId = account.id,
-                    date = dateMillis,
-                    note = form.note,
-                    userId = userId
-                )
-
-                if (form.frequency != null) {
-                    // Create recurring rule + first occurrence
-                    val recurringId = recurringRepo.insert(
-                        RecurringTransaction(
+                // Handle TRANSFER type: create 2 linked transactions
+                if (form.type == TransactionType.TRANSFER && form.destinationAccountId != null) {
+                    val destinationAccount = accountRepo.getAccountById(form.destinationAccountId, userId)
+                    if (destinationAccount != null) {
+                        // Debit from source account (EXPENSE-like)
+                        val debitTransaction = Transaction(
                             name = form.name,
                             amount = amount,
-                            type = form.type,
-                            categoryId = form.categoryId,
+                            type = TransactionType.TRANSFER,
+                            categoryId = null,  // No category for transfers
                             accountId = account.id,
+                            destinationAccountId = destinationAccount.id,
+                            date = dateMillis,
                             note = form.note,
-                            startDate = dateMillis,
-                            frequency = form.frequency,
-                            interval = form.frequencyInterval,
                             userId = userId
                         )
-                    )
-                    transactionRepo.insert(transaction.copy(recurringId = recurringId))
+                        transactionRepo.insert(debitTransaction)
+                    }
                 } else {
-                    transactionRepo.insert(transaction)
+                    // Regular INCOME or EXPENSE transaction
+                    val transaction = Transaction(
+                        name = form.name,
+                        amount = amount,
+                        type = form.type,
+                        categoryId = form.categoryId,
+                        accountId = account.id,
+                        date = dateMillis,
+                        note = form.note,
+                        userId = userId
+                    )
+
+                    if (form.frequency != null) {
+                        // Create recurring rule + first occurrence
+                        val recurringId = recurringRepo.insert(
+                            RecurringTransaction(
+                                name = form.name,
+                                amount = amount,
+                                type = form.type,
+                                categoryId = form.categoryId,
+                                accountId = account.id,
+                                note = form.note,
+                                startDate = dateMillis,
+                                frequency = form.frequency,
+                                interval = form.frequencyInterval,
+                                userId = userId
+                            )
+                        )
+                        transactionRepo.insert(transaction.copy(recurringId = recurringId))
+                        
+                        // Generate occurrences immediately for current month
+                        val recurring = recurringRepo.getById(recurringId, userId)
+                        if (recurring != null) {
+                            val currentMonth = java.time.YearMonth.now()
+                            app.recurringGenerator.generateUpToMonth(recurring, currentMonth)
+                        }
+                    } else {
+                        transactionRepo.insert(transaction)
+                    }
                 }
             }
 
