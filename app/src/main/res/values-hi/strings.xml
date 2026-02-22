@@ -188,7 +188,7 @@
     <string name="balance_adjusted">शेष समायोजित किया गया ✓</string>
 
     <!-- Backup -->
-    <string name="backup_title">Google Drive बैकअप</string>
+    <string name="backup_title">बैकअप</string>
     <string name="backup_sign_in">Google से साइन इन करें</string>
     <string name="backup_sign_in_failed">साइन इन विफल</string>
     <string name="backup_save">बैकअप</string>

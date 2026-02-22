@@ -227,6 +227,14 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(6.dp))
 
+                    // Info about budget purpose
+                    Text(
+                        text = "💡 Le budget global vous aide à suivre vos dépenses mensuelles. Consultez le tableau de bord pour voir votre progression.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
                     OutlinedTextField(
                         value = globalBudgetAmount,
                         onValueChange = {
@@ -269,204 +277,203 @@ fun SettingsScreen(
                 SettingsNavItem(
                     icon = Icons.Filled.Label,
                     title = stringResource(R.string.categories) + if (!isPro) " ⭐ Pro" else "",
-                    subtitle = "${stringResource(R.string.expenses_count, expenseCount)} · ${stringResource(R.string.incomes_count, incomeCount)}",
+                    subtitle = if (isPro) stringResource(R.string.categories_desc_pro) else stringResource(R.string.categories_desc_free),
                     onClick = if (isPro) onNavigateCategories else onNavigateProUpgrade
                 )
             }
 
-            // Category budgets
-            item {
-                SettingsNavItem(
-                    icon = Icons.Filled.PieChart,
-                    title = stringResource(R.string.category_budgets),
-                    subtitle = stringResource(R.string.category_budgets_desc),
-                    onClick = onNavigateCategoryBudgets
-                )
+            // Category budgets - PRO only
+            if (isPro) {
+                item {
+                    SettingsNavItem(
+                        icon = Icons.Filled.PieChart,
+                        title = stringResource(R.string.category_budgets),
+                        subtitle = stringResource(R.string.category_budgets_desc),
+                        onClick = onNavigateCategoryBudgets
+                    )
+                }
             }
 
-            // Savings goals
-            item {
-                SettingsNavItem(
-                    icon = Icons.Filled.AccountBalanceWallet,
-                    title = stringResource(R.string.savings_goals),
-                    subtitle = stringResource(R.string.savings_goals_desc),
-                    onClick = onNavigateSavingsGoals
-                )
+            // Savings goals - PRO only
+            if (isPro) {
+                item {
+                    SettingsNavItem(
+                        icon = Icons.Filled.AccountBalanceWallet,
+                        title = stringResource(R.string.savings_goals),
+                        subtitle = stringResource(R.string.savings_goals_desc),
+                        onClick = onNavigateSavingsGoals
+                    )
+                }
             }
 
             // ── SECTION: Backup ──
             item { SettingsSectionHeader(stringResource(R.string.backup_title)) }
 
-            // Google Drive backup
-            item {
-                val driveManager = remember { com.smartbudget.backup.DriveBackupManager(context) }
+            // Firebase Cloud Sync - PRO only
+            if (isPro) {
+                item {
+                    val app = context.applicationContext as com.smartbudget.SmartBudgetApp
+                val firebaseSyncManager = app.firebaseSyncManager
+                val firebaseAuthManager = app.firebaseAuthManager
+                val userManager = com.smartbudget.data.UserManager(context)
                 val scope = rememberCoroutineScope()
-                var isBackingUp by remember { mutableStateOf(false) }
+                var isSyncing by remember { mutableStateOf(false) }
                 var isRestoring by remember { mutableStateOf(false) }
-                var backupMessage by remember { mutableStateOf<String?>(null) }
-                val isSignedIn = remember { mutableStateOf(driveManager.isSignedIn()) }
-                val accountEmail = remember { mutableStateOf(driveManager.getAccountEmail()) }
-                val lastBackupTime = remember {
-                    val prefs = context.getSharedPreferences("settings", android.content.Context.MODE_PRIVATE)
-                    mutableStateOf(prefs.getLong("last_backup_time", 0L))
-                }
-
-                LaunchedEffect(Unit) {
-                    if (!isSignedIn.value || com.google.android.gms.auth.api.signin.GoogleSignIn.getLastSignedInAccount(context) == null) {
-                        val success = driveManager.silentSignIn()
-                        if (success) {
-                            isSignedIn.value = true
-                            accountEmail.value = driveManager.getAccountEmail()
-                        }
-                    }
-                }
-
-                val signInLauncher = rememberLauncherForActivityResult(
-                    contract = androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
-                ) { result ->
-                    val task = com.google.android.gms.auth.api.signin.GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                    try {
-                        task.getResult(com.google.android.gms.common.api.ApiException::class.java)
-                        isSignedIn.value = true
-                        accountEmail.value = driveManager.getAccountEmail()
-                    } catch (_: Exception) {
-                        backupMessage = context.getString(R.string.backup_sign_in_failed)
-                    }
-                }
+                var syncMessage by remember { mutableStateOf<String?>(null) }
+                val isSignedIn = remember { mutableStateOf(firebaseAuthManager.isSignedIn()) }
+                val lastSyncTime = remember { mutableStateOf(firebaseSyncManager.getLastSyncTime()) }
+                val autoSyncEnabled = remember { mutableStateOf(firebaseSyncManager.isAutoSyncEnabled()) }
 
                 SettingsCard {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Filled.Cloud,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Google Drive",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    if (!isSignedIn.value) {
-                        OutlinedButton(
-                            onClick = { signInLauncher.launch(driveManager.getSignInIntent()) },
+                    Column {
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(stringResource(R.string.backup_sign_in))
+                            Icon(
+                                Icons.Filled.Cloud,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Synchronisation Cloud",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                if (isSignedIn.value) {
+                                    Text(
+                                        text = if (lastSyncTime.value > 0) {
+                                            "Dernière sync: ${java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(lastSyncTime.value))}"
+                                        } else {
+                                            "Jamais synchronisé"
+                                        },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                         }
-                    } else {
-                        Text(
-                            text = accountEmail.value ?: "",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        if (lastBackupTime.value > 0) {
-                            val dateStr = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
-                                .format(java.util.Date(lastBackupTime.value))
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        if (isSignedIn.value) {
+                            // Auto-sync toggle
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { 
+                                        autoSyncEnabled.value = !autoSyncEnabled.value
+                                        firebaseSyncManager.setAutoSyncEnabled(autoSyncEnabled.value)
+                                    }
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Synchronisation automatique",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Switch(
+                                    checked = autoSyncEnabled.value,
+                                    onCheckedChange = { 
+                                        autoSyncEnabled.value = it
+                                        firebaseSyncManager.setAutoSyncEnabled(it)
+                                    }
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Sync now button
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        isSyncing = true
+                                        syncMessage = null
+                                        val result = firebaseSyncManager.syncToCloud(userManager.getCurrentUserId())
+                                        isSyncing = false
+                                        if (result.isSuccess) {
+                                            lastSyncTime.value = firebaseSyncManager.getLastSyncTime()
+                                            syncMessage = "Synchronisation réussie ✓"
+                                        } else {
+                                            syncMessage = "Erreur: ${result.exceptionOrNull()?.message}"
+                                        }
+                                    }
+                                },
+                                enabled = !isSyncing && !isRestoring,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                if (isSyncing) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                }
+                                Text(if (isSyncing) "Synchronisation..." else "Synchroniser maintenant")
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Restore button
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch {
+                                        isRestoring = true
+                                        syncMessage = null
+                                        val result = firebaseSyncManager.restoreFromCloud(userManager.getCurrentUserId())
+                                        isRestoring = false
+                                        if (result.isSuccess) {
+                                            syncMessage = "Restauration réussie ✓"
+                                        } else {
+                                            syncMessage = "Erreur: ${result.exceptionOrNull()?.message}"
+                                        }
+                                    }
+                                },
+                                enabled = !isSyncing && !isRestoring,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                if (isRestoring) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                }
+                                Text(if (isRestoring) "Restauration..." else "Restaurer depuis le cloud")
+                            }
+
+                            syncMessage?.let { message ->
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = message,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (message.contains("✓")) MaterialTheme.colorScheme.primary 
+                                           else MaterialTheme.colorScheme.error
+                                )
+                            }
+                        } else {
                             Text(
-                                text = stringResource(R.string.backup_last, dateStr),
-                                style = MaterialTheme.typography.labelSmall,
+                                text = "Connexion au cloud en cours...",
+                                style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(
-                                onClick = {
-                                    isBackingUp = true
-                                    backupMessage = null
-                                    scope.launch {
-                                        (context.applicationContext as SmartBudgetApp).getDb().close()
-                                        val result = driveManager.backup()
-                                        (context.applicationContext as SmartBudgetApp).reopenDatabase()
-                                        result.onSuccess {
-                                            backupMessage = context.getString(R.string.backup_success)
-                                            lastBackupTime.value = System.currentTimeMillis()
-                                        }.onFailure {
-                                            backupMessage = context.getString(R.string.backup_error) + ": ${it.message}"
-                                        }
-                                        isBackingUp = false
-                                    }
-                                },
-                                enabled = !isBackingUp && !isRestoring,
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                if (isBackingUp) {
-                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
-                                } else {
-                                    Icon(Icons.Filled.CloudUpload, contentDescription = null, modifier = Modifier.size(16.dp))
-                                }
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(stringResource(R.string.backup_save))
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    isRestoring = true
-                                    backupMessage = null
-                                    scope.launch {
-                                        (context.applicationContext as SmartBudgetApp).getDb().close()
-                                        val result = driveManager.restore()
-                                        (context.applicationContext as SmartBudgetApp).reopenDatabase()
-                                        result.onSuccess {
-                                            backupMessage = context.getString(R.string.backup_restored)
-                                        }.onFailure {
-                                            backupMessage = context.getString(R.string.backup_restore_error) + ": ${it.message}"
-                                        }
-                                        isRestoring = false
-                                    }
-                                },
-                                enabled = !isBackingUp && !isRestoring,
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                if (isRestoring) {
-                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                                } else {
-                                    Icon(Icons.Filled.CloudDownload, contentDescription = null, modifier = Modifier.size(16.dp))
-                                }
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(stringResource(R.string.backup_restore))
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-                        TextButton(onClick = {
-                            scope.launch {
-                                driveManager.signOut()
-                                isSignedIn.value = false
-                                accountEmail.value = null
-                            }
-                        }) {
-                            Text(stringResource(R.string.backup_sign_out), style = MaterialTheme.typography.labelSmall)
-                        }
                     }
-
-                    backupMessage?.let { msg ->
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = msg,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (msg.contains("✓")) IncomeGreen else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                }
                 }
             }
 
-            // Export CSV
+            // Export PDF
             item {
                 SettingsNavItem(
                     icon = Icons.Filled.FileDownload,
                     title = stringResource(R.string.export_csv),
-                    subtitle = "CSV",
+                    subtitle = "Exportez vos transactions en PDF",
                     onClick = { /* handled elsewhere */ }
                 )
             }
@@ -545,50 +552,55 @@ fun SettingsScreen(
                 }
             }
 
-            // ── SECTION: Personalization (theme color at the bottom) ──
-            item { SettingsSectionHeader(stringResource(R.string.theme_color)) }
+            // ── SECTION: Personalization (theme color) ──
+            item { SettingsSectionHeader(stringResource(R.string.theme_color) + if (!isPro) " ⭐ Pro" else "") }
 
             item {
                 SettingsCard {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    Column(
+                        modifier = if (!isPro) Modifier.clickable { onNavigateProUpgrade() } else Modifier
                     ) {
-                        availableThemeColors.forEach { tc ->
-                            val isSelected = tc.name == themeColor
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .background(tc.primary, CircleShape)
-                                    .then(
-                                        if (isSelected) Modifier.border(2.5.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                                        else Modifier
-                                    )
-                                    .clickable {
-                                        if (isPro) viewModel.setThemeColor(tc.name)
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (isSelected) {
-                                    Icon(
-                                        Icons.Filled.Check,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            availableThemeColors.forEach { tc ->
+                                val isSelected = tc.name == themeColor
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .background(tc.primary, CircleShape)
+                                        .then(
+                                            if (isSelected) Modifier.border(2.5.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                            else Modifier
+                                        )
+                                        .clickable {
+                                            if (isPro) viewModel.setThemeColor(tc.name)
+                                            else onNavigateProUpgrade()
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isSelected) {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (!isPro) {
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = stringResource(R.string.pro_required_desc) + " ⭐",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        if (!isPro) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "Passez à Pro pour personnaliser les couleurs ⭐",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             }

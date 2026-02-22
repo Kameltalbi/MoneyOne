@@ -188,7 +188,7 @@
     <string name="balance_adjusted">Bakiye ayarlandı ✓</string>
 
     <!-- Backup -->
-    <string name="backup_title">Google Drive Yedekleme</string>
+    <string name="backup_title">Yedekleme</string>
     <string name="backup_sign_in">Google ile giriş yap</string>
     <string name="backup_sign_in_failed">Giriş başarısız</string>
     <string name="backup_save">Yedekle</string>

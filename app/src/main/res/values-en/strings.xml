@@ -92,12 +92,15 @@
     <string name="category_budgets">Category budgets</string>
     <string name="category_budgets_desc">Set a budget for each expense category</string>
     <string name="categories">Categories</string>
+    <string name="categories_desc_free">8 default categories</string>
+    <string name="categories_desc_pro">Create and customize your categories</string>
     <string name="expenses_count">%1$d expenses</string>
     <string name="incomes_count">%1$d incomes</string>
 
     <!-- Categories Screen -->
     <string name="new_category">New category</string>
     <string name="edit_category">Edit category</string>
+    <string name="add_category">Add category</string>
     <string name="delete_category">Delete category</string>
     <string name="delete_category_confirm">Are you sure you want to delete \"%1$s\"?</string>
     <string name="category_name">Name</string>
@@ -188,7 +191,7 @@
     <string name="balance_adjusted">Balance adjusted ✓</string>
 
     <!-- Backup -->
-    <string name="backup_title">Google Drive Backup</string>
+    <string name="backup_title">Backup</string>
     <string name="backup_sign_in">Sign in with Google</string>
     <string name="backup_sign_in_failed">Sign in failed</string>
     <string name="backup_save">Backup</string>

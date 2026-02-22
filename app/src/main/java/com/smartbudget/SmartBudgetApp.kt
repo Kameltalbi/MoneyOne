@@ -13,6 +13,8 @@ import com.smartbudget.data.repository.RecurringRepository
 import com.smartbudget.data.repository.TransactionRepository
 import com.smartbudget.billing.BillingManager
 import com.smartbudget.notification.BudgetAlertManager
+import com.smartbudget.firebase.FirebaseAuthManager
+import com.smartbudget.firebase.FirebaseSyncManager
 import com.smartbudget.ui.util.CurrencyFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,13 +43,41 @@ class SmartBudgetApp : Application() {
     val recurringRepository by lazy { RecurringRepository(getDb().recurringDao()) }
     val billingManager by lazy { BillingManager(this) }
     val budgetAlertManager by lazy { BudgetAlertManager(this, budgetRepository, transactionRepository) }
+    val firebaseAuthManager by lazy { FirebaseAuthManager(this) }
+    val firebaseSyncManager by lazy { 
+        FirebaseSyncManager(
+            this,
+            firebaseAuthManager,
+            accountRepository,
+            categoryRepository,
+            transactionRepository,
+            budgetRepository,
+            savingsGoalRepository,
+            recurringRepository
+        )
+    }
 
     override fun onCreate() {
         super.onCreate()
         CurrencyFormatter.init(this)
         billingManager.initialize()
         budgetAlertManager.createNotificationChannel()
+        initializeFirebase()
         seedDefaultData()
+    }
+    
+    private fun initializeFirebase() {
+        CoroutineScope(Dispatchers.IO).launch {
+            // Sign in anonymously if not already signed in
+            if (!firebaseAuthManager.isSignedIn()) {
+                val result = firebaseAuthManager.signInAnonymously()
+                if (result.isSuccess) {
+                    android.util.Log.d("SmartBudgetApp", "Firebase anonymous sign-in successful")
+                } else {
+                    android.util.Log.e("SmartBudgetApp", "Firebase anonymous sign-in failed", result.exceptionOrNull())
+                }
+            }
+        }
     }
 
     private fun seedDefaultData() {

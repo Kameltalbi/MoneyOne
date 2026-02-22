@@ -92,6 +92,8 @@
     <string name="category_budgets">ميزانيات الفئات</string>
     <string name="category_budgets_desc">تحديد ميزانية لكل فئة مصروفات</string>
     <string name="categories">الفئات</string>
+    <string name="categories_desc_free">8 فئات افتراضية</string>
+    <string name="categories_desc_pro">أنشئ وخصص فئاتك</string>
     <string name="expenses_count">%1$d مصروفات</string>
     <string name="incomes_count">%1$d دخل</string>
 
@@ -173,6 +175,7 @@
     <string name="onboarding_title_3">حلل عاداتك</string>
     <string name="onboarding_desc_3">شاهد مصاريفك برسوم بيانية واضحة وتحكم في أموالك</string>
     <string name="next_page">التالي</string>
+    <string name="skip">تخطي</string>
     <string name="skip_balance">تخطي هذه الخطوة</string>
     <string name="choose_your_language">اختر لغتك</string>
     <string name="choose_your_currency">اختر عملتك</string>
@@ -188,7 +191,7 @@
     <string name="balance_adjusted">تم تعديل الرصيد ✓</string>
 
     <!-- Backup -->
-    <string name="backup_title">نسخ احتياطي Google Drive</string>
+    <string name="backup_title">نسخ احتياطي</string>
     <string name="backup_sign_in">تسجيل الدخول بحساب Google</string>
     <string name="backup_sign_in_failed">فشل تسجيل الدخول</string>
     <string name="backup_save">نسخ احتياطي</string>
@@ -223,7 +226,7 @@
     <string name="theme_color">لون السمة</string>
 
     <!-- Export -->
-    <string name="export_csv">تصدير CSV</string>
+    <string name="export_csv">تصدير PDF</string>
 
     <!-- Search -->
     <string name="search_hint">البحث عن معاملة…</string>

@@ -188,7 +188,7 @@
     <string name="balance_adjusted">Saldo angepasst ✓</string>
 
     <!-- Backup -->
-    <string name="backup_title">Google Drive Sicherung</string>
+    <string name="backup_title">Sicherung</string>
     <string name="backup_sign_in">Mit Google anmelden</string>
     <string name="backup_sign_in_failed">Anmeldung fehlgeschlagen</string>
     <string name="backup_save">Sichern</string>

@@ -130,7 +130,12 @@ fun OnboardingScreen(
                         items(languages) { (code, name, flag) ->
                             val isSelected = selectedLang == code
                             Surface(
-                                onClick = { selectedLang = code },
+                                onClick = { 
+                                    selectedLang = code
+                                    // Apply language immediately
+                                    val localeList = LocaleListCompat.forLanguageTags(code)
+                                    AppCompatDelegate.setApplicationLocales(localeList)
+                                },
                                 shape = RoundedCornerShape(16.dp),
                                 color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                                         else MaterialTheme.colorScheme.surface,

@@ -101,6 +101,8 @@
     <string name="category_budgets">Budgets par catégorie</string>
     <string name="category_budgets_desc">Définir un budget pour chaque catégorie de dépense</string>
     <string name="categories">Catégories</string>
+    <string name="categories_desc_free">8 catégories par défaut</string>
+    <string name="categories_desc_pro">Créez et personnalisez vos catégories</string>
     <string name="expenses_count">%1$d dépenses</string>
     <string name="incomes_count">%1$d revenus</string>
     <string name="savings_goals">Objectifs d\'épargne</string>
@@ -206,7 +208,7 @@
     <string name="balance_adjusted">Solde ajusté ✓</string>
 
     <!-- Backup -->
-    <string name="backup_title">Sauvegarde Google Drive</string>
+    <string name="backup_title">Sauvegarde</string>
     <string name="backup_sign_in">Se connecter avec Google</string>
     <string name="backup_sign_in_failed">Échec de la connexion</string>
     <string name="backup_save">Sauvegarder</string>
@@ -241,7 +243,7 @@
     <string name="theme_color">Couleur du thème</string>
 
     <!-- Export -->
-    <string name="export_csv">Exporter CSV</string>
+    <string name="export_csv">Exporter PDF</string>
 
     <!-- Search -->
     <string name="search_hint">Rechercher une transaction…</string>
