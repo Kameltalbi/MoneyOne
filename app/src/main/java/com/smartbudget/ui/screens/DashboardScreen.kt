@@ -47,6 +47,8 @@ fun DashboardScreen(
     val annualData by viewModel.annualData.collectAsStateWithLifecycle()
     val previousMonthSummary by viewModel.previousMonthSummary.collectAsStateWithLifecycle()
     val monthForecast by viewModel.monthForecast.collectAsStateWithLifecycle()
+    val currentAccount by viewModel.currentAccount.collectAsStateWithLifecycle()
+    val isConsolidated by viewModel.isConsolidated.collectAsStateWithLifecycle()
 
     // Load annual data when year changes
     LaunchedEffect(currentYearMonth.year) {
@@ -57,10 +59,28 @@ fun DashboardScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = stringResource(R.string.dashboard),
-                        style = MaterialTheme.typography.titleLarge
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.dashboard),
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.padding(start = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isConsolidated) stringResource(R.string.all_accounts)
+                                       else currentAccount?.name ?: stringResource(R.string.account),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {

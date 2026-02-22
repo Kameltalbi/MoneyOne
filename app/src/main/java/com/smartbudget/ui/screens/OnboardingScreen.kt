@@ -40,6 +40,7 @@ private const val STEP_BALANCE = 5
 private const val STEP_WELCOME = 6
 private const val TOTAL_STEPS = 7
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingScreen(
     onFinish: (accountName: String, initialBalance: Double, langCode: String) -> Unit
@@ -52,7 +53,23 @@ fun OnboardingScreen(
     var balanceInput by remember { mutableStateOf("") }
     var currencySearch by remember { mutableStateOf("") }
 
-    Scaffold { paddingValues ->
+    Scaffold(
+        topBar = {
+            if (currentStep > STEP_LANGUAGE) {
+                SmallTopAppBar(
+                    title = { },
+                    navigationIcon = {
+                        IconButton(onClick = { currentStep-- }) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        }
+                    },
+                    colors = TopAppBarDefaults.smallTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            }
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
