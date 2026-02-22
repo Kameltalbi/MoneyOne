@@ -81,7 +81,12 @@ fun SmartBudgetNavigation(
             MainScreen(
                 viewModel = mainViewModel,
                 onAddTransaction = {
-                    transactionViewModel.resetForm(mainViewModel.selectedDate.value)
+                    val accountId = if (mainViewModel.isConsolidated.value) {
+                        null // Will use default account
+                    } else {
+                        mainViewModel.currentAccount.value?.id
+                    }
+                    transactionViewModel.resetForm(mainViewModel.selectedDate.value, accountId)
                     navController.navigate(Routes.ADD_TRANSACTION)
                 },
                 onEditTransaction = { transactionId ->

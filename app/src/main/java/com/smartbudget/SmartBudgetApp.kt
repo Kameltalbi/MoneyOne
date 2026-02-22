@@ -54,21 +54,25 @@ class SmartBudgetApp : Application() {
         CoroutineScope(Dispatchers.IO).launch {
             // Default account is now created during onboarding
 
-            // Seed default categories
+            // Seed default categories - always check and recreate if missing
             val userManager = com.smartbudget.data.UserManager(this@SmartBudgetApp)
             val userId = userManager.getCurrentUserId()
-            if (categoryRepository.count(userId) == 0) {
+            
+            // Check if default categories exist, if not recreate them
+            val categoryCount = categoryRepository.count(userId)
+            if (categoryCount == 0) {
                 val defaults = listOf(
-                    Category(name = "Salaire", icon = "payments", color = 0xFF4CAF50, type = TransactionType.INCOME, isDefault = true),
-                    Category(name = "Freelance", icon = "work", color = 0xFF66BB6A, type = TransactionType.INCOME, isDefault = true),
-                    Category(name = "Alimentation", icon = "restaurant", color = 0xFFFF9800, type = TransactionType.EXPENSE, isDefault = true),
-                    Category(name = "Transport", icon = "directions_car", color = 0xFF2196F3, type = TransactionType.EXPENSE, isDefault = true),
-                    Category(name = "Logement", icon = "home", color = 0xFF9C27B0, type = TransactionType.EXPENSE, isDefault = true),
-                    Category(name = "Shopping", icon = "shopping_bag", color = 0xFFE91E63, type = TransactionType.EXPENSE, isDefault = true),
-                    Category(name = "Santé", icon = "local_hospital", color = 0xFFF44336, type = TransactionType.EXPENSE, isDefault = true),
-                    Category(name = "Loisirs", icon = "sports_esports", color = 0xFF00BCD4, type = TransactionType.EXPENSE, isDefault = true),
+                    Category(name = "Salaire", icon = "payments", color = 0xFF4CAF50, type = TransactionType.INCOME, isDefault = true, userId = userId),
+                    Category(name = "Freelance", icon = "work", color = 0xFF66BB6A, type = TransactionType.INCOME, isDefault = true, userId = userId),
+                    Category(name = "Alimentation", icon = "restaurant", color = 0xFFFF9800, type = TransactionType.EXPENSE, isDefault = true, userId = userId),
+                    Category(name = "Transport", icon = "directions_car", color = 0xFF2196F3, type = TransactionType.EXPENSE, isDefault = true, userId = userId),
+                    Category(name = "Logement", icon = "home", color = 0xFF9C27B0, type = TransactionType.EXPENSE, isDefault = true, userId = userId),
+                    Category(name = "Shopping", icon = "shopping_bag", color = 0xFFE91E63, type = TransactionType.EXPENSE, isDefault = true, userId = userId),
+                    Category(name = "Santé", icon = "local_hospital", color = 0xFFF44336, type = TransactionType.EXPENSE, isDefault = true, userId = userId),
+                    Category(name = "Loisirs", icon = "sports_esports", color = 0xFF00BCD4, type = TransactionType.EXPENSE, isDefault = true, userId = userId),
                 )
                 categoryRepository.insertAll(defaults)
+                android.util.Log.d("SmartBudgetApp", "Created ${defaults.size} default categories for user $userId")
             }
         }
     }

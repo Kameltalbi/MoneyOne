@@ -14,13 +14,19 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
         const val PRODUCT_ID_ANNUAL = "moneyone_pro_annual"
         private const val PREFS_NAME = "moneyone_pro"
         private const val KEY_IS_PRO = "is_pro"
+        
+        // DEV MODE: Set to true for personal testing APK (bypasses Google Play Billing)
+        // IMPORTANT: Must be false for Play Store release!
+        private const val DEV_MODE_FORCE_PRO = true
     }
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    // PRODUCTION MODE: isPro = false by default
-    // Users must purchase subscription to unlock Pro features
-    private val _isPro = MutableStateFlow(prefs.getBoolean(KEY_IS_PRO, false))
+    // Initialize Pro status: DEV_MODE forces Pro, otherwise checks subscription
+    private val _isPro = MutableStateFlow(
+        if (DEV_MODE_FORCE_PRO) true 
+        else prefs.getBoolean(KEY_IS_PRO, false)
+    )
     val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
 
     private var billingClient: BillingClient? = null
@@ -143,8 +149,14 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     }
 
     private fun setProStatus(isPro: Boolean) {
-        prefs.edit().putBoolean(KEY_IS_PRO, isPro).apply()
-        _isPro.value = isPro
+        // In DEV_MODE, always keep Pro enabled
+        if (DEV_MODE_FORCE_PRO) {
+            prefs.edit().putBoolean(KEY_IS_PRO, true).apply()
+            _isPro.value = true
+        } else {
+            prefs.edit().putBoolean(KEY_IS_PRO, isPro).apply()
+            _isPro.value = isPro
+        }
     }
 
     fun destroy() {

@@ -34,7 +34,8 @@ data class TransactionFormState(
     val isEditing: Boolean = false,
     val editingId: Long? = null,
     val recurringId: Long? = null,
-    val recurringEditMode: RecurringEditMode? = null
+    val recurringEditMode: RecurringEditMode? = null,
+    val selectedAccountId: Long? = null
 )
 
 class TransactionViewModel(
@@ -110,8 +111,8 @@ class TransactionViewModel(
         _formState.update { it.copy(frequency = frequency, frequencyInterval = interval) }
     }
 
-    fun resetForm(date: LocalDate = LocalDate.now()) {
-        _formState.value = TransactionFormState(date = date)
+    fun resetForm(date: LocalDate = LocalDate.now(), accountId: Long? = null) {
+        _formState.value = TransactionFormState(date = date, selectedAccountId = accountId)
     }
 
     fun loadTransaction(transactionId: Long) {
@@ -137,7 +138,12 @@ class TransactionViewModel(
             val amount = form.amount.toDoubleOrNull() ?: return@launch
             if (amount <= 0) return@launch
 
-            val account = accountRepo.getDefaultAccount(userId) ?: return@launch
+            // Use selected account if available, otherwise use default
+            val account = if (form.selectedAccountId != null) {
+                accountRepo.getAccountById(form.selectedAccountId, userId)
+            } else {
+                accountRepo.getDefaultAccount(userId)
+            } ?: return@launch
             val dateMillis = DateUtils.toEpochMillis(form.date)
 
             if (form.isEditing) {
