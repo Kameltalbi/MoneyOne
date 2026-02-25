@@ -102,6 +102,10 @@ dependencies {
     // Google Play Billing
     implementation("com.android.billingclient:billing-ktx:6.1.0")
 
+    // Biometric & Security
+    implementation("androidx.biometric:biometric:1.1.0")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
     // Firebase BOM
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")

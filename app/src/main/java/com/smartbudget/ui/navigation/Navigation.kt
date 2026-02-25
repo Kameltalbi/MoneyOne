@@ -23,6 +23,9 @@ object Routes {
     const val SETTINGS_CATEGORY_BUDGETS = "settings/category_budgets"
     const val SETTINGS_CURRENCY = "settings/currency"
     const val SETTINGS_ACCOUNTS = "settings/accounts"
+    const val SETTINGS_SECURITY = "settings/security"
+    const val SMS_IMPORT = "sms_import"
+    const val FEATURES = "features"
     const val BUDGETS = "budgets"
     const val DASHBOARD = "dashboard"
     const val SMART_INSIGHTS = "smart_insights"
@@ -94,10 +97,11 @@ fun SmartBudgetNavigation(
                     navController.navigate(Routes.ADD_TRANSACTION)
                 },
                 onEditRecurringTransaction = { transactionId, mode ->
-                    transactionViewModel.loadTransaction(transactionId)
+                    // Set mode FIRST, then load transaction (which preserves the mode)
                     transactionViewModel.setRecurringEditMode(
                         com.smartbudget.ui.viewmodel.RecurringEditMode.valueOf(mode)
                     )
+                    transactionViewModel.loadTransaction(transactionId)
                     navController.navigate(Routes.ADD_TRANSACTION)
                 },
                 onSettings = {
@@ -139,7 +143,10 @@ fun SmartBudgetNavigation(
                 onNavigateCurrency = { navController.navigate(Routes.SETTINGS_CURRENCY) },
                 onNavigateAccounts = { navController.navigate(Routes.SETTINGS_ACCOUNTS) },
                 onNavigateSavingsGoals = { navController.navigate(Routes.SAVINGS_GOALS) },
-                onNavigateProUpgrade = { navController.navigate(Routes.PRO_UPGRADE) }
+                onNavigateProUpgrade = { navController.navigate(Routes.PRO_UPGRADE) },
+                onNavigateSecurity = { navController.navigate(Routes.SETTINGS_SECURITY) },
+                onNavigateSmsImport = { navController.navigate(Routes.SMS_IMPORT) },
+                onNavigateFeatures = { navController.navigate(Routes.FEATURES) }
             )
         }
 
@@ -168,6 +175,26 @@ fun SmartBudgetNavigation(
             AccountsScreen(
                 viewModel = settingsViewModel,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.SETTINGS_SECURITY) {
+            SecuritySettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.SMS_IMPORT) {
+            SmsImportScreen(
+                viewModel = mainViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.FEATURES) {
+            FeaturesScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateProUpgrade = { navController.navigate(Routes.PRO_UPGRADE) }
             )
         }
 

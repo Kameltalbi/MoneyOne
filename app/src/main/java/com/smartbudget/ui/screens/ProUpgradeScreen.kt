@@ -120,14 +120,86 @@ fun ProUpgradeScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Features list
+            // Free vs Pro comparison
+            Text(
+                text = "Comparaison des plans",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Free plan features
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Plan Gratuit",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                        ) {
+                            Text(
+                                text = "0 MAD",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    val freeFeatures = listOf(
+                        "✓ 1 compte uniquement",
+                        "✓ Transactions illimitées",
+                        "✓ Catégories personnalisées",
+                        "✓ Budget global mensuel",
+                        "✓ Statistiques de base"
+                    )
+                    freeFeatures.forEach { feature ->
+                        Text(
+                            text = feature,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (feature != freeFeatures.last()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Pro plan features
+            Text(
+                text = "Plan Pro - Toutes les fonctionnalités",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
             val features = listOf(
-                Icons.Filled.AccountBalance to stringResource(R.string.pro_feature_accounts),
-                Icons.Filled.AllInclusive to stringResource(R.string.pro_feature_unlimited),
-                Icons.Filled.Label to stringResource(R.string.pro_feature_categories),
-                Icons.Filled.BarChart to stringResource(R.string.pro_feature_dashboard),
-                Icons.Filled.Layers to stringResource(R.string.pro_feature_consolidation),
-                Icons.Filled.AccountBalanceWallet to stringResource(R.string.pro_feature_balance)
+                Icons.Filled.BarChart to "📊 Dashboard complet avec graphiques",
+                Icons.Filled.AccountBalance to "💳 Jusqu'à 5 comptes",
+                Icons.Filled.Label to "🏷️ Budgets par catégorie",
+                Icons.Filled.Layers to "📈 Consolidation multi-comptes",
+                Icons.Filled.FileDownload to "📄 Export CSV & PDF",
+                Icons.Filled.Lock to "🔒 Sécurité PIN & Empreinte digitale",
+                Icons.Filled.Language to "💱 Multi-devises avec taux automatiques",
+                Icons.Filled.Message to "📱 Import automatique SMS bancaires",
+                Icons.Filled.CloudUpload to "☁️ Sauvegarde Google Drive",
+                Icons.Filled.Sync to "🔄 Synchro cloud"
             )
 
             Card(
@@ -288,6 +360,28 @@ fun ProUpgradeScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.restore_purchases))
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Privacy policy link
+                TextButton(
+                    onClick = {
+                        val intent = android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse("https://sites.google.com/view/moneyone-app/accueil")
+                        )
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Filled.PrivacyTip,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Politique de confidentialité")
                 }
             }
 

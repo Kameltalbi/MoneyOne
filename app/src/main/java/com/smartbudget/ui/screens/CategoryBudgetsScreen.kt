@@ -43,7 +43,7 @@ fun CategoryBudgetsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.budget_per_category), style = MaterialTheme.typography.titleLarge) },
+                title = { Text(stringResource(R.string.budget_per_category), style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.back))

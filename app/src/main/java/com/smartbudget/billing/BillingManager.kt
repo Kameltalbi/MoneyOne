@@ -17,7 +17,7 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
         
         // DEV MODE: Set to true for personal testing APK (bypasses Google Play Billing)
         // IMPORTANT: Must be false for Play Store release!
-        private const val DEV_MODE_FORCE_PRO = true  // Personal APK with Pro enabled
+        private const val DEV_MODE_FORCE_PRO = false  // Testing FREE plan
     }
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -32,10 +32,10 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     private var billingClient: BillingClient? = null
     private var productDetails: List<ProductDetails> = emptyList()
 
-    private val _monthlyPrice = MutableStateFlow("1,99 €")
+    private val _monthlyPrice = MutableStateFlow("2,99 $")
     val monthlyPrice: StateFlow<String> = _monthlyPrice.asStateFlow()
 
-    private val _annualPrice = MutableStateFlow("19,99 €")
+    private val _annualPrice = MutableStateFlow("29,99 $")
     val annualPrice: StateFlow<String> = _annualPrice.asStateFlow()
 
     fun initialize() {

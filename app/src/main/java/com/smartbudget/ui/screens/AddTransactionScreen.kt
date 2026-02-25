@@ -54,6 +54,7 @@ fun AddTransactionScreen(
 ) {
     val formState by viewModel.formState.collectAsStateWithLifecycle()
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
+    val allAccounts by viewModel.allAccounts.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -107,9 +108,17 @@ fun AddTransactionScreen(
         topBar = {
             TopAppBar(
                 title = {
+                    val titleRes = when {
+                        formState.isEditing && formState.type == TransactionType.TRANSFER -> R.string.edit_transfer
+                        formState.isEditing -> R.string.edit_transaction
+                        formState.type == TransactionType.TRANSFER -> R.string.new_transfer
+                        else -> R.string.new_transaction
+                    }
                     Text(
-                        text = if (formState.isEditing) stringResource(R.string.edit_transaction) else stringResource(R.string.new_transaction),
-                        style = MaterialTheme.typography.titleLarge
+                        text = stringResource(titleRes),
+                        style = MaterialTheme.typography.titleLarge,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                 },
                 navigationIcon = {
@@ -131,6 +140,40 @@ fun AddTransactionScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Recurring frequency badge (read-only info)
+            if (formState.recurringFrequency != null) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = when (formState.recurringFrequency) {
+                                Frequency.DAILY -> stringResource(R.string.recurrence_daily)
+                                Frequency.WEEKLY -> stringResource(R.string.recurrence_weekly)
+                                Frequency.MONTHLY -> stringResource(R.string.recurrence_monthly)
+                                Frequency.YEARLY -> stringResource(R.string.recurrence_annual)
+                                null -> ""
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            }
+            
             // Type selector
             Card(
                 shape = RoundedCornerShape(12.dp),
@@ -143,6 +186,12 @@ fun AddTransactionScreen(
                         .padding(4.dp)
                 ) {
                     TransactionType.values().forEach { type ->
+                        // Only show TRANSFER if user has 2+ accounts
+                        val canShowTransfer = allAccounts.size >= 2
+                        if (type == TransactionType.TRANSFER && !canShowTransfer) {
+                            return@forEach
+                        }
+                        
                         val isSelected = formState.type == type
                         val label = when (type) {
                             TransactionType.EXPENSE -> stringResource(R.string.expense)

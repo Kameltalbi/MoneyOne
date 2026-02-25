@@ -20,7 +20,28 @@ data class TransactionWithCategory(
     val categoryName: String?,
     val categoryIcon: String?,
     val categoryColor: Long?
-)
+) {
+    fun toTransaction() = com.smartbudget.data.entity.Transaction(
+        id = id,
+        name = name,
+        amount = amount,
+        type = type,
+        categoryId = categoryId,
+        accountId = accountId,
+        date = date,
+        note = note,
+        userId = "", // Will be set by repository
+        isValidated = isValidated,
+        recurrence = try {
+            com.smartbudget.data.entity.Recurrence.valueOf(recurrence)
+        } catch (e: Exception) {
+            com.smartbudget.data.entity.Recurrence.NONE
+        },
+        recurringId = recurringId,
+        isModified = false,
+        isDeleted = false
+    )
+}
 
 @Dao
 interface TransactionDao {
@@ -206,6 +227,22 @@ interface TransactionDao {
         userId: String, recurringId: Long, fromDate: Long, name: String, amount: Double,
         type: TransactionType, categoryId: Long?, note: String
     )
+
+    @Query("""
+        UPDATE transactions SET amount = :amount, name = :name, categoryId = :categoryId, note = :note, type = :type, isModified = 0
+        WHERE userId = :userId AND recurringId = :recurringId AND isDeleted = 0
+    """)
+    suspend fun updateAllUnmodifiedOccurrences(
+        userId: String, recurringId: Long, name: String, amount: Double,
+        type: TransactionType, categoryId: Long?, note: String
+    )
+
+    @Query("""
+        SELECT * FROM transactions 
+        WHERE userId = :userId AND recurringId = :recurringId AND isDeleted = 0
+        ORDER BY date ASC
+    """)
+    suspend fun getAllOccurrencesByRecurringId(userId: String, recurringId: Long): List<Transaction>
 
     @Query("""
         SELECT COALESCE(SUM(amount), 0) FROM transactions 

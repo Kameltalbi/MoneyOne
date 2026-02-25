@@ -217,7 +217,9 @@ private fun ExpenseByCategoryChart(
             Text(
                 text = stringResource(R.string.expenses_by_category),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -328,7 +330,9 @@ private fun BudgetUsageCard(summary: MonthSummary) {
             Text(
                 text = stringResource(R.string.budget_usage),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -437,7 +441,9 @@ private fun IncomeVsExpensesCard(summary: MonthSummary) {
             Text(
                 text = stringResource(R.string.income_vs_expenses),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -551,7 +557,9 @@ private fun CategoryBudgetTrackingCard(
             Text(
                 text = stringResource(R.string.budget_tracking),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -634,7 +642,9 @@ private fun AnnualSummaryChart(
             Text(
                 text = stringResource(R.string.annual_summary, year),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(4.dp))

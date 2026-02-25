@@ -44,7 +44,10 @@ fun SettingsScreen(
     onNavigateCurrency: () -> Unit,
     onNavigateAccounts: () -> Unit,
     onNavigateSavingsGoals: () -> Unit,
-    onNavigateProUpgrade: () -> Unit
+    onNavigateProUpgrade: () -> Unit,
+    onNavigateSecurity: () -> Unit = {},
+    onNavigateSmsImport: () -> Unit = {},
+    onNavigateFeatures: () -> Unit = {}
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as SmartBudgetApp
@@ -75,7 +78,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.settings), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimary) },
+                title = { Text(stringResource(R.string.settings), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimary, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.onPrimary)
@@ -142,6 +145,16 @@ fun SettingsScreen(
             // ── SECTION: General ──
             item { SettingsSectionHeader(stringResource(R.string.settings)) }
 
+            // Features explanation
+            item {
+                SettingsNavItem(
+                    icon = Icons.Filled.Lightbulb,
+                    title = "Découvrir les fonctionnalités",
+                    subtitle = "Toutes les fonctionnalités gratuites et Pro",
+                    onClick = onNavigateFeatures
+                )
+            }
+
             // Accounts
             item {
                 SettingsNavItem(
@@ -150,6 +163,26 @@ fun SettingsScreen(
                     subtitle = if (isPro) stringResource(R.string.accounts_count, accounts.size) + " / 5"
                                else stringResource(R.string.free_account_limit),
                     onClick = if (isPro) onNavigateAccounts else onNavigateProUpgrade
+                )
+            }
+
+            // Security (Pro only)
+            item {
+                SettingsNavItem(
+                    icon = Icons.Filled.Lock,
+                    title = "Sécurité" + if (!isPro) " ⭐ Pro" else "",
+                    subtitle = "Code PIN et empreinte digitale",
+                    onClick = if (isPro) onNavigateSecurity else onNavigateProUpgrade
+                )
+            }
+
+            // SMS Import (Pro only)
+            item {
+                SettingsNavItem(
+                    icon = Icons.Filled.Message,
+                    title = "Import SMS" + if (!isPro) " ⭐ Pro" else "",
+                    subtitle = "Importer vos transactions bancaires",
+                    onClick = if (isPro) onNavigateSmsImport else onNavigateProUpgrade
                 )
             }
 
@@ -475,6 +508,22 @@ fun SettingsScreen(
                     title = stringResource(R.string.export_csv),
                     subtitle = "Exportez vos transactions en PDF",
                     onClick = { /* handled elsewhere */ }
+                )
+            }
+
+            // Privacy Policy (for all users)
+            item {
+                SettingsNavItem(
+                    icon = Icons.Filled.PrivacyTip,
+                    title = "Politique de confidentialité",
+                    subtitle = "Consultez notre politique de confidentialité",
+                    onClick = {
+                        val intent = android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse("https://sites.google.com/view/moneyone-app/accueil")
+                        )
+                        context.startActivity(intent)
+                    }
                 )
             }
 

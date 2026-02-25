@@ -35,6 +35,7 @@ data class TransactionFormState(
     val editingId: Long? = null,
     val recurringId: Long? = null,
     val recurringEditMode: RecurringEditMode? = null,
+    val recurringFrequency: Frequency? = null,  // For displaying frequency when editing
     val selectedAccountId: Long? = null,
     val destinationAccountId: Long? = null  // For transfers
 )
@@ -127,6 +128,13 @@ class TransactionViewModel(
     fun loadTransaction(transactionId: Long) {
         viewModelScope.launch {
             val transaction = transactionRepo.getTransactionById(transactionId, userId) ?: return@launch
+            val currentMode = _formState.value.recurringEditMode  // Preserve mode if already set
+            
+            // Load recurring info if this is a recurring transaction
+            val recurringFrequency = if (transaction.recurringId != null) {
+                recurringRepo.getById(transaction.recurringId, userId)?.frequency
+            } else null
+            
             _formState.value = TransactionFormState(
                 name = transaction.name,
                 type = transaction.type,
@@ -136,7 +144,9 @@ class TransactionViewModel(
                 note = transaction.note,
                 isEditing = true,
                 editingId = transaction.id,
-                recurringId = transaction.recurringId
+                recurringId = transaction.recurringId,
+                recurringEditMode = currentMode,  // Preserve the mode
+                recurringFrequency = recurringFrequency
             )
         }
     }
@@ -245,9 +255,7 @@ class TransactionViewModel(
             if (amount <= 0) return@launch
             val id = form.editingId ?: return@launch
 
-            android.util.Log.d("TxnVM", "modifySingleOccurrence: id=$id amount=$amount recurringId=${form.recurringId}")
             val existing = transactionRepo.getTransactionById(id, userId) ?: return@launch
-            android.util.Log.d("TxnVM", "modifySingleOccurrence: existing.id=${existing.id} existing.amount=${existing.amount} existing.recurringId=${existing.recurringId}")
             transactionRepo.update(existing.copy(
                 name = form.name,
                 amount = amount,
@@ -278,7 +286,25 @@ class TransactionViewModel(
             val id = form.editingId ?: return@launch
             val dateMillis = DateUtils.toEpochMillis(form.date)
 
-            // Update this transaction
+            // Split the recurring rule: end old rule, create new one
+            val oldRecurring = recurringRepo.getById(recurringId, userId)
+            var newRecurringId = recurringId
+            if (oldRecurring != null) {
+                // End the old recurring rule at the day before this transaction
+                recurringRepo.update(oldRecurring.copy(endDate = dateMillis - 1))
+                
+                // Create new recurring rule starting from this transaction
+                newRecurringId = recurringRepo.insert(oldRecurring.copy(
+                    id = 0,
+                    startDate = dateMillis,
+                    amount = amount,
+                    name = form.name,
+                    categoryId = form.categoryId,
+                    note = form.note
+                ))
+            }
+
+            // Update this transaction and link it to the new recurring rule
             val existing = transactionRepo.getTransactionById(id, userId) ?: return@launch
             transactionRepo.update(existing.copy(
                 name = form.name,
@@ -286,32 +312,24 @@ class TransactionViewModel(
                 type = form.type,
                 categoryId = form.categoryId,
                 date = dateMillis,
-                note = form.note
+                note = form.note,
+                recurringId = newRecurringId,
+                isModified = false
             ))
 
-            // Update all future unmodified occurrences
-            transactionRepo.updateFutureUnmodifiedOccurrences(
-                userId = userId,
-                recurringId = recurringId,
-                fromDate = dateMillis,
-                name = form.name,
-                amount = amount,
-                type = form.type,
-                categoryId = form.categoryId,
-                note = form.note
-            )
-
-            // Split the recurring rule: end old rule, create new one
-            val oldRecurring = recurringRepo.getById(recurringId, userId)
-            if (oldRecurring != null) {
-                recurringRepo.update(oldRecurring.copy(endDate = dateMillis - 1))
-                recurringRepo.insert(oldRecurring.copy(
-                    id = 0,
-                    startDate = dateMillis,
-                    amount = amount,
+            // Get all future occurrences from the old rule and update them to the new rule
+            val futureOccurrences = transactionRepo.getAllOccurrencesByRecurringId(userId, recurringId)
+                .filter { it.date >= dateMillis && it.id != id }
+            
+            futureOccurrences.forEach { occurrence ->
+                transactionRepo.update(occurrence.copy(
                     name = form.name,
+                    amount = amount,
+                    type = form.type,
                     categoryId = form.categoryId,
-                    note = form.note
+                    note = form.note,
+                    recurringId = newRecurringId,
+                    isModified = false
                 ))
             }
 
@@ -334,7 +352,7 @@ class TransactionViewModel(
             val recurringId = form.recurringId ?: return@launch
             val id = form.editingId ?: return@launch
 
-            // Update this transaction
+            // Update this transaction (reset isModified for consistency)
             val existing = transactionRepo.getTransactionById(id, userId) ?: return@launch
             transactionRepo.update(existing.copy(
                 name = form.name,
@@ -342,7 +360,8 @@ class TransactionViewModel(
                 type = form.type,
                 categoryId = form.categoryId,
                 date = DateUtils.toEpochMillis(form.date),
-                note = form.note
+                note = form.note,
+                isModified = false
             ))
 
             // Update recurring rule
@@ -357,17 +376,18 @@ class TransactionViewModel(
                 ))
             }
 
-            // Update all future unmodified occurrences from the start
-            transactionRepo.updateFutureUnmodifiedOccurrences(
-                userId = userId,
-                recurringId = recurringId,
-                fromDate = 0,
-                name = form.name,
-                amount = amount,
-                type = form.type,
-                categoryId = form.categoryId,
-                note = form.note
-            )
+            // Update ALL occurrences (past and future) for entire series
+            val allOccurrences = transactionRepo.getAllOccurrencesByRecurringId(userId, recurringId)
+            allOccurrences.forEach { occurrence ->
+                transactionRepo.update(occurrence.copy(
+                    name = form.name,
+                    amount = amount,
+                    type = form.type,
+                    categoryId = form.categoryId,
+                    note = form.note,
+                    isModified = false
+                ))
+            }
 
             BalanceWidgetProvider.sendUpdateBroadcast(getApplication())
             val account = accountRepo.getDefaultAccount(userId)

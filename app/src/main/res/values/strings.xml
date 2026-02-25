@@ -46,6 +46,8 @@
     <!-- Add Transaction Screen -->
     <string name="new_transaction">Nouvelle transaction</string>
     <string name="edit_transaction">Modifier la transaction</string>
+    <string name="new_transfer">Nouveau transfert</string>
+    <string name="edit_transfer">Modifier le transfert</string>
     <string name="transaction_name">Nom de la transaction</string>
     <string name="amount">Montant</string>
     <string name="category">Catégorie</string>

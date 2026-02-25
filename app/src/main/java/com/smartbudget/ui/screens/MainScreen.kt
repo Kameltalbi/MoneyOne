@@ -1,6 +1,7 @@
 package com.smartbudget.ui.screens
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -66,6 +67,7 @@ fun MainScreen(
     var showAccountMenu by remember { mutableStateOf(false) }
     var showOverflowMenu by remember { mutableStateOf(false) }
     var showMonthSummary by remember { mutableStateOf(false) }
+    var showExportMenu by remember { mutableStateOf(false) }
     var selectedTransaction by remember { mutableStateOf<TransactionWithCategory?>(null) }
     var showDeleteConfirm by remember { mutableStateOf<TransactionWithCategory?>(null) }
     var showRecurringEditChoice by remember { mutableStateOf<TransactionWithCategory?>(null) }
@@ -181,15 +183,60 @@ fun MainScreen(
                                 else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
                             modifier = Modifier.size(20.dp))
                     }
-                    // Export
-                    IconButton(onClick = {
-                        val monthLabel = DateUtils.formatMonthYear(currentYearMonth)
-                        val transactions = viewModel.monthlyTransactions.value
-                        com.smartbudget.ui.util.PdfExporter.exportAndShare(context, transactions, monthLabel)
-                    }, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Filled.Share, contentDescription = stringResource(R.string.export_csv),
-                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
-                            modifier = Modifier.size(20.dp))
+                    // Export (PDF/CSV)
+                    Box {
+                        IconButton(
+                            onClick = { 
+                                if (isPro) {
+                                    showExportMenu = true
+                                } else {
+                                    onProUpgrade()
+                                }
+                            }, 
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Share, 
+                                contentDescription = "Export",
+                                tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        
+                        DropdownMenu(
+                            expanded = showExportMenu,
+                            onDismissRequest = { showExportMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("📄 Export PDF") },
+                                onClick = {
+                                    val monthLabel = DateUtils.formatMonthYear(currentYearMonth)
+                                    val transactions = viewModel.monthlyTransactions.value
+                                    com.smartbudget.ui.util.PdfExporter.exportAndShare(context, transactions, monthLabel)
+                                    showExportMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("📊 Export CSV") },
+                                onClick = {
+                                    val transactions = viewModel.monthlyTransactions.value
+                                    val categoryMap = transactions.associate { 
+                                        it.categoryId to (it.categoryName ?: "") 
+                                    }.filterKeys { it != null } as Map<Long, String>
+                                    val accountMap = mapOf(currentAccount?.id to (currentAccount?.name ?: ""))
+                                        .filterKeys { it != null } as Map<Long, String>
+                                    
+                                    val intent = com.smartbudget.util.CsvExporter.exportTransactionsToCsv(
+                                        context,
+                                        transactions.map { it.toTransaction() },
+                                        categoryMap,
+                                        accountMap
+                                    )
+                                    intent?.let { context.startActivity(Intent.createChooser(it, "Export CSV")) }
+                                    showExportMenu = false
+                                }
+                            )
+                        }
                     }
                     DropdownMenu(
                         expanded = showAccountMenu,

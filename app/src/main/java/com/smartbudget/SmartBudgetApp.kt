@@ -16,6 +16,9 @@ import com.smartbudget.billing.BillingManager
 import com.smartbudget.notification.BudgetAlertManager
 import com.smartbudget.firebase.FirebaseAuthManager
 import com.smartbudget.firebase.FirebaseSyncManager
+import com.smartbudget.security.SecurityManager
+import com.smartbudget.currency.ExchangeRateService
+import com.smartbudget.sms.SmsImportService
 import com.smartbudget.ui.util.CurrencyFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +48,9 @@ class SmartBudgetApp : Application() {
     val recurringGenerator by lazy { RecurringGenerator(transactionRepository) }
     val billingManager by lazy { BillingManager(this) }
     val budgetAlertManager by lazy { BudgetAlertManager(this, budgetRepository, transactionRepository) }
+    val securityManager by lazy { SecurityManager(this) }
+    val exchangeRateService by lazy { ExchangeRateService(this) }
+    val smsImportService by lazy { SmsImportService(this) }
     val firebaseAuthManager by lazy { FirebaseAuthManager(this) }
     val firebaseSyncManager by lazy { 
         FirebaseSyncManager(
