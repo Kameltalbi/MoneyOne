@@ -354,12 +354,37 @@ class TransactionViewModel(
     fun modifyEntireSeries(onSuccess: () -> Unit) {
         viewModelScope.launch {
             val form = _formState.value
-            val amount = form.amount.toDoubleOrNull() ?: return@launch
-            if (amount <= 0) return@launch
-            val recurringId = form.recurringId ?: return@launch
-            val id = form.editingId ?: return@launch
+            android.util.Log.d("TransactionVM", "modifyEntireSeries: Starting - form.isEditing=${form.isEditing}, editingId=${form.editingId}, recurringId=${form.recurringId}")
+            
+            val amount = form.amount.toDoubleOrNull()
+            if (amount == null) {
+                android.util.Log.e("TransactionVM", "modifyEntireSeries: Invalid amount: ${form.amount}")
+                return@launch
+            }
+            if (amount <= 0) {
+                android.util.Log.e("TransactionVM", "modifyEntireSeries: Amount <= 0: $amount")
+                return@launch
+            }
+            
+            val recurringId = form.recurringId
+            if (recurringId == null) {
+                android.util.Log.e("TransactionVM", "modifyEntireSeries: No recurringId")
+                return@launch
+            }
+            
+            val id = form.editingId
+            if (id == null) {
+                android.util.Log.e("TransactionVM", "modifyEntireSeries: No editingId")
+                return@launch
+            }
 
-            val existing = transactionRepo.getTransactionById(id, userId) ?: return@launch
+            val existing = transactionRepo.getTransactionById(id, userId)
+            if (existing == null) {
+                android.util.Log.e("TransactionVM", "modifyEntireSeries: Transaction not found for id=$id, userId=$userId")
+                return@launch
+            }
+            android.util.Log.d("TransactionVM", "modifyEntireSeries: Found transaction id=$id, name=${existing.name}")
+            
             val newDateMillis = DateUtils.toEpochMillis(form.date)
 
             // First: Update the recurring rule with ALL new values including startDate
