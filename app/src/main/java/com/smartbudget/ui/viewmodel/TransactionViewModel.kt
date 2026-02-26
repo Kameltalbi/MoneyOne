@@ -37,7 +37,8 @@ data class TransactionFormState(
     val recurringEditMode: RecurringEditMode? = null,
     val recurringFrequency: Frequency? = null,  // For displaying frequency when editing
     val selectedAccountId: Long? = null,
-    val destinationAccountId: Long? = null  // For transfers
+    val destinationAccountId: Long? = null,  // For transfers
+    val customCurrency: String? = null  // For Pro: override account currency
 )
 
 class TransactionViewModel(
@@ -119,6 +120,10 @@ class TransactionViewModel(
 
     fun updateDestinationAccount(accountId: Long?) {
         _formState.update { it.copy(destinationAccountId = accountId) }
+    }
+
+    fun updateCustomCurrency(currency: String?) {
+        _formState.update { it.copy(customCurrency = currency) }
     }
 
     fun resetForm(date: LocalDate = LocalDate.now(), accountId: Long? = null) {
@@ -243,6 +248,8 @@ class TransactionViewModel(
                 val app = getApplication<SmartBudgetApp>()
                 app.budgetAlertManager.checkBudgetAlerts(account.id)
             }
+            // Reset custom currency after save to restore account's default currency
+            _formState.update { it.copy(customCurrency = null) }
             onSuccess()
         }
     }
@@ -352,41 +359,70 @@ class TransactionViewModel(
             val recurringId = form.recurringId ?: return@launch
             val id = form.editingId ?: return@launch
 
-            // Update this transaction (reset isModified for consistency)
             val existing = transactionRepo.getTransactionById(id, userId) ?: return@launch
-            transactionRepo.update(existing.copy(
+            val originalDateMillis = existing.date
+            val newDateMillis = DateUtils.toEpochMillis(form.date)
+
+            // First: Update the recurring rule with ALL new values including startDate
+            val recurring = recurringRepo.getById(recurringId, userId)
+            if (recurring == null) return@launch
+            
+            val oldStartDate = java.time.Instant.ofEpochMilli(recurring.startDate)
+                .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+            val newStartDate = java.time.Instant.ofEpochMilli(newDateMillis)
+                .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+            
+            recurringRepo.update(recurring.copy(
                 name = form.name,
                 amount = amount,
                 type = form.type,
                 categoryId = form.categoryId,
-                date = DateUtils.toEpochMillis(form.date),
                 note = form.note,
-                isModified = false
+                startDate = newDateMillis  // NEW start date
             ))
 
-            // Update recurring rule
-            val recurring = recurringRepo.getById(recurringId, userId)
-            if (recurring != null) {
-                recurringRepo.update(recurring.copy(
-                    name = form.name,
-                    amount = amount,
-                    type = form.type,
-                    categoryId = form.categoryId,
-                    note = form.note
-                ))
-            }
-
-            // Update ALL occurrences (past and future) for entire series
+            // Second: Delete ALL unmodified occurrences (they will be regenerated with new dates)
             val allOccurrences = transactionRepo.getAllOccurrencesByRecurringId(userId, recurringId)
+            android.util.Log.d("TransactionVM", "modifyEntireSeries: Found ${allOccurrences.size} occurrences for recurringId=$recurringId")
+            
+            var deletedCount = 0
+            var updatedCount = 0
             allOccurrences.forEach { occurrence ->
-                transactionRepo.update(occurrence.copy(
-                    name = form.name,
-                    amount = amount,
-                    type = form.type,
-                    categoryId = form.categoryId,
-                    note = form.note,
-                    isModified = false
-                ))
+                android.util.Log.d("TransactionVM", "Processing occurrence id=${occurrence.id}, date=${occurrence.date}, isModified=${occurrence.isModified}")
+                if (!occurrence.isModified) {
+                    // Delete all unmodified occurrences - they will be regenerated
+                    transactionRepo.delete(occurrence)
+                    deletedCount++
+                    android.util.Log.d("TransactionVM", "Deleted occurrence id=${occurrence.id}")
+                } else {
+                    // Modified occurrences: update fields only (keep their custom dates)
+                    transactionRepo.update(occurrence.copy(
+                        name = form.name,
+                        amount = amount,
+                        type = form.type,
+                        categoryId = form.categoryId,
+                        note = form.note
+                    ))
+                    updatedCount++
+                    android.util.Log.d("TransactionVM", "Updated modified occurrence id=${occurrence.id}")
+                }
+            }
+            android.util.Log.d("TransactionVM", "modifyEntireSeries: Deleted $deletedCount, Updated $updatedCount occurrences")
+            
+            // Third: Regenerate ALL occurrences from the NEW startDate
+            val updatedRecurring = recurringRepo.getById(recurringId, userId)
+            if (updatedRecurring != null) {
+                // Generate from the new startDate month to 12 months ahead
+                val startMonth = newStartDate.let { java.time.YearMonth.from(it) }
+                val currentMonth = java.time.YearMonth.now()
+                val beginMonth = if (startMonth.isBefore(currentMonth)) startMonth else currentMonth
+                val endMonth = currentMonth.plusMonths(12)
+                
+                var month = beginMonth
+                while (!month.isAfter(endMonth)) {
+                    app.recurringGenerator.generateUpToMonth(updatedRecurring, month)
+                    month = month.plusMonths(1)
+                }
             }
 
             BalanceWidgetProvider.sendUpdateBroadcast(getApplication())

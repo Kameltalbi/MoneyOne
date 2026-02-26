@@ -252,8 +252,8 @@ fun FeaturesScreen(
 
             FeatureCard(
                 icon = Icons.Filled.Language,
-                title = "Multi-devises",
-                description = "Gérez des comptes en différentes devises avec conversion automatique des taux de change.",
+                title = "Multi-devises avec conversion auto",
+                description = "Créez des comptes en USD, EUR, MAD, etc. Les montants sont automatiquement convertis dans votre devise principale avec les taux de change en temps réel.",
                 isFree = false,
                 isPro = isPro
             )

@@ -196,7 +196,7 @@ fun ProUpgradeScreen(
                 Icons.Filled.Layers to "📈 Consolidation multi-comptes",
                 Icons.Filled.FileDownload to "📄 Export CSV & PDF",
                 Icons.Filled.Lock to "🔒 Sécurité PIN & Empreinte digitale",
-                Icons.Filled.Language to "💱 Multi-devises avec taux automatiques",
+                Icons.Filled.Language to "💱 Multi-devises avec conversion auto",
                 Icons.Filled.Message to "📱 Import automatique SMS bancaires",
                 Icons.Filled.CloudUpload to "☁️ Sauvegarde Google Drive",
                 Icons.Filled.Sync to "🔄 Synchro cloud"

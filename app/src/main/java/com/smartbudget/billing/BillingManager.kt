@@ -17,7 +17,7 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
         
         // DEV MODE: Set to true for personal testing APK (bypasses Google Play Billing)
         // IMPORTANT: Must be false for Play Store release!
-        private const val DEV_MODE_FORCE_PRO = false  // Testing FREE plan
+        private val DEV_MODE_FORCE_PRO = true  // Testing FREE plan
     }
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

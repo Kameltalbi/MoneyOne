@@ -34,20 +34,26 @@ class RecurringGenerator(private val transactionRepo: TransactionRepository) {
             Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
         }
 
-        // Find last generated occurrence
-        val lastOccurrenceMillis = transactionRepo.getLastOccurrenceDateForRecurring(recurring.userId, recurring.id)
-        val lastDate = if (lastOccurrenceMillis != null) {
-            Instant.ofEpochMilli(lastOccurrenceMillis)
-                .atZone(ZoneId.systemDefault()).toLocalDate()
-        } else {
-            // No occurrences yet — start from startDate minus one interval so first nextDate = startDate
-            null
-        }
+        android.util.Log.d("RecurringGen", "generateUpToMonth: recurringId=${recurring.id}, startDate=$startDate (${recurring.startDate}), targetMonth=$targetMonth")
 
-        var nextDate = if (lastDate != null) {
-            getNextDate(lastDate, recurring.frequency, recurring.interval)
-        } else {
-            startDate
+        // Always start from the recurring rule's startDate
+        // This ensures that when the startDate is updated (e.g., changing day of month),
+        // all future occurrences use the new date pattern
+        var nextDate = startDate
+        
+        // Find last generated occurrence to avoid regenerating existing ones
+        val lastOccurrenceMillis = transactionRepo.getLastOccurrenceDateForRecurring(recurring.userId, recurring.id)
+        android.util.Log.d("RecurringGen", "Last occurrence date: $lastOccurrenceMillis")
+        if (lastOccurrenceMillis != null) {
+            val lastDate = Instant.ofEpochMilli(lastOccurrenceMillis)
+                .atZone(ZoneId.systemDefault()).toLocalDate()
+            
+            android.util.Log.d("RecurringGen", "lastDate=$lastDate, will skip ahead from startDate=$startDate")
+            // Skip ahead to after the last occurrence, but maintain the day pattern from startDate
+            while (!nextDate.isAfter(lastDate)) {
+                nextDate = getNextDate(nextDate, recurring.frequency, recurring.interval)
+            }
+            android.util.Log.d("RecurringGen", "After skipping, nextDate=$nextDate")
         }
 
         val toInsert = mutableListOf<Transaction>()

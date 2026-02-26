@@ -56,9 +56,12 @@ fun AddTransactionScreen(
     val filteredCategories by viewModel.filteredCategories.collectAsStateWithLifecycle()
     val allAccounts by viewModel.allAccounts.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val app = context.applicationContext as com.smartbudget.SmartBudgetApp
+    val isPro by app.billingManager.isPro.collectAsState()
     val scope = rememberCoroutineScope()
 
     var showDatePicker by remember { mutableStateOf(false) }
+    var showCurrencyPicker by remember { mutableStateOf(false) }
     var isScanning by remember { mutableStateOf(false) }
     var scanError by remember { mutableStateOf<String?>(null) }
 
@@ -284,6 +287,60 @@ fun AddTransactionScreen(
                     style = MaterialTheme.typography.labelSmall,
                     color = ExpenseRed
                 )
+            }
+
+            // Currency selector (Pro only)
+            if (isPro) {
+                val selectedAccount = allAccounts.find { it.id == formState.selectedAccountId }
+                val accountCurrency = selectedAccount?.currency ?: "MAD"
+                val displayCurrency = formState.customCurrency ?: accountCurrency
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Utiliser une autre devise pour cette transaction",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedButton(
+                        onClick = { showCurrencyPicker = true },
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = if (formState.customCurrency != null && formState.customCurrency != accountCurrency)
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                            else
+                                Color.Transparent
+                        )
+                    ) {
+                        Icon(
+                            Icons.Filled.Language,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = displayCurrency,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (formState.customCurrency != null && formState.customCurrency != accountCurrency) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "→ $accountCurrency",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
             }
 
             // Destination account for TRANSFER
@@ -528,6 +585,184 @@ fun AddTransactionScreen(
         }
     }
 
+    // Currency picker dialog (Pro only)
+    if (showCurrencyPicker && isPro) {
+        val selectedAccount = allAccounts.find { it.id == formState.selectedAccountId }
+        val accountCurrency = selectedAccount?.currency ?: "MAD"
+        
+        AlertDialog(
+            onDismissRequest = { showCurrencyPicker = false },
+            title = { Text("Devise de la transaction") },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(
+                        text = "Sélectionnez la devise pour cette transaction",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Account currency (default)
+                    Card(
+                        onClick = {
+                            viewModel.updateCustomCurrency(null)
+                            showCurrencyPicker = false
+                        },
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (formState.customCurrency == null) 
+                                MaterialTheme.colorScheme.primaryContainer
+                            else 
+                                MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Filled.AccountBalance, contentDescription = null)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = accountCurrency,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "Devise du compte",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            if (formState.customCurrency == null) {
+                                Icon(
+                                    Icons.Filled.Check,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Other currencies - expanded list
+                    val commonCurrencies = listOf(
+                        "USD", "EUR", "GBP", "MAD", "SAR", "AED", 
+                        "CAD", "CHF", "JPY", "CNY", "TRY", "EGP",
+                        "TND", "DZD", "QAR", "KWD", "BHD", "OMR"
+                    ).filter { it != accountCurrency }
+                    
+                    commonCurrencies.forEach { currency ->
+                        Card(
+                            onClick = {
+                                viewModel.updateCustomCurrency(currency)
+                                showCurrencyPicker = false
+                            },
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (formState.customCurrency == currency)
+                                    MaterialTheme.colorScheme.primaryContainer
+                                else
+                                    MaterialTheme.colorScheme.surface
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Filled.Language, contentDescription = null)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = currency,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (formState.customCurrency == currency) {
+                                    Icon(
+                                        Icons.Filled.Check,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                        if (currency != commonCurrencies.last()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                    
+                    // Add "Other currency" option
+                    Spacer(modifier = Modifier.height(8.dp))
+                    var showCustomInput by remember { mutableStateOf(false) }
+                    var customCurrencyInput by remember { mutableStateOf("") }
+                    
+                    if (!showCustomInput) {
+                        Card(
+                            onClick = { showCustomInput = true },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Filled.Edit, contentDescription = null)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = "Autre devise...",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    } else {
+                        OutlinedTextField(
+                            value = customCurrencyInput,
+                            onValueChange = { 
+                                if (it.length <= 3) customCurrencyInput = it.uppercase()
+                            },
+                            label = { Text("Code devise (ex: INR, BRL)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            trailingIcon = {
+                                Row {
+                                    IconButton(onClick = {
+                                        if (customCurrencyInput.length == 3) {
+                                            viewModel.updateCustomCurrency(customCurrencyInput)
+                                            showCurrencyPicker = false
+                                        }
+                                    }) {
+                                        Icon(Icons.Filled.Check, contentDescription = "Valider")
+                                    }
+                                    IconButton(onClick = { showCustomInput = false }) {
+                                        Icon(Icons.Filled.Close, contentDescription = "Annuler")
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showCurrencyPicker = false }) {
+                    Text("Annuler")
+                }
+            }
+        )
+    }
 
     // Date picker dialog
     if (showDatePicker) {
