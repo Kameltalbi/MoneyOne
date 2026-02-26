@@ -360,15 +360,12 @@ class TransactionViewModel(
             val id = form.editingId ?: return@launch
 
             val existing = transactionRepo.getTransactionById(id, userId) ?: return@launch
-            val originalDateMillis = existing.date
             val newDateMillis = DateUtils.toEpochMillis(form.date)
 
             // First: Update the recurring rule with ALL new values including startDate
             val recurring = recurringRepo.getById(recurringId, userId)
             if (recurring == null) return@launch
             
-            val oldStartDate = java.time.Instant.ofEpochMilli(recurring.startDate)
-                .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
             val newStartDate = java.time.Instant.ofEpochMilli(newDateMillis)
                 .atZone(java.time.ZoneId.systemDefault()).toLocalDate()
             
@@ -383,17 +380,11 @@ class TransactionViewModel(
 
             // Second: Delete ALL unmodified occurrences (they will be regenerated with new dates)
             val allOccurrences = transactionRepo.getAllOccurrencesByRecurringId(userId, recurringId)
-            android.util.Log.d("TransactionVM", "modifyEntireSeries: Found ${allOccurrences.size} occurrences for recurringId=$recurringId")
             
-            var deletedCount = 0
-            var updatedCount = 0
             allOccurrences.forEach { occurrence ->
-                android.util.Log.d("TransactionVM", "Processing occurrence id=${occurrence.id}, date=${occurrence.date}, isModified=${occurrence.isModified}")
                 if (!occurrence.isModified) {
                     // Delete all unmodified occurrences - they will be regenerated
                     transactionRepo.delete(occurrence)
-                    deletedCount++
-                    android.util.Log.d("TransactionVM", "Deleted occurrence id=${occurrence.id}")
                 } else {
                     // Modified occurrences: update fields only (keep their custom dates)
                     transactionRepo.update(occurrence.copy(
@@ -403,11 +394,8 @@ class TransactionViewModel(
                         categoryId = form.categoryId,
                         note = form.note
                     ))
-                    updatedCount++
-                    android.util.Log.d("TransactionVM", "Updated modified occurrence id=${occurrence.id}")
                 }
             }
-            android.util.Log.d("TransactionVM", "modifyEntireSeries: Deleted $deletedCount, Updated $updatedCount occurrences")
             
             // Third: Regenerate ALL occurrences from the NEW startDate
             val updatedRecurring = recurringRepo.getById(recurringId, userId)
