@@ -27,12 +27,12 @@ object PlanLimits {
     const val PRO_ALLOW_CUSTOM_CATEGORIES = true
     
     // Free plan: only specific default categories allowed
-    // 7 expense categories + 2 income categories
+    // 7 expense categories + 3 income categories
     val FREE_ALLOWED_EXPENSE_CATEGORIES = setOf(
         "Alimentation", "Transport", "Loisirs", "Santé", 
         "Logement", "Shopping", "Autre"
     )
     val FREE_ALLOWED_INCOME_CATEGORIES = setOf(
-        "Salaire", "Autre revenu"
+        "Salaire", "Autre revenu", "Immobilier"
     )
 }

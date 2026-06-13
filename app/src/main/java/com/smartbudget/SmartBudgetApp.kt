@@ -122,7 +122,8 @@ class SmartBudgetApp : Application() {
             if (categoryCount == 0) {
                 val defaults = listOf(
                     Category(name = "Salaire", icon = "payments", color = 0xFF4CAF50, type = TransactionType.INCOME, isDefault = true, userId = userId),
-                    Category(name = "Freelance", icon = "work", color = 0xFF66BB6A, type = TransactionType.INCOME, isDefault = true, userId = userId),
+                    Category(name = "Immobilier", icon = "home_work", color = 0xFF66BB6A, type = TransactionType.INCOME, isDefault = true, userId = userId),
+                    Category(name = "Autre revenu", icon = "attach_money", color = 0xFF8BC34A, type = TransactionType.INCOME, isDefault = true, userId = userId),
                     Category(name = "Alimentation", icon = "restaurant", color = 0xFFFF9800, type = TransactionType.EXPENSE, isDefault = true, userId = userId),
                     Category(name = "Transport", icon = "directions_car", color = 0xFF2196F3, type = TransactionType.EXPENSE, isDefault = true, userId = userId),
                     Category(name = "Logement", icon = "home", color = 0xFF9C27B0, type = TransactionType.EXPENSE, isDefault = true, userId = userId),

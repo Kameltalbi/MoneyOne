@@ -22,7 +22,7 @@ import com.smartbudget.data.entity.Transaction
 
 @Database(
     entities = [Account::class, Transaction::class, Category::class, Budget::class, SavingsGoal::class, RecurringTransaction::class],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -154,13 +154,45 @@ abstract class SmartBudgetDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Add Immobilier and Autre revenu income categories for existing users who don't have them
+                val cursor = database.query("SELECT DISTINCT userId FROM categories")
+                val userIds = mutableListOf<String>()
+                while (cursor.moveToNext()) {
+                    userIds.add(cursor.getString(0))
+                }
+                cursor.close()
+                for (userId in userIds) {
+                    val immobilierExists = database.query(
+                        "SELECT COUNT(*) FROM categories WHERE name = 'Immobilier' AND userId = '$userId'"
+                    ).let { c -> c.moveToFirst(); val count = c.getInt(0); c.close(); count > 0 }
+                    if (!immobilierExists) {
+                        database.execSQL("""
+                            INSERT INTO categories (name, icon, color, type, isDefault, userId)
+                            VALUES ('Immobilier', 'home_work', ${0xFF66BB6A.toLong()}, 'INCOME', 1, '$userId')
+                        """)
+                    }
+                    val autreRevenuExists = database.query(
+                        "SELECT COUNT(*) FROM categories WHERE name = 'Autre revenu' AND userId = '$userId'"
+                    ).let { c -> c.moveToFirst(); val count = c.getInt(0); c.close(); count > 0 }
+                    if (!autreRevenuExists) {
+                        database.execSQL("""
+                            INSERT INTO categories (name, icon, color, type, isDefault, userId)
+                            VALUES ('Autre revenu', 'attach_money', ${0xFF8BC34A.toLong()}, 'INCOME', 1, '$userId')
+                        """)
+                    }
+                }
+            }
+        }
+
         fun getDatabase(context: Context): SmartBudgetDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     SmartBudgetDatabase::class.java,
                     "smartbudget_database"
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                 .build()
                 INSTANCE = instance
                 instance
