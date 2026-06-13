@@ -33,12 +33,15 @@ import com.smartbudget.ui.theme.*
 import com.smartbudget.ui.util.IconMapper
 import com.smartbudget.ui.util.toComposeColor
 import com.smartbudget.ui.viewmodel.SettingsViewModel
+import com.smartbudget.billing.PlanLimits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesScreen(
     viewModel: SettingsViewModel,
-    onNavigateBack: () -> Unit
+    isPro: Boolean,
+    onNavigateBack: () -> Unit,
+    onNavigateProUpgrade: () -> Unit = {}
 ) {
     val categories by viewModel.allCategories.collectAsStateWithLifecycle()
     val categoryForm by viewModel.categoryForm.collectAsStateWithLifecycle()
@@ -48,6 +51,11 @@ fun CategoriesScreen(
 
     val incomeCategories = categories.filter { it.type == TransactionType.INCOME }
     val expenseCategories = categories.filter { it.type == TransactionType.EXPENSE }
+    
+    // Count custom categories (non-default)
+    val customCategories = categories.filter { !it.isDefault }
+    val maxCustomCategories = if (isPro) PlanLimits.PRO_MAX_CUSTOM_CATEGORIES else PlanLimits.FREE_MAX_CUSTOM_CATEGORIES
+    val canAddCategory = customCategories.size < maxCustomCategories
 
     Scaffold(
         topBar = {
@@ -64,14 +72,16 @@ fun CategoriesScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    viewModel.resetCategoryForm()
-                    showCategoryDialog = true
-                },
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add))
+            if (isPro) {
+                FloatingActionButton(
+                    onClick = {
+                        viewModel.resetCategoryForm()
+                        showCategoryDialog = true
+                    },
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add))
+                }
             }
         }
     ) { paddingValues ->
@@ -83,6 +93,45 @@ fun CategoriesScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(8.dp))
+            
+            // Category limit info and warning for Free users
+            if (!isPro) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Filled.Lock,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Plan Gratuit : 7 catégories dépenses + 2 catégories revenus",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "Passez au plan Pro pour créer des catégories personnalisées illimitées",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        TextButton(onClick = onNavigateProUpgrade) {
+                            Text("Upgrade")
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
 
             // Income categories
             if (incomeCategories.isNotEmpty()) {

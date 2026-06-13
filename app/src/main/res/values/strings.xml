@@ -98,6 +98,15 @@
     <string name="no_budget_set">Aucun budget défini</string>
 
     <!-- Settings -->
+    <string name="discover_features">Découvrir les fonctionnalités</string>
+    <string name="discover_features_desc">Toutes les fonctionnalités gratuites et Pro</string>
+    <string name="security">Sécurité</string>
+    <string name="security_desc">Code PIN et empreinte digitale</string>
+    <string name="sms_import">Import SMS</string>
+    <string name="sms_import_desc">Importer vos transactions bancaires</string>
+    <string name="monthly_budget_tip">💡 Le budget global vous aide à suivre vos dépenses mensuelles. Consultez le tableau de bord pour voir votre progression.</string>
+    <string name="privacy_policy">Politique de confidentialité</string>
+    <string name="privacy_policy_desc">Consultez notre politique de confidentialité</string>
     <string name="currency">Devise</string>
     <string name="monthly_global_budget">Budget mensuel global</string>
     <string name="global_budget_label">Budget global (%1$s)</string>
@@ -105,7 +114,7 @@
     <string name="category_budgets">Budgets par catégorie</string>
     <string name="category_budgets_desc">Définir un budget pour chaque catégorie de dépense</string>
     <string name="categories">Catégories</string>
-    <string name="categories_desc_free">8 catégories par défaut</string>
+    <string name="categories_desc_free">9 catégories par défaut</string>
     <string name="categories_desc_pro">Créez et personnalisez vos catégories</string>
     <string name="expenses_count">%1$d dépenses</string>
     <string name="incomes_count">%1$d revenus</string>
@@ -113,6 +122,7 @@
     <string name="savings_goals_desc">Définissez et suivez vos objectifs d\'épargne</string>
 
     <!-- Categories Screen -->
+    <string name="add_category">Ajouter une catégorie</string>
     <string name="new_category">Nouvelle catégorie</string>
     <string name="edit_category">Modifier la catégorie</string>
     <string name="delete_category">Supprimer la catégorie</string>
@@ -248,6 +258,7 @@
 
     <!-- Export -->
     <string name="export_csv">Exporter PDF</string>
+    <string name="export_csv_desc">Exportez vos transactions en PDF</string>
 
     <!-- Search -->
     <string name="search_hint">Rechercher une transaction…</string>
@@ -302,7 +313,7 @@
     <string name="pro_required">Fonctionnalité Pro</string>
     <string name="pro_required_desc">Cette fonctionnalité nécessite MoneyOne Pro</string>
     <string name="transaction_limit_reached">Limite de 100 transactions/mois atteinte</string>
-    <string name="free_account_limit">1 seul compte en version gratuite</string>
+    <string name="free_account_limit">2 comptes maximum en version gratuite</string>
     
     <!-- Bottom Navigation -->
     <string name="home">Accueil</string>

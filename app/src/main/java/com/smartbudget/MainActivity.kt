@@ -23,7 +23,9 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContent {
             val app = applicationContext as SmartBudgetApp
-            val userManager = remember { com.smartbudget.data.UserManager(this) }
+            val context = applicationContext
+            
+            val userManager = remember { com.smartbudget.data.UserManager(context) }
             val factory = remember { com.smartbudget.ui.viewmodel.ViewModelFactory(app, userManager) }
             val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
             val themeColor by settingsViewModel.themeColor.collectAsState()

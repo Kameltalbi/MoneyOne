@@ -149,8 +149,8 @@ fun SettingsScreen(
             item {
                 SettingsNavItem(
                     icon = Icons.Filled.Lightbulb,
-                    title = "Découvrir les fonctionnalités",
-                    subtitle = "Toutes les fonctionnalités gratuites et Pro",
+                    title = stringResource(R.string.discover_features),
+                    subtitle = stringResource(R.string.discover_features_desc),
                     onClick = onNavigateFeatures
                 )
             }
@@ -160,9 +160,8 @@ fun SettingsScreen(
                 SettingsNavItem(
                     icon = Icons.Filled.AccountBalance,
                     title = stringResource(R.string.accounts),
-                    subtitle = if (isPro) stringResource(R.string.accounts_count, accounts.size) + " / 5"
-                               else stringResource(R.string.free_account_limit),
-                    onClick = if (isPro) onNavigateAccounts else onNavigateProUpgrade
+                    subtitle = stringResource(R.string.accounts_count, accounts.size) + if (isPro) " / ∞" else " / 2",
+                    onClick = onNavigateAccounts
                 )
             }
 
@@ -170,8 +169,8 @@ fun SettingsScreen(
             item {
                 SettingsNavItem(
                     icon = Icons.Filled.Lock,
-                    title = "Sécurité" + if (!isPro) " ⭐ Pro" else "",
-                    subtitle = "Code PIN et empreinte digitale",
+                    title = stringResource(R.string.security) + if (!isPro) " ⭐ Pro" else "",
+                    subtitle = stringResource(R.string.security_desc),
                     onClick = if (isPro) onNavigateSecurity else onNavigateProUpgrade
                 )
             }
@@ -180,8 +179,8 @@ fun SettingsScreen(
             item {
                 SettingsNavItem(
                     icon = Icons.Filled.Message,
-                    title = "Import SMS" + if (!isPro) " ⭐ Pro" else "",
-                    subtitle = "Importer vos transactions bancaires",
+                    title = stringResource(R.string.sms_import) + if (!isPro) " ⭐ Pro" else "",
+                    subtitle = stringResource(R.string.sms_import_desc),
                     onClick = if (isPro) onNavigateSmsImport else onNavigateProUpgrade
                 )
             }
@@ -262,7 +261,7 @@ fun SettingsScreen(
 
                     // Info about budget purpose
                     Text(
-                        text = "💡 Le budget global vous aide à suivre vos dépenses mensuelles. Consultez le tableau de bord pour voir votre progression.",
+                        text = stringResource(R.string.monthly_budget_tip),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -310,7 +309,7 @@ fun SettingsScreen(
                 SettingsNavItem(
                     icon = Icons.Filled.Label,
                     title = stringResource(R.string.categories) + if (!isPro) " ⭐ Pro" else "",
-                    subtitle = if (isPro) stringResource(R.string.categories_desc_pro) else stringResource(R.string.categories_desc_free),
+                    subtitle = stringResource(R.string.categories_desc_pro),
                     onClick = if (isPro) onNavigateCategories else onNavigateProUpgrade
                 )
             }
@@ -342,181 +341,183 @@ fun SettingsScreen(
             // ── SECTION: Backup ──
             item { SettingsSectionHeader(stringResource(R.string.backup_title)) }
 
-            // Firebase Cloud Sync - PRO only
+            // Firebase Cloud Sync - PRO only - DISABLED to prevent crash
+            // if (isPro) {
+            //     item {
+            //         val app = context.applicationContext as com.smartbudget.SmartBudgetApp
+            //     val firebaseSyncManager = app.firebaseSyncManager
+            //     val firebaseAuthManager = app.firebaseAuthManager
+            //     val userManager = com.smartbudget.data.UserManager(context)
+            //     val scope = rememberCoroutineScope()
+            //     var isSyncing by remember { mutableStateOf(false) }
+            //     var isRestoring by remember { mutableStateOf(false) }
+            //     var syncMessage by remember { mutableStateOf<String?>(null) }
+            //     val isSignedIn = remember { mutableStateOf(firebaseAuthManager.isSignedIn()) }
+            //     val lastSyncTime = remember { mutableStateOf(firebaseSyncManager.getLastSyncTime()) }
+            //     val autoSyncEnabled = remember { mutableStateOf(firebaseSyncManager.isAutoSyncEnabled()) }
+            //
+            //     SettingsCard {
+            //         Column {
+            //             Row(
+            //                 modifier = Modifier.fillMaxWidth(),
+            //                 verticalAlignment = Alignment.CenterVertically
+            //             ) {
+            //                 Icon(
+            //                     Icons.Filled.Cloud,
+            //                     contentDescription = null,
+            //                     tint = MaterialTheme.colorScheme.primary,
+            //                     modifier = Modifier.size(20.dp)
+            //                 )
+            //                 Spacer(modifier = Modifier.width(10.dp))
+            //                 Column(modifier = Modifier.weight(1f)) {
+            //                     Text(
+            //                         text = "Synchronisation Cloud",
+            //                         style = MaterialTheme.typography.bodyLarge,
+            //                         fontWeight = FontWeight.Medium
+            //                     )
+            //                     if (isSignedIn.value) {
+            //                         Text(
+            //                             text = if (lastSyncTime.value > 0) {
+            //                                 "Dernière sync: ${java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(lastSyncTime.value))}"
+            //                             } else {
+            //                                 "Jamais synchronisé"
+            //                             },
+            //                             style = MaterialTheme.typography.bodySmall,
+            //                             color = MaterialTheme.colorScheme.onSurfaceVariant
+            //                         )
+            //                     }
+            //                 }
+            //             }
+            //
+            //             Spacer(modifier = Modifier.height(12.dp))
+            //
+            //             if (isSignedIn.value) {
+            //                 // Auto-sync toggle
+            //                 Row(
+            //                     modifier = Modifier
+            //                         .fillMaxWidth()
+            //                         .clickable { 
+            //                             autoSyncEnabled.value = !autoSyncEnabled.value
+            //                             firebaseSyncManager.setAutoSyncEnabled(autoSyncEnabled.value)
+            //                         }
+            //                         .padding(vertical = 8.dp),
+            //                     verticalAlignment = Alignment.CenterVertically
+            //                 ) {
+            //                     Text(
+            //                         text = "Synchronisation automatique",
+            //                         style = MaterialTheme.typography.bodyMedium,
+            //                         modifier = Modifier.weight(1f)
+            //                     )
+            //                     Switch(
+            //                         checked = autoSyncEnabled.value,
+            //                         onCheckedChange = { 
+            //                             autoSyncEnabled.value = it
+            //                             firebaseSyncManager.setAutoSyncEnabled(it)
+            //                         }
+            //                     )
+            //                 }
+            //
+            //                 Spacer(modifier = Modifier.height(8.dp))
+            //
+            //                 // Sync now button
+            //                 Button(
+            //                     onClick = {
+            //                         scope.launch {
+            //                             isSyncing = true
+            //                             syncMessage = null
+            //                             val result = firebaseSyncManager.syncToCloud(userManager.getCurrentUserId())
+            //                             isSyncing = false
+            //                             if (result.isSuccess) {
+            //                                 lastSyncTime.value = firebaseSyncManager.getLastSyncTime()
+            //                                 syncMessage = "Synchronisation réussie ✓"
+            //                             } else {
+            //                                 syncMessage = "Erreur: ${result.exceptionOrNull()?.message}"
+            //                             }
+            //                         }
+            //                     },
+            //                     enabled = !isSyncing && !isRestoring,
+            //                     modifier = Modifier.fillMaxWidth()
+            //                 ) {
+            //                     if (isSyncing) {
+            //                         CircularProgressIndicator(
+            //                             modifier = Modifier.size(16.dp),
+            //                             strokeWidth = 2.dp,
+            //                             color = MaterialTheme.colorScheme.onPrimary
+            //                         )
+            //                         Spacer(modifier = Modifier.width(8.dp))
+            //                     }
+            //                     Text(if (isSyncing) "Synchronisation..." else "Synchroniser maintenant")
+            //                 }
+            //
+            //                 Spacer(modifier = Modifier.height(8.dp))
+            //
+            //                 // Restore button
+            //                 OutlinedButton(
+            //                     onClick = {
+            //                         scope.launch {
+            //                             isRestoring = true
+            //                             syncMessage = null
+            //                             val result = firebaseSyncManager.restoreFromCloud(userManager.getCurrentUserId())
+            //                             isRestoring = false
+            //                             if (result.isSuccess) {
+            //                                 syncMessage = "Restauration réussie ✓"
+            //                             } else {
+            //                                 syncMessage = "Erreur: ${result.exceptionOrNull()?.message}"
+            //                             }
+            //                         }
+            //                     },
+            //                     enabled = !isSyncing && !isRestoring,
+            //                     modifier = Modifier.fillMaxWidth()
+            //                 ) {
+            //                     if (isRestoring) {
+            //                         CircularProgressIndicator(
+            //                             modifier = Modifier.size(16.dp),
+            //                             strokeWidth = 2.dp
+            //                         )
+            //                         Spacer(modifier = Modifier.width(8.dp))
+            //                     }
+            //                     Text(if (isRestoring) "Restauration..." else "Restaurer depuis le cloud")
+            //                 }
+            //
+            //                 syncMessage?.let { message ->
+            //                     Spacer(modifier = Modifier.height(8.dp))
+            //                     Text(
+            //                         text = message,
+            //                         style = MaterialTheme.typography.bodySmall,
+            //                         color = if (message.contains("✓")) MaterialTheme.colorScheme.primary 
+            //                                else MaterialTheme.colorScheme.error
+            //                     )
+            //                 }
+            //             } else {
+            //                 Text(
+            //                     text = "Connexion au cloud en cours...",
+            //                     style = MaterialTheme.typography.bodySmall,
+            //                     color = MaterialTheme.colorScheme.onSurfaceVariant
+            //                 )
+            //             }
+            //         }
+            //     }
+            //     }
+            // }
+
+            // Export PDF (Pro only)
             if (isPro) {
                 item {
-                    val app = context.applicationContext as com.smartbudget.SmartBudgetApp
-                val firebaseSyncManager = app.firebaseSyncManager
-                val firebaseAuthManager = app.firebaseAuthManager
-                val userManager = com.smartbudget.data.UserManager(context)
-                val scope = rememberCoroutineScope()
-                var isSyncing by remember { mutableStateOf(false) }
-                var isRestoring by remember { mutableStateOf(false) }
-                var syncMessage by remember { mutableStateOf<String?>(null) }
-                val isSignedIn = remember { mutableStateOf(firebaseAuthManager.isSignedIn()) }
-                val lastSyncTime = remember { mutableStateOf(firebaseSyncManager.getLastSyncTime()) }
-                val autoSyncEnabled = remember { mutableStateOf(firebaseSyncManager.isAutoSyncEnabled()) }
-
-                SettingsCard {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Filled.Cloud,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Synchronisation Cloud",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                if (isSignedIn.value) {
-                                    Text(
-                                        text = if (lastSyncTime.value > 0) {
-                                            "Dernière sync: ${java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(lastSyncTime.value))}"
-                                        } else {
-                                            "Jamais synchronisé"
-                                        },
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        if (isSignedIn.value) {
-                            // Auto-sync toggle
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { 
-                                        autoSyncEnabled.value = !autoSyncEnabled.value
-                                        firebaseSyncManager.setAutoSyncEnabled(autoSyncEnabled.value)
-                                    }
-                                    .padding(vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Synchronisation automatique",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Switch(
-                                    checked = autoSyncEnabled.value,
-                                    onCheckedChange = { 
-                                        autoSyncEnabled.value = it
-                                        firebaseSyncManager.setAutoSyncEnabled(it)
-                                    }
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // Sync now button
-                            Button(
-                                onClick = {
-                                    scope.launch {
-                                        isSyncing = true
-                                        syncMessage = null
-                                        val result = firebaseSyncManager.syncToCloud(userManager.getCurrentUserId())
-                                        isSyncing = false
-                                        if (result.isSuccess) {
-                                            lastSyncTime.value = firebaseSyncManager.getLastSyncTime()
-                                            syncMessage = "Synchronisation réussie ✓"
-                                        } else {
-                                            syncMessage = "Erreur: ${result.exceptionOrNull()?.message}"
-                                        }
-                                    }
-                                },
-                                enabled = !isSyncing && !isRestoring,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                if (isSyncing) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                }
-                                Text(if (isSyncing) "Synchronisation..." else "Synchroniser maintenant")
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // Restore button
-                            OutlinedButton(
-                                onClick = {
-                                    scope.launch {
-                                        isRestoring = true
-                                        syncMessage = null
-                                        val result = firebaseSyncManager.restoreFromCloud(userManager.getCurrentUserId())
-                                        isRestoring = false
-                                        if (result.isSuccess) {
-                                            syncMessage = "Restauration réussie ✓"
-                                        } else {
-                                            syncMessage = "Erreur: ${result.exceptionOrNull()?.message}"
-                                        }
-                                    }
-                                },
-                                enabled = !isSyncing && !isRestoring,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                if (isRestoring) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                }
-                                Text(if (isRestoring) "Restauration..." else "Restaurer depuis le cloud")
-                            }
-
-                            syncMessage?.let { message ->
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = message,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = if (message.contains("✓")) MaterialTheme.colorScheme.primary 
-                                           else MaterialTheme.colorScheme.error
-                                )
-                            }
-                        } else {
-                            Text(
-                                text = "Connexion au cloud en cours...",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                    SettingsNavItem(
+                        icon = Icons.Filled.FileDownload,
+                        title = stringResource(R.string.export_csv),
+                        subtitle = stringResource(R.string.export_csv_desc),
+                        onClick = { /* handled elsewhere */ }
+                    )
                 }
-                }
-            }
-
-            // Export PDF
-            item {
-                SettingsNavItem(
-                    icon = Icons.Filled.FileDownload,
-                    title = stringResource(R.string.export_csv),
-                    subtitle = "Exportez vos transactions en PDF",
-                    onClick = { /* handled elsewhere */ }
-                )
             }
 
             // Privacy Policy (for all users)
             item {
                 SettingsNavItem(
                     icon = Icons.Filled.PrivacyTip,
-                    title = "Politique de confidentialité",
-                    subtitle = "Consultez notre politique de confidentialité",
+                    title = stringResource(R.string.privacy_policy),
+                    subtitle = stringResource(R.string.privacy_policy_desc),
                     onClick = {
                         val intent = android.content.Intent(
                             android.content.Intent.ACTION_VIEW,
@@ -607,7 +608,7 @@ fun SettingsScreen(
             item {
                 SettingsCard {
                     Column(
-                        modifier = if (!isPro) Modifier.clickable { onNavigateProUpgrade() } else Modifier
+                        modifier = Modifier
                     ) {
                         Row(
                             modifier = Modifier

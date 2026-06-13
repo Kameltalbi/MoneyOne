@@ -76,7 +76,9 @@ class TransactionViewModel(
     }
 
     val allCategories: StateFlow<List<Category>> = flow { emit(userId) }
-        .flatMapLatest { categoryRepo.getAllCategories(it) }
+        .flatMapLatest { uid -> 
+            categoryRepo.getAllCategoriesFiltered(uid, app.billingManager.isPro.value)
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allAccounts = flow { emit(userId) }

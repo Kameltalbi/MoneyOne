@@ -85,6 +85,20 @@
     <string name="no_budget_set">Sem orçamento</string>
 
     <!-- Settings -->
+    <string name="discover_features">Descobrir funcionalidades</string>
+    <string name="discover_features_desc">Todas as funcionalidades gratuitas e Pro</string>
+    <string name="security">Segurança</string>
+    <string name="security_desc">Código PIN e impressão digital</string>
+    <string name="sms_import">Importar SMS</string>
+    <string name="sms_import_desc">Importar suas transações bancárias</string>
+    <string name="monthly_budget_tip">💡 O orçamento global ajuda a acompanhar seus gastos mensais. Veja o painel para acompanhar seu progresso.</string>
+    <string name="privacy_policy">Política de privacidade</string>
+    <string name="privacy_policy_desc">Consulte nossa política de privacidade</string>
+    <string name="export_csv_desc">Exporte suas transações em PDF</string>
+    <string name="savings_goals">Metas de poupança</string>
+    <string name="savings_goals_desc">Defina e acompanhe suas metas de poupança</string>
+    <string name="categories_desc_pro">Crie e personalize suas categorias</string>
+    <string name="categories_desc_free">9 categorias padrão</string>
     <string name="currency">Moeda</string>
     <string name="monthly_global_budget">Orçamento mensal global</string>
     <string name="global_budget_label">Orçamento global (%1$s)</string>

@@ -20,6 +20,7 @@ import com.smartbudget.data.entity.Account
 import com.smartbudget.ui.theme.*
 import com.smartbudget.ui.util.CurrencyFormatter
 import com.smartbudget.ui.viewmodel.SettingsViewModel
+import com.smartbudget.billing.PlanLimits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +53,8 @@ fun AccountsScreen(
             )
         },
         floatingActionButton = {
-            if (accounts.size < 5) {
+            val maxAccounts = if (isPro) PlanLimits.PRO_MAX_ACCOUNTS else PlanLimits.FREE_MAX_ACCOUNTS
+            if (isPro || accounts.size < PlanLimits.FREE_MAX_ACCOUNTS) {
                 FloatingActionButton(
                     onClick = { showAddDialog = true },
                     containerColor = MaterialTheme.colorScheme.primary
@@ -71,11 +73,38 @@ fun AccountsScreen(
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             item {
+                val maxAccounts = if (isPro) "∞" else "2"
                 Text(
-                    text = stringResource(R.string.accounts_count, accounts.size) + " / 5",
+                    text = stringResource(R.string.accounts_count, accounts.size) + " / $maxAccounts",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (!isPro && accounts.size >= PlanLimits.FREE_MAX_ACCOUNTS) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Filled.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Passez au plan Pro pour ajouter plus de comptes",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                }
             }
 
             items(accounts, key = { it.id }) { account ->

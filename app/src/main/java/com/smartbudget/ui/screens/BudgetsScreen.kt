@@ -29,6 +29,7 @@ import com.smartbudget.ui.util.DateUtils
 import com.smartbudget.ui.util.IconMapper
 import com.smartbudget.ui.util.toComposeColor
 import com.smartbudget.ui.viewmodel.SettingsViewModel
+import com.smartbudget.billing.PlanLimits
 import java.time.format.DateTimeFormatter
 import java.time.YearMonth as JavaYearMonth
 
@@ -74,16 +75,15 @@ fun BudgetsScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { 
-                    if (isPro) {
-                        showAddBudgetDialog = true
-                    } else {
-                        onNavigateProUpgrade()
-                    }
+            val maxBudgets = if (isPro) PlanLimits.PRO_MAX_BUDGETS else PlanLimits.FREE_MAX_BUDGETS
+            val totalBudgets = categoryBudgets.size + if (globalBudget != null) 1 else 0
+            
+            if (isPro || totalBudgets < maxBudgets) {
+                FloatingActionButton(
+                    onClick = { showAddBudgetDialog = true }
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_budget))
                 }
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_budget))
             }
         }
     ) { padding ->
@@ -107,6 +107,49 @@ fun BudgetsScreen(
                 )
             }
 
+            // Budget limit warning for free users
+            item {
+                val maxBudgets = if (isPro) PlanLimits.PRO_MAX_BUDGETS else PlanLimits.FREE_MAX_BUDGETS
+                val totalBudgets = categoryBudgets.size + if (globalBudget != null) 1 else 0
+                
+                if (!isPro && totalBudgets >= maxBudgets) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Filled.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Limite atteinte : $totalBudgets / $maxBudgets budgets",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    text = "Passez au plan Pro pour créer des budgets illimités",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                            TextButton(onClick = onNavigateProUpgrade) {
+                                Text("Upgrade")
+                            }
+                        }
+                    }
+                }
+            }
+
             // Category budgets header
             item {
                 Row(
@@ -119,11 +162,6 @@ fun BudgetsScreen(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
-                    if (!isPro) {
-                        TextButton(onClick = onNavigateProUpgrade) {
-                            Text("⭐ Pro")
-                        }
-                    }
                 }
             }
 
@@ -346,7 +384,7 @@ private fun GlobalBudgetCard(
                     }
                 } else {
                     TextButton(onClick = onUpgrade) {
-                        Text("⭐ ${stringResource(R.string.upgrade_to_pro)}")
+                        Text(stringResource(R.string.upgrade_to_pro))
                     }
                 }
             }

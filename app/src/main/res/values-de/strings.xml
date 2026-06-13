@@ -85,6 +85,20 @@
     <string name="no_budget_set">Kein Budget festgelegt</string>
 
     <!-- Settings -->
+    <string name="discover_features">Funktionen entdecken</string>
+    <string name="discover_features_desc">Alle kostenlosen und Pro-Funktionen</string>
+    <string name="security">Sicherheit</string>
+    <string name="security_desc">PIN-Code und Fingerabdruck</string>
+    <string name="sms_import">SMS importieren</string>
+    <string name="sms_import_desc">Banktransaktionen importieren</string>
+    <string name="monthly_budget_tip">💡 Das Gesamtbudget hilft Ihnen, Ihre monatlichen Ausgaben zu verfolgen. Sehen Sie sich das Dashboard an.</string>
+    <string name="privacy_policy">Datenschutzrichtlinie</string>
+    <string name="privacy_policy_desc">Unsere Datenschutzrichtlinie lesen</string>
+    <string name="export_csv_desc">Transaktionen als PDF exportieren</string>
+    <string name="savings_goals">Sparziele</string>
+    <string name="savings_goals_desc">Sparziele festlegen und verfolgen</string>
+    <string name="categories_desc_pro">Kategorien erstellen und anpassen</string>
+    <string name="categories_desc_free">9 Standardkategorien</string>
     <string name="currency">Währung</string>
     <string name="monthly_global_budget">Monatliches Gesamtbudget</string>
     <string name="global_budget_label">Gesamtbudget (%1$s)</string>

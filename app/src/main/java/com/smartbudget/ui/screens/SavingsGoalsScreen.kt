@@ -26,19 +26,24 @@ import com.smartbudget.R
 import com.smartbudget.data.entity.SavingsGoal
 import com.smartbudget.ui.util.CurrencyFormatter
 import com.smartbudget.ui.util.toComposeColor
+import com.smartbudget.billing.PlanLimits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SavingsGoalsScreen(
     goals: List<SavingsGoal>,
+    isPro: Boolean,
     onAddGoal: (name: String, targetAmount: Double) -> Unit,
     onAddAmount: (goalId: Long, amount: Double) -> Unit,
     onDeleteGoal: (SavingsGoal) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateProUpgrade: () -> Unit = {}
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
     var showAddAmountDialog by remember { mutableStateOf<SavingsGoal?>(null) }
     var showDeleteConfirm by remember { mutableStateOf<SavingsGoal?>(null) }
+
+    val maxGoals = if (isPro) PlanLimits.PRO_MAX_SAVINGS_GOALS else PlanLimits.FREE_MAX_SAVINGS_GOALS
 
     Scaffold(
         topBar = {
@@ -50,8 +55,10 @@ fun SavingsGoalsScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showAddDialog = true }) {
-                        Icon(Icons.Filled.Add, contentDescription = null)
+                    if (goals.size < maxGoals) {
+                        IconButton(onClick = { showAddDialog = true }) {
+                            Icon(Icons.Filled.Add, contentDescription = null)
+                        }
                     }
                 }
             )
@@ -93,6 +100,45 @@ fun SavingsGoalsScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                if (!isPro && goals.size >= PlanLimits.FREE_MAX_SAVINGS_GOALS) {
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Filled.Lock,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Limite atteinte : ${goals.size} / $maxGoals objectif",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = "Passez au plan Pro pour créer des objectifs illimités",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                                TextButton(onClick = onNavigateProUpgrade) {
+                                    Text("Upgrade")
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 items(goals) { goal ->
                     SavingsGoalCard(
                         goal = goal,

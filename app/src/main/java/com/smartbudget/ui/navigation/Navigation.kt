@@ -151,9 +151,15 @@ fun SmartBudgetNavigation(
         }
 
         composable(Routes.SETTINGS_CATEGORIES) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val app = context.applicationContext as com.smartbudget.SmartBudgetApp
+            val isPro by app.billingManager.isPro.collectAsState()
+            
             CategoriesScreen(
                 viewModel = settingsViewModel,
-                onNavigateBack = { navController.popBackStack() }
+                isPro = isPro,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateProUpgrade = { navController.navigate(Routes.PRO_UPGRADE) }
             )
         }
 
@@ -265,10 +271,12 @@ fun SmartBudgetNavigation(
             val goals by mainViewModel.savingsGoals.collectAsState()
             SavingsGoalsScreen(
                 goals = goals,
+                isPro = isPro,
                 onAddGoal = { name, target -> mainViewModel.addSavingsGoal(name, target, isPro) },
                 onAddAmount = { goalId, amount -> mainViewModel.addAmountToGoal(goalId, amount) },
                 onDeleteGoal = { goal -> mainViewModel.deleteSavingsGoal(goal) },
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateProUpgrade = { navController.navigate(Routes.PRO_UPGRADE) }
             )
         }
     }

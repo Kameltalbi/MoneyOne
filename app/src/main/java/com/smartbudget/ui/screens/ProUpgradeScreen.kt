@@ -39,8 +39,9 @@ fun ProUpgradeScreen(
     val isPro by billingManager.isPro.collectAsState()
     val monthlyPrice by billingManager.monthlyPrice.collectAsState()
     val annualPrice by billingManager.annualPrice.collectAsState()
+    val lifetimePrice by billingManager.lifetimePrice.collectAsState()
 
-    var selectedPlan by remember { mutableStateOf("annual") }
+    var selectedPlan by remember { mutableStateOf("lifetime") }
 
     Scaffold(
         topBar = {
@@ -158,11 +159,10 @@ fun ProUpgradeScreen(
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     val freeFeatures = listOf(
-                        "✓ 1 compte uniquement",
+                        "✓ 2 comptes maximum",
                         "✓ Transactions illimitées",
-                        "✓ Catégories personnalisées",
-                        "✓ Budget global mensuel",
-                        "✓ Statistiques de base"
+                        "✓ 9 catégories fixes",
+                        "✓ Budget global mensuel"
                     )
                     freeFeatures.forEach { feature ->
                         Text(
@@ -220,6 +220,53 @@ fun ProUpgradeScreen(
             if (!isPro) {
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Monthly plan card
+                Card(
+                    onClick = { selectedPlan = "monthly" },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (selectedPlan == "monthly")
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                        else MaterialTheme.colorScheme.surface
+                    ),
+                    border = if (selectedPlan == "monthly")
+                        androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                    else null
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectedPlan == "monthly",
+                            onClick = { selectedPlan = "monthly" }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.monthly_plan),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = stringResource(R.string.monthly_plan_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Text(
+                            text = "$monthlyPrice/${stringResource(R.string.per_month)}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 // Annual plan card
                 Card(
                     onClick = { selectedPlan = "annual" },
@@ -273,53 +320,6 @@ fun ProUpgradeScreen(
                         }
                         Text(
                             text = "$annualPrice/${stringResource(R.string.per_year)}",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Monthly plan card
-                Card(
-                    onClick = { selectedPlan = "monthly" },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (selectedPlan == "monthly")
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                        else MaterialTheme.colorScheme.surface
-                    ),
-                    border = if (selectedPlan == "monthly")
-                        androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                    else null
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = selectedPlan == "monthly",
-                            onClick = { selectedPlan = "monthly" }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.monthly_plan),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = stringResource(R.string.monthly_plan_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Text(
-                            text = "$monthlyPrice/${stringResource(R.string.per_month)}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary

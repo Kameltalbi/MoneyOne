@@ -29,6 +29,14 @@
 -dontwarn com.google.api.client.**
 -dontwarn com.google.api.services.drive.**
 
+# Apache HTTP (used by Google API client)
+-dontwarn org.apache.http.**
+-dontwarn android.net.http.**
+-dontwarn com.google.android.gms.internal.**
+-dontwarn org.ietf.jgss.**
+-dontwarn sun.security.**
+-dontwarn javax.naming.**
+
 # ML Kit
 -keep class com.google.mlkit.** { *; }
 -dontwarn com.google.mlkit.**

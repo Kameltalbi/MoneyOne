@@ -85,6 +85,20 @@
     <string name="no_budget_set">Bütçe belirlenmedi</string>
 
     <!-- Settings -->
+    <string name="discover_features">Özellikleri keşfet</string>
+    <string name="discover_features_desc">Tüm ücretsiz ve Pro özellikler</string>
+    <string name="security">Güvenlik</string>
+    <string name="security_desc">PIN kodu ve parmak izi</string>
+    <string name="sms_import">SMS içe aktar</string>
+    <string name="sms_import_desc">Banka işlemlerini içe aktar</string>
+    <string name="monthly_budget_tip">💡 Genel bütçe, aylık harcamalarınızı takip etmenize yardımcı olur. İlerlemenizi görmek için panele bakın.</string>
+    <string name="privacy_policy">Gizlilik politikası</string>
+    <string name="privacy_policy_desc">Gizlilik politikamızı inceleyin</string>
+    <string name="export_csv_desc">İşlemlerinizi PDF olarak dışa aktarın</string>
+    <string name="savings_goals">Tasarruf hedefleri</string>
+    <string name="savings_goals_desc">Tasarruf hedefleri belirleyin ve takip edin</string>
+    <string name="categories_desc_pro">Kategorilerinizi oluşturun ve özelleştirin</string>
+    <string name="categories_desc_free">9 varsayılan kategori</string>
     <string name="currency">Para birimi</string>
     <string name="monthly_global_budget">Aylık genel bütçe</string>
     <string name="global_budget_label">Genel bütçe (%1$s)</string>

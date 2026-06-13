@@ -3,10 +3,17 @@ package com.smartbudget.data.repository
 import com.smartbudget.data.dao.CategoryDao
 import com.smartbudget.data.entity.Category
 import com.smartbudget.data.entity.TransactionType
+import com.smartbudget.billing.PlanLimits
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class CategoryRepository(private val categoryDao: CategoryDao) {
     fun getAllCategories(userId: String): Flow<List<Category>> = categoryDao.getAllCategories(userId)
+    
+    fun getAllCategoriesFiltered(userId: String, isPro: Boolean): Flow<List<Category>> {
+        // TESTING: Always return all categories for everyone
+        return categoryDao.getAllCategories(userId)
+    }
 
     fun getCategoriesByType(userId: String, type: TransactionType): Flow<List<Category>> =
         categoryDao.getCategoriesByType(userId, type)

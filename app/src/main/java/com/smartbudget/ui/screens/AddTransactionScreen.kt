@@ -499,18 +499,20 @@ fun AddTransactionScreen(
 
                 var frequencyExpanded by remember { mutableStateOf(false) }
 
-                data class FreqOption(val freq: Frequency?, val interval: Int, val labelRes: Int)
-                val options = listOf(
-                    FreqOption(null, 1, R.string.recurrence_none),
-                    FreqOption(Frequency.DAILY, 1, R.string.recurrence_daily),
-                    FreqOption(Frequency.WEEKLY, 1, R.string.recurrence_weekly),
-                    FreqOption(Frequency.MONTHLY, 1, R.string.recurrence_monthly),
-                    FreqOption(Frequency.MONTHLY, 2, R.string.recurrence_bimonthly),
-                    FreqOption(Frequency.MONTHLY, 3, R.string.recurrence_quarterly),
-                    FreqOption(Frequency.MONTHLY, 4, R.string.recurrence_four_monthly),
-                    FreqOption(Frequency.MONTHLY, 6, R.string.recurrence_semi_annual),
-                    FreqOption(Frequency.YEARLY, 1, R.string.recurrence_annual)
+                data class FreqOption(val freq: Frequency?, val interval: Int, val labelRes: Int, val requiresPro: Boolean = false)
+                val allOptions = listOf(
+                    FreqOption(null, 1, R.string.recurrence_none, requiresPro = false),
+                    FreqOption(Frequency.DAILY, 1, R.string.recurrence_daily, requiresPro = false),
+                    FreqOption(Frequency.WEEKLY, 1, R.string.recurrence_weekly, requiresPro = false),
+                    FreqOption(Frequency.MONTHLY, 1, R.string.recurrence_monthly, requiresPro = false),
+                    FreqOption(Frequency.MONTHLY, 2, R.string.recurrence_bimonthly, requiresPro = true),
+                    FreqOption(Frequency.MONTHLY, 3, R.string.recurrence_quarterly, requiresPro = true),
+                    FreqOption(Frequency.MONTHLY, 4, R.string.recurrence_four_monthly, requiresPro = true),
+                    FreqOption(Frequency.MONTHLY, 6, R.string.recurrence_semi_annual, requiresPro = true),
+                    FreqOption(Frequency.YEARLY, 1, R.string.recurrence_annual, requiresPro = true)
                 )
+                // All frequencies available for everyone (app is free)
+                val options = allOptions
                 val currentOption = options.find {
                     it.freq == formState.frequency && it.interval == formState.frequencyInterval
                 } ?: options[0]

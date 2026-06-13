@@ -62,6 +62,7 @@ class SettingsViewModel(
     fun setLanguage(langCode: String) {
         prefs.edit().putString("language", langCode).apply()
         _selectedLanguage.value = langCode
+        _currentLanguage.value = langCode
         val localeList = if (langCode.isEmpty()) LocaleListCompat.getEmptyLocaleList()
         else LocaleListCompat.forLanguageTags(langCode)
         AppCompatDelegate.setApplicationLocales(localeList)
@@ -159,7 +160,9 @@ class SettingsViewModel(
     }
 
     val allCategories: StateFlow<List<Category>> = flow { emit(userId) }
-        .flatMapLatest { categoryRepo.getAllCategories(it) }
+        .flatMapLatest { uid -> 
+            categoryRepo.getAllCategoriesFiltered(uid, app.billingManager.isPro.value)
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _categoryForm = MutableStateFlow(CategoryFormState())
@@ -168,7 +171,7 @@ class SettingsViewModel(
     private val _selectedYearMonth = MutableStateFlow(YearMonth.now())
     val selectedYearMonth: StateFlow<YearMonth> = _selectedYearMonth.asStateFlow()
     
-    private val _currentLanguage = MutableStateFlow("fr")
+    private val _currentLanguage = MutableStateFlow(prefs.getString("language", "fr") ?: "fr")
     val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
 
     private val _globalBudgetAmount = MutableStateFlow("")
@@ -354,7 +357,7 @@ class SettingsViewModel(
             val ymStr = DateUtils.yearMonthString(_selectedYearMonth.value)
             val existing = currentBudget.value
 
-            // FREE: only 1 global budget allowed
+            // FREE: only 1 budget total (global OR category)
             if (!isPro && existing == null) {
                 val allBudgets = budgetRepo.getAllBudgetsForMonthDirect(userId, ymStr)
                 if (allBudgets.isNotEmpty()) {

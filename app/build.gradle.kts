@@ -7,14 +7,14 @@ plugins {
 
 android {
     namespace = "com.smartbudget"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.smartbudget"
+        applicationId = "com.moneyone.budget"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 2
-        versionName = "1.1"
+        targetSdk = 35
+        versionCode = 51
+        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -66,6 +66,9 @@ android {
             excludes += "/META-INF/NOTICE.txt"
             excludes += "/META-INF/notice.txt"
         }
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
 }
 
@@ -106,13 +109,13 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
-    // Firebase BOM
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
+    // Firebase BOM - DISABLED to prevent crash
+    // implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    // implementation("com.google.firebase:firebase-auth-ktx")
+    // implementation("com.google.firebase:firebase-firestore-ktx")
 
-    // ML Kit Text Recognition (OCR)
-    implementation("com.google.mlkit:text-recognition:16.0.0")
+    // ML Kit Text Recognition (OCR) - via Play Services to avoid 16KB .so issue
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
 
     // Google Sign-In & Drive API
     implementation("com.google.android.gms:play-services-auth:20.7.0")

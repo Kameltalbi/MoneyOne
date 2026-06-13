@@ -87,6 +87,15 @@
     <string name="no_budget_set">لم يتم تحديد ميزانية</string>
 
     <!-- Settings -->
+    <string name="discover_features">اكتشف المميزات</string>
+    <string name="discover_features_desc">جميع المميزات المجانية والمدفوعة</string>
+    <string name="security">الأمان</string>
+    <string name="security_desc">رمز PIN والبصمة</string>
+    <string name="sms_import">استيراد SMS</string>
+    <string name="sms_import_desc">استيراد معاملاتك البنكية</string>
+    <string name="monthly_budget_tip">💡 تساعدك الميزانية العامة على تتبع نفقاتك الشهرية. راجع لوحة التحكم لمتابعة تقدمك.</string>
+    <string name="privacy_policy">سياسة الخصوصية</string>
+    <string name="privacy_policy_desc">اطلع على سياسة الخصوصية الخاصة بنا</string>
     <string name="currency">العملة</string>
     <string name="monthly_global_budget">الميزانية الشهرية العامة</string>
     <string name="global_budget_label">الميزانية العامة (%1$s)</string>
@@ -229,6 +238,7 @@
 
     <!-- Export -->
     <string name="export_csv">تصدير PDF</string>
+    <string name="export_csv_desc">تصدير معاملاتك بصيغة PDF</string>
 
     <!-- Search -->
     <string name="search_hint">البحث عن معاملة…</string>

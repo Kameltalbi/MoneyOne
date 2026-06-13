@@ -14,8 +14,8 @@ import com.smartbudget.data.repository.RecurringRepository
 import com.smartbudget.data.repository.TransactionRepository
 import com.smartbudget.billing.BillingManager
 import com.smartbudget.notification.BudgetAlertManager
-import com.smartbudget.firebase.FirebaseAuthManager
-import com.smartbudget.firebase.FirebaseSyncManager
+// import com.smartbudget.firebase.FirebaseAuthManager // Removed - Firebase disabled
+// import com.smartbudget.firebase.FirebaseSyncManager // Removed - Firebase disabled
 import com.smartbudget.security.SecurityManager
 import com.smartbudget.currency.ExchangeRateService
 import com.smartbudget.sms.SmsImportService
@@ -23,6 +23,7 @@ import com.smartbudget.ui.util.CurrencyFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+// import com.google.firebase.FirebaseApp // Removed - Firebase disabled
 
 class SmartBudgetApp : Application() {
     var database = null as SmartBudgetDatabase?
@@ -51,42 +52,62 @@ class SmartBudgetApp : Application() {
     val securityManager by lazy { SecurityManager(this) }
     val exchangeRateService by lazy { ExchangeRateService(this) }
     val smsImportService by lazy { SmsImportService(this) }
-    val firebaseAuthManager by lazy { FirebaseAuthManager(this) }
-    val firebaseSyncManager by lazy { 
-        FirebaseSyncManager(
-            this,
-            firebaseAuthManager,
-            accountRepository,
-            categoryRepository,
-            transactionRepository,
-            budgetRepository,
-            savingsGoalRepository,
-            recurringRepository
-        )
-    }
+    // Firebase disabled - removed firebaseAuthManager and firebaseSyncManager
+    // val firebaseAuthManager by lazy { FirebaseAuthManager(this) }
+    // val firebaseSyncManager by lazy { 
+    //     FirebaseSyncManager(
+    //         this,
+    //         firebaseAuthManager,
+    //         accountRepository,
+    //         categoryRepository,
+    //         transactionRepository,
+    //         budgetRepository,
+    //         savingsGoalRepository,
+    //         recurringRepository
+    //     )
+    // }
 
     override fun onCreate() {
         super.onCreate()
+        
+        // Firebase disabled for production - causes crashes
+        // Initialize Firebase manually BEFORE any Firebase usage
+        // try {
+        //     FirebaseApp.initializeApp(this)
+        //     android.util.Log.d("SmartBudgetApp", "Firebase initialized successfully")
+        // } catch (e: Exception) {
+        //     android.util.Log.e("SmartBudgetApp", "Firebase initialization failed", e)
+        // }
+        
         CurrencyFormatter.init(this)
         billingManager.initialize()
         budgetAlertManager.createNotificationChannel()
-        initializeFirebase()
+        // initializeFirebase() // Disabled - causes crash
         seedDefaultData()
     }
     
-    private fun initializeFirebase() {
-        CoroutineScope(Dispatchers.IO).launch {
-            // Sign in anonymously if not already signed in
-            if (!firebaseAuthManager.isSignedIn()) {
-                val result = firebaseAuthManager.signInAnonymously()
-                if (result.isSuccess) {
-                    android.util.Log.d("SmartBudgetApp", "Firebase anonymous sign-in successful")
-                } else {
-                    android.util.Log.e("SmartBudgetApp", "Firebase anonymous sign-in failed", result.exceptionOrNull())
-                }
-            }
-        }
-    }
+    // Firebase disabled - initializeFirebase removed
+    // private fun initializeFirebase() {
+    //     CoroutineScope(Dispatchers.IO).launch {
+    //         try {
+    //             val firebaseApps = FirebaseApp.getApps(this@SmartBudgetApp)
+    //             if (firebaseApps.isEmpty()) {
+    //                 android.util.Log.w("SmartBudgetApp", "Firebase not available, skipping Firebase initialization")
+    //                 return@launch
+    //             }
+    //             if (!firebaseAuthManager.isSignedIn()) {
+    //                 val result = firebaseAuthManager.signInAnonymously()
+    //                 if (result.isSuccess) {
+    //                     android.util.Log.d("SmartBudgetApp", "Firebase anonymous sign-in successful")
+    //                 } else {
+    //                     android.util.Log.e("SmartBudgetApp", "Firebase anonymous sign-in failed", result.exceptionOrNull())
+    //                 }
+    //             }
+    //         } catch (e: Exception) {
+    //             android.util.Log.e("SmartBudgetApp", "Error in initializeFirebase", e)
+    //         }
+    //     }
+    // }
 
     private fun seedDefaultData() {
         CoroutineScope(Dispatchers.IO).launch {

@@ -85,6 +85,16 @@
     <string name="no_budget_set">Sin presupuesto</string>
 
     <!-- Settings -->
+    <string name="discover_features">Descubrir funciones</string>
+    <string name="discover_features_desc">Todas las funciones gratuitas y Pro</string>
+    <string name="security">Seguridad</string>
+    <string name="security_desc">Código PIN e huella digital</string>
+    <string name="sms_import">Importar SMS</string>
+    <string name="sms_import_desc">Importar tus transacciones bancarias</string>
+    <string name="monthly_budget_tip">💡 El presupuesto global te ayuda a seguir tus gastos mensuales. Consulta el panel para ver tu progreso.</string>
+    <string name="privacy_policy">Política de privacidad</string>
+    <string name="privacy_policy_desc">Consulta nuestra política de privacidad</string>
+    <string name="export_csv_desc">Exporta tus transacciones en PDF</string>
     <string name="currency">Moneda</string>
     <string name="monthly_global_budget">Presupuesto mensual global</string>
     <string name="global_budget_label">Presupuesto global (%1$s)</string>
@@ -92,6 +102,10 @@
     <string name="category_budgets">Presupuestos por categoría</string>
     <string name="category_budgets_desc">Definir un presupuesto para cada categoría de gasto</string>
     <string name="categories">Categorías</string>
+    <string name="categories_desc_pro">Crea y personaliza tus categorías</string>
+    <string name="categories_desc_free">9 categorías por defecto</string>
+    <string name="savings_goals">Metas de ahorro</string>
+    <string name="savings_goals_desc">Define y sigue tus metas de ahorro</string>
     <string name="expenses_count">%1$d gastos</string>
     <string name="incomes_count">%1$d ingresos</string>
 
@@ -223,7 +237,7 @@
     <string name="theme_color">Color del tema</string>
 
     <!-- Export -->
-    <string name="export_csv">Exportar CSV</string>
+    <string name="export_csv">Exportar PDF</string>
 
     <!-- Search -->
     <string name="search_hint">Buscar transacción…</string>

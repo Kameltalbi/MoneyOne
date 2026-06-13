@@ -87,6 +87,20 @@
     <string name="no_budget_set">No budget set</string>
 
     <!-- Settings -->
+    <string name="discover_features">Discover features</string>
+    <string name="discover_features_desc">All free and Pro features</string>
+    <string name="security">Security</string>
+    <string name="security_desc">PIN code and fingerprint</string>
+    <string name="sms_import">SMS Import</string>
+    <string name="sms_import_desc">Import your bank transactions</string>
+    <string name="monthly_budget_tip">💡 The global budget helps you track your monthly expenses. Check the dashboard to see your progress.</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy_desc">View our privacy policy</string>
+    <string name="export_csv_desc">Export your transactions as PDF</string>
+    <string name="savings_goals">Savings goals</string>
+    <string name="savings_goals_desc">Set and track your savings goals</string>
+    <string name="categories_desc_pro">Create and customize your categories</string>
+    <string name="categories_desc_free">9 default categories</string>
     <string name="currency">Currency</string>
     <string name="monthly_global_budget">Monthly global budget</string>
     <string name="global_budget_label">Global budget (%1$s)</string>
@@ -94,8 +108,6 @@
     <string name="category_budgets">Category budgets</string>
     <string name="category_budgets_desc">Set a budget for each expense category</string>
     <string name="categories">Categories</string>
-    <string name="categories_desc_free">8 default categories</string>
-    <string name="categories_desc_pro">Create and customize your categories</string>
     <string name="expenses_count">%1$d expenses</string>
     <string name="incomes_count">%1$d incomes</string>
 

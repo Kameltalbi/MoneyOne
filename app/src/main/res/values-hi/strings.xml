@@ -85,6 +85,20 @@
     <string name="no_budget_set">कोई बजट नहीं</string>
 
     <!-- Settings -->
+    <string name="discover_features">फ़ीचर खोजें</string>
+    <string name="discover_features_desc">सभी मुफ़्त और Pro फ़ीचर</string>
+    <string name="security">सुरक्षा</string>
+    <string name="security_desc">PIN कोड और फिंगरप्रिंट</string>
+    <string name="sms_import">SMS आयात करें</string>
+    <string name="sms_import_desc">अपने बैंक लेनदेन आयात करें</string>
+    <string name="monthly_budget_tip">💡 सामान्य बजट आपके मासिक खर्च को ट्रैक करने में मदद करता है।</string>
+    <string name="privacy_policy">गोपनीयता नीति</string>
+    <string name="privacy_policy_desc">हमारी गोपनीयता नीति देखें</string>
+    <string name="export_csv_desc">अपने लेनदेन PDF में निर्यात करें</string>
+    <string name="savings_goals">बचत लक्ष्य</string>
+    <string name="savings_goals_desc">बचत लक्ष्य निर्धारित और ट्रैक करें</string>
+    <string name="categories_desc_pro">अपनी श्रेणियाँ बनाएं और अनुकूलित करें</string>
+    <string name="categories_desc_free">9 डिफ़ॉल्ट श्रेणियाँ</string>
     <string name="currency">मुद्रा</string>
     <string name="monthly_global_budget">मासिक कुल बजट</string>
     <string name="global_budget_label">कुल बजट (%1$s)</string>
