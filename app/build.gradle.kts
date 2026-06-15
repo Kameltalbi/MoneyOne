@@ -13,7 +13,7 @@ android {
         applicationId = "com.moneyone.budget"
         minSdk = 26
         targetSdk = 35
-        versionCode = 52
+        versionCode = 54
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -103,7 +103,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // Google Play Billing
-    implementation("com.android.billingclient:billing-ktx:6.1.0")
+    implementation("com.android.billingclient:billing-ktx:7.0.0")
 
     // Biometric & Security
     implementation("androidx.biometric:biometric:1.1.0")
